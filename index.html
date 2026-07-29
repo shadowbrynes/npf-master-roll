@@ -129,14 +129,33 @@
       const randomOfficer = generateSingleRandomOfficer();
       document.getElementById('add-serviceno').value = randomOfficer.serviceNo;
       document.getElementById('add-name').value = randomOfficer.name;
-      document.getElementById('add-rank').value = randomOfficer.rank;
+
+      const rankSelect = document.getElementById('add-rank');
+      if (rankSelect) {
+        const foundOpt = Array.from(rankSelect.options).find(o => o.value === randomOfficer.rank || o.value.replace('_', ' ') === randomOfficer.rank);
+        if (foundOpt) rankSelect.value = foundOpt.value;
+      }
+
       document.getElementById('add-specialisation').value = randomOfficer.specialisation;
       
       const selectCmd = document.getElementById('add-command');
-      if (selectCmd.options.length > 0) {
+      if (selectCmd && selectCmd.options.length > 0) {
         selectCmd.selectedIndex = Math.floor(Math.random() * selectCmd.options.length);
       }
-      alert(`⚡ Auto-filled details for ${randomOfficer.name} (${randomOfficer.serviceNo})! Click 'Add Officer to Master Roll' to save.`);
+
+      // Auto-fill Dates: Enlistment, Promotion & Statutory Retirement (35 years service rule)
+      const apptDate = randomOfficer.appointmentDate || '2012-05-15';
+      const promoDate = randomOfficer.lastPromotionDate || '2022-09-10';
+      
+      const apptYear = parseInt(apptDate.split('-')[0], 10) || 2012;
+      const retirementYear = apptYear + 35;
+      const retirementDate = `${retirementYear}${apptDate.substring(4)}`;
+
+      document.getElementById('add-appointment-date').value = apptDate;
+      document.getElementById('add-promotion-date').value = promoDate;
+      document.getElementById('add-retirement-date').value = retirementDate;
+
+      alert(`⚡ Auto-filled details for ${randomOfficer.name} (${randomOfficer.serviceNo})!\n\n• Date of Enlistment: ${apptDate}\n• Date of Last Promotion: ${promoDate}\n• Statutory Date of Retirement: ${retirementDate} (35-Year Service Rule)`);
     }
 
     function runBatchGenerator() {
@@ -421,14 +440,33 @@
       const randomOfficer = generateSingleRandomOfficer();
       document.getElementById('add-serviceno').value = randomOfficer.serviceNo;
       document.getElementById('add-name').value = randomOfficer.name;
-      document.getElementById('add-rank').value = randomOfficer.rank;
+
+      const rankSelect = document.getElementById('add-rank');
+      if (rankSelect) {
+        const foundOpt = Array.from(rankSelect.options).find(o => o.value === randomOfficer.rank || o.value.replace('_', ' ') === randomOfficer.rank);
+        if (foundOpt) rankSelect.value = foundOpt.value;
+      }
+
       document.getElementById('add-specialisation').value = randomOfficer.specialisation;
       
       const selectCmd = document.getElementById('add-command');
-      if (selectCmd.options.length > 0) {
+      if (selectCmd && selectCmd.options.length > 0) {
         selectCmd.selectedIndex = Math.floor(Math.random() * selectCmd.options.length);
       }
-      alert(`⚡ Auto-filled details for ${randomOfficer.name} (${randomOfficer.serviceNo})! Click 'Add Officer to Master Roll' to save.`);
+
+      // Auto-fill Dates: Enlistment, Promotion & Statutory Retirement (35 years service rule)
+      const apptDate = randomOfficer.appointmentDate || '2012-05-15';
+      const promoDate = randomOfficer.lastPromotionDate || '2022-09-10';
+      
+      const apptYear = parseInt(apptDate.split('-')[0], 10) || 2012;
+      const retirementYear = apptYear + 35;
+      const retirementDate = `${retirementYear}${apptDate.substring(4)}`;
+
+      document.getElementById('add-appointment-date').value = apptDate;
+      document.getElementById('add-promotion-date').value = promoDate;
+      document.getElementById('add-retirement-date').value = retirementDate;
+
+      alert(`⚡ Auto-filled details for ${randomOfficer.name} (${randomOfficer.serviceNo})!\n\n• Date of Enlistment: ${apptDate}\n• Date of Last Promotion: ${promoDate}\n• Statutory Date of Retirement: ${retirementDate} (35-Year Service Rule)`);
     }
 
     function runBatchGenerator() {
@@ -2279,21 +2317,26 @@
       const [command, state, zone, region, formation, location] = postingVal.split('|');
       const today = new Date().toISOString().split('T')[0];
 
+      const apptDateVal = document.getElementById('add-appointment-date')?.value || today;
+      const promoDateVal = document.getElementById('add-promotion-date')?.value || today;
+      const retirementDateVal = document.getElementById('add-retirement-date')?.value || `${parseInt(apptDateVal.split('-')[0]) + 35}${apptDateVal.substring(4)}`;
+
       const newOff = {
         id: 'POL-' + (dbPersonnel.length + 100),
         serviceNo, name, rank,
         role: `Officer, ${command}`,
         command, state, zone, formation,
-        unit: 'Standard Unit',
+        unit: 'EOD Command Unit',
         location, specialisation,
         status: 'ACTIVE_READY',
-        appointmentDate: today,
-        lastPromotionDate: today,
+        appointmentDate: apptDateVal,
+        lastPromotionDate: promoDateVal,
+        retirementDate: retirementDateVal,
         phone: '+234 800 000 0000',
         email: 'officer@npf.gov.ng',
         photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-        promotions: [],
-        postings: [{ date: today, command, location }],
+        promotions: [{ date: promoDateVal, fromRank: 'ASP II', toRank: rank, gazette: 'PSC Enlistment/Promotion' }],
+        postings: [{ date: apptDateVal, command, location }],
         qualifications: [specialisation]
       };
 
@@ -2435,14 +2478,33 @@
       const randomOfficer = generateSingleRandomOfficer();
       document.getElementById('add-serviceno').value = randomOfficer.serviceNo;
       document.getElementById('add-name').value = randomOfficer.name;
-      document.getElementById('add-rank').value = randomOfficer.rank;
+
+      const rankSelect = document.getElementById('add-rank');
+      if (rankSelect) {
+        const foundOpt = Array.from(rankSelect.options).find(o => o.value === randomOfficer.rank || o.value.replace('_', ' ') === randomOfficer.rank);
+        if (foundOpt) rankSelect.value = foundOpt.value;
+      }
+
       document.getElementById('add-specialisation').value = randomOfficer.specialisation;
       
       const selectCmd = document.getElementById('add-command');
-      if (selectCmd.options.length > 0) {
+      if (selectCmd && selectCmd.options.length > 0) {
         selectCmd.selectedIndex = Math.floor(Math.random() * selectCmd.options.length);
       }
-      alert(`⚡ Auto-filled details for ${randomOfficer.name} (${randomOfficer.serviceNo})! Click 'Add Officer to Master Roll' to save.`);
+
+      // Auto-fill Dates: Enlistment, Promotion & Statutory Retirement (35 years service rule)
+      const apptDate = randomOfficer.appointmentDate || '2012-05-15';
+      const promoDate = randomOfficer.lastPromotionDate || '2022-09-10';
+      
+      const apptYear = parseInt(apptDate.split('-')[0], 10) || 2012;
+      const retirementYear = apptYear + 35;
+      const retirementDate = `${retirementYear}${apptDate.substring(4)}`;
+
+      document.getElementById('add-appointment-date').value = apptDate;
+      document.getElementById('add-promotion-date').value = promoDate;
+      document.getElementById('add-retirement-date').value = retirementDate;
+
+      alert(`⚡ Auto-filled details for ${randomOfficer.name} (${randomOfficer.serviceNo})!\n\n• Date of Enlistment: ${apptDate}\n• Date of Last Promotion: ${promoDate}\n• Statutory Date of Retirement: ${retirementDate} (35-Year Service Rule)`);
     }
 
     function runBatchGenerator() {
