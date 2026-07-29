@@ -1,0 +1,19 @@
+{
+  "name": "eod-cbrn-database",
+  "version": "1.0.0",
+  "description": "Nigeria Police Force - EOD-CBRN National Master Nominal Roll and Tactical Command C2 System",
+  "main": "index.html",
+  "scripts": {
+    "start": "py -m http.server 8080"
+  },
+  "keywords": [
+    "npf",
+    "eod",
+    "cbrn",
+    "police-master-roll",
+    "hazmat",
+    "c2-command"
+  ],
+  "author": "Nigeria Police Force EOD-CBRN Command",
+  "license": "UNLICENSED"
+}
