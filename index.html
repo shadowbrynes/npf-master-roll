@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nigeria Police Force - Police Personnel Master Roll & Command Directory System</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #070b14;
+      color: #e2e8f0;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #10b981;
+    }
+    .glow-active {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+    }
+    .glow-amber {
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.35);
+    }
+    @media print {
+      body {
+        background-color: white !important;
+        color: black !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+      .print-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        color: black !important;
+      }
+      .print-table th, .print-table td {
+        border: 1px solid #333 !important;
+        padding: 6px !important;
+        font-size: 10pt !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-emerald-600 selection:text-white">
+
+  <!-- TOP SECURITY HEADER BAR -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 px-4 py-3 shadow-2xl no-print">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(16,185,129,0.25)]">
+          🇳🇬
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-black text-base md:text-lg tracking-widest text-white uppercase">
+              NIGERIA POLICE FORCE
+            </h1>
+            <span class="bg-emerald-600 text-black text-[10px] font-black px-2.5 py-0.5 rounded uppercase font-mono">
+              MASTER ROLL & DIRECTORY
+            </span>
+          </div>
+          <p class="text-xs text-slate-400 font-medium">AUTHORISED POLICE PERSONNEL & COMMAND STRUCTURE DATABASE</p>
+        </div>
+      </div>
+
+      <!-- RBAC ROLE & CONTROL ACTIONS -->
+      <div class="flex items-center gap-3 text-xs">
+        <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-lg">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+          <span class="text-[10px] text-slate-400 font-bold uppercase">ROLE:</span>
+          <select id="rbac-role-select" onchange="handleRoleChange()" class="bg-transparent text-emerald-400 font-black text-xs focus:outline-none cursor-pointer">
+            <option value="SUPER_ADMIN">SUPER ADMINISTRATOR</option>
+            <option value="PERSONNEL_ADMIN">PERSONNEL ADMINISTRATOR</option>
+            <option value="COMMAND_ADMIN">COMMAND ADMINISTRATOR</option>
+            <option value="SENIOR_MGMT">SENIOR MANAGEMENT VIEWER</option>
+            <option value="OFFICER">OFFICER</option>
+            <option value="READ_ONLY">READ-ONLY USER</option>
+          </select>
+        </div>
+
+        <button onclick="openAddModal()" id="btn-add-officer" class="bg-emerald-600 hover:bg-emerald-500 text-black font-black px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-lg shadow-emerald-950/50">
+          <i data-lucide="user-plus" class="w-4 h-4"></i>
+          <span>ADD OFFICER</span>
+        </button>
+
+        <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-3 py-2 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+          <i data-lucide="printer" class="w-4 h-4 text-emerald-400"></i>
+          <span>PRINT</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- PRINT ONLY OFFICIAL HEADER -->
+  <div class="hidden print-only p-6 text-center border-b-2 border-black mb-6">
+    <h1 class="text-xl font-bold uppercase tracking-wider">NIGERIA POLICE FORCE</h1>
+    <h2 class="text-lg font-bold uppercase">FORCE HEADQUARTERS, POLICE PERSONNEL MASTER ROLL DIRECTORY</h2>
+    <h3 class="text-md font-semibold text-slate-700 uppercase mt-1" id="print-title">OFFICIAL AUTHORISED NOMINAL ROLL</h3>
+    <p class="text-xs text-slate-500 font-mono mt-1">RESTRICTED GOVERNMENT DIRECTORY &bull; REF: NPF/HQ/MR/2026/VOL-I &bull; DATE: <span id="print-date"></span></p>
+  </div>
+
+  <!-- DYNAMIC DASHBOARD SUMMARY CARDS (DYNAMICALLY CALCULATED FROM DATABASE) -->
+  <section class="bg-slate-950 border-b border-slate-800 px-4 py-4 no-print shadow-xl">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-[10px] font-black uppercase text-slate-500 tracking-widest mb-2 flex items-center gap-2">
+        <i data-lucide="activity" class="w-3.5 h-3.5 text-emerald-400"></i>
+        <span>NATIONAL COMMAND & PERSONNEL METRICS (DYNAMIC REAL-TIME DATABASE CALCULATIONS)</span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 lg:grid-cols-11 gap-2 text-xs">
+        
+        <!-- Total Personnel -->
+        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex flex-col justify-between">
+          <span class="text-[9px] text-slate-400 font-bold uppercase">TOTAL PERSONNEL</span>
+          <span class="text-xl font-black text-white font-mono mt-1" id="dash-total">0</span>
+        </div>
+
+        <!-- Strategic Command -->
+        <div class="bg-slate-900 border border-amber-500/30 p-2.5 rounded-xl flex flex-col justify-between">
+          <span class="text-[9px] text-amber-400 font-bold uppercase">STRATEGIC COMMAND</span>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-xl font-black text-amber-400 font-mono" id="dash-acp-cp">0</span>
+            <span class="text-[8px] text-slate-500 font-mono">CP/DCP/ACP</span>
+          </div>
+        </div>
+
+        <!-- Senior Officers -->
+        <div class="bg-slate-900 border border-sky-500/30 p-2.5 rounded-xl flex flex-col justify-between">
+          <span class="text-[9px] text-sky-400 font-bold uppercase">SENIOR OFFICERS</span>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-xl font-black text-sky-400 font-mono" id="dash-dsp-csp">0</span>
+            <span class="text-[8px] text-slate-500 font-mono">CSP/SP/DSP</span>
+          </div>
+        </div>
+
+        <!-- Assistant Supts -->
+        <div class="bg-slate-900 border border-emerald-500/30 p-2.5 rounded-xl flex flex-col justify-between">
+          <span class="text-[9px] text-emerald-400 font-bold uppercase">ASSISTANT SUPTS</span>
+          <div class="flex items-baseline justify-between mt-1">
+            <span class="text-xl font-black text-emerald-400 font-mono" id="dash-asp">0</span>
+            <span class="text-[8px] text-slate-500 font-mono">ASP I & II</span>
+          </div>
+        </div>
+
+        <!-- Inspectors -->
+        <div class="bg-slate-900 border border-purple-500/30 p-2.5 rounded-xl flex flex-col justify-between">
+          <span class="text-[9px] text-purple-400 font-bold uppercase">INSPECTORS</span>
+          <span class="text-xl font-black text-purple-400 font-mono mt-1" id="dash-inspr">0</span>
+        </div>
+
+        <!-- Sergeants -->
+        <div class="bg-slate-900 border border-indigo-500/30 p-2.5 rounded-xl flex flex-col justify-between">
+          <span class="text-[9px] text-indigo-400 font-bold uppercase">SERGEANTS</span>
+          <span class="text-xl font-black text-indigo-400 font-mono mt-1" id="dash-sgt">0</span>
+        </div>
+
+        <!-- Corporals -->
+        <div class="bg-slate-900 border border-indigo-500/30 p-2.5 rounded-xl flex flex-col justify-between">
+          <span class="text-[9px] text-indigo-400 font-bold uppercase">CORPORALS</span>
+          <span class="text-xl font-black text-indigo-300 font-mono mt-1" id="dash-cpl">0</span>
+        </div>
+
+        <!-- Constables -->
+        <div class="bg-slate-900 border border-indigo-500/30 p-2.5 rounded-xl flex flex-col justify-between">
+          <span class="text-[9px] text-indigo-400 font-bold uppercase">CONSTABLES</span>
+          <span class="text-xl font-black text-indigo-200 font-mono mt-1" id="dash-pc">0</span>
+        </div>
+
+        <!-- Total Commands -->
+        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex flex-col justify-between">
+          <span class="text-[9px] text-slate-400 font-bold uppercase">COMMANDS</span>
+          <span class="text-xl font-black text-teal-400 font-mono mt-1" id="dash-commands">0</span>
+        </div>
+
+        <!-- Total Zones -->
+        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex flex-col justify-between">
+          <span class="text-[9px] text-slate-400 font-bold uppercase">ZONES</span>
+          <span class="text-xl font-black text-teal-400 font-mono mt-1" id="dash-zones">0</span>
+        </div>
+
+        <!-- Total Formations -->
+        <div class="bg-slate-900 border border-slate-800 p-2.5 rounded-xl flex flex-col justify-between">
+          <span class="text-[9px] text-slate-400 font-bold uppercase">FORMATIONS</span>
+          <span class="text-xl font-black text-teal-400 font-mono mt-1" id="dash-formations">0</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN NAVIGATION TABS FOR MODULE (7 MAIN MODULES + AUDIT TRAIL + ADMIN) -->
+  <nav class="bg-slate-950 border-b border-slate-800 px-4 py-2.5 no-print sticky top-[65px] z-30 shadow-xl">
+    <div class="max-w-7xl mx-auto flex gap-2 overflow-x-auto text-xs pb-1">
+
+      <button onclick="switchView('MASTER_ROLL')" id="tab-MASTER_ROLL" class="nav-tab px-3.5 py-2 rounded-lg font-black transition flex items-center gap-2 border bg-emerald-600 text-black border-emerald-500 glow-active">
+        <i data-lucide="layers" class="w-4 h-4"></i>
+        <span>1. MASTER ROLL</span>
+      </button>
+
+      <button onclick="switchView('ACP-CP')" id="tab-ACP-CP" class="nav-tab px-3.5 py-2 rounded-lg font-extrabold transition flex items-center gap-2 border bg-slate-900 text-slate-300 border-slate-800 hover:border-amber-500/50 hover:text-white">
+        <i data-lucide="crown" class="w-4 h-4 text-amber-400"></i>
+        <span>2. 👑 STRATEGIC COMMAND</span>
+      </button>
+
+      <button onclick="switchView('DSP-CSP')" id="tab-DSP-CSP" class="nav-tab px-3.5 py-2 rounded-lg font-extrabold transition flex items-center gap-2 border bg-slate-900 text-slate-300 border-slate-800 hover:border-sky-500/50 hover:text-white">
+        <i data-lucide="award" class="w-4 h-4 text-sky-400"></i>
+        <span>3. 🎖️ SENIOR OFFICERS</span>
+      </button>
+
+      <button onclick="switchView('ASP')" id="tab-ASP" class="nav-tab px-3.5 py-2 rounded-lg font-extrabold transition flex items-center gap-2 border bg-slate-900 text-slate-300 border-slate-800 hover:border-emerald-500/50 hover:text-white">
+        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+        <span>4. 🎗️ ASSISTANT SUPTS</span>
+      </button>
+
+      <button onclick="switchView('INSPECTORS')" id="tab-INSPECTORS" class="nav-tab px-3.5 py-2 rounded-lg font-extrabold transition flex items-center gap-2 border bg-slate-900 text-slate-300 border-slate-800 hover:border-purple-500/50 hover:text-white">
+        <i data-lucide="search" class="w-4 h-4 text-purple-400"></i>
+        <span>5. 🔍 INSPECTORATE</span>
+      </button>
+
+      <button onclick="switchView('PC-SGT')" id="tab-PC-SGT" class="nav-tab px-3.5 py-2 rounded-lg font-extrabold transition flex items-center gap-2 border bg-slate-900 text-slate-300 border-slate-800 hover:border-indigo-500/50 hover:text-white">
+        <i data-lucide="users" class="w-4 h-4 text-indigo-400"></i>
+        <span>6. 🛡️ RANK & FILE</span>
+      </button>
+
+      <button onclick="switchView('BASES')" id="tab-BASES" class="nav-tab px-3.5 py-2 rounded-lg font-extrabold transition flex items-center gap-2 border bg-slate-900 text-slate-300 border-slate-800 hover:border-teal-500/50 hover:text-white">
+        <i data-lucide="building-2" class="w-4 h-4 text-teal-400"></i>
+        <span>7. 🏰 ALL NIGERIAN BASES</span>
+      </button>
+
+      <button onclick="switchView('AUDIT_LOGS')" id="tab-AUDIT_LOGS" class="nav-tab px-3.5 py-2 rounded-lg font-extrabold transition flex items-center gap-2 border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700">
+        <i data-lucide="file-text" class="w-4 h-4 text-slate-400"></i>
+        <span>📜 AUDIT TRAIL LOGS</span>
+      </button>
+
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT AREA -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+
+    <!-- CADRE / MODULE BANNER CARD -->
+    <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-800 p-5 rounded-2xl shadow-2xl flex flex-wrap items-center justify-between gap-4 no-print" id="module-banner">
+      <div>
+        <div class="text-[11px] font-black tracking-widest text-emerald-400 uppercase mb-1 flex items-center gap-2">
+          <i data-lucide="shield" class="w-4 h-4"></i>
+          <span id="banner-tag">POLICE PERSONNEL MASTER ROLL MODULE</span>
+        </div>
+        <h2 class="text-xl font-black text-white uppercase tracking-wide" id="banner-title">
+          1. AUTHORISED MASTER NOMINAL ROLL
+        </h2>
+        <p class="text-xs text-slate-400 mt-1 max-w-3xl" id="banner-desc">
+          Complete authorised nominal roll of police personnel across all Nigerian State Commands, Zonal HQs, Seaports, Airports, and Tactical Counter-IED Formations.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3 bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-800">
+        <div class="text-right">
+          <span class="text-[10px] text-slate-500 font-bold block">RECORDS COUNT</span>
+          <span class="text-2xl font-black text-emerald-400 font-mono" id="banner-count">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- GLOBAL SEARCH BAR & ADVANCED FILTERS (PROMINENT REQUIREMENT) -->
+    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 no-print space-y-3" id="search-filter-box">
+      <!-- Global Search Bar -->
+      <div>
+        <label class="text-[10px] text-emerald-400 font-black block mb-1 uppercase tracking-wider">GLOBAL PROMINENT SEARCH BAR:</label>
+        <div class="relative">
+          <input type="text" id="global-search-input" oninput="handleSearchFilterChange()" placeholder="Search officer name, service number, command, unit, zone or location..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 pl-10 font-mono shadow-inner">
+          <i data-lucide="search" class="w-5 h-5 text-slate-400 absolute left-3 top-2.5"></i>
+        </div>
+      </div>
+
+      <!-- Filters Row -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs pt-1">
+        <div>
+          <label class="text-[9px] text-slate-400 block mb-1 font-bold">RANK:</label>
+          <select id="filter-rank" onchange="handleSearchFilterChange()" class="w-full bg-slate-950 border border-slate-800 text-white rounded px-2.5 py-1.5 focus:border-emerald-500 focus:outline-none font-mono">
+            <option value="ALL">ALL RANKS</option>
+            <option value="CP">CP</option>
+            <option value="DCP">DCP</option>
+            <option value="ACP">ACP</option>
+            <option value="CSP">CSP</option>
+            <option value="SP">SP</option>
+            <option value="DSP">DSP</option>
+            <option value="ASP_I">ASP I</option>
+            <option value="ASP_II">ASP II</option>
+            <option value="INSPR">INSPR</option>
+            <option value="SGT">SGT</option>
+            <option value="CPL">CPL</option>
+            <option value="PC">PC</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[9px] text-slate-400 block mb-1 font-bold">ZONE:</label>
+          <select id="filter-zone" onchange="handleSearchFilterChange()" class="w-full bg-slate-950 border border-slate-800 text-white rounded px-2.5 py-1.5 focus:border-emerald-500 focus:outline-none">
+            <option value="ALL">ALL ZONES</option>
+            <option value="Zone 1 Kano">Zone 1 (Kano, Jigawa, Katsina)</option>
+            <option value="Zone 2 Lagos">Zone 2 (Lagos, Ogun)</option>
+            <option value="Zone 6 Calabar">Zone 6 (Cross River, Akwa Ibom)</option>
+            <option value="Zone 7 Abuja">Zone 7 (FCT Abuja, Niger)</option>
+            <option value="Zone 13 Awka">Zone 13 (Anambra, Enugu)</option>
+            <option value="Zone 15 Maiduguri">Zone 15 (Borno, Yobe)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[9px] text-slate-400 block mb-1 font-bold">STATE COMMAND:</label>
+          <select id="filter-state" onchange="handleSearchFilterChange()" class="w-full bg-slate-950 border border-slate-800 text-white rounded px-2.5 py-1.5 focus:border-emerald-500 focus:outline-none">
+            <option value="ALL">ALL STATES</option>
+            <option value="FCT Abuja">FCT Abuja</option>
+            <option value="Lagos">Lagos State</option>
+            <option value="Borno">Borno State</option>
+            <option value="Yobe">Yobe State</option>
+            <option value="Kano">Kano State</option>
+            <option value="Rivers">Rivers State</option>
+            <option value="Anambra">Anambra State</option>
+            <option value="Cross River">Cross River State</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[9px] text-slate-400 block mb-1 font-bold">STATUS:</label>
+          <select id="filter-status" onchange="handleSearchFilterChange()" class="w-full bg-slate-950 border border-slate-800 text-white rounded px-2.5 py-1.5 focus:border-emerald-500 focus:outline-none">
+            <option value="ALL">ALL STATUSES</option>
+            <option value="ACTIVE_READY">ACTIVE & READY</option>
+            <option value="FIELD_DEPLOYED">FIELD DEPLOYED</option>
+            <option value="ON_ESCORT">ON ESCORT</option>
+            <option value="ON_LEAVE">ON LEAVE</option>
+            <option value="MEDICAL_HOLD">MEDICAL HOLD</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[9px] text-slate-400 block mb-1 font-bold">SORT BY:</label>
+          <select id="sort-by" onchange="handleSearchFilterChange()" class="w-full bg-slate-950 border border-slate-800 text-white rounded px-2.5 py-1.5 focus:border-emerald-500 focus:outline-none">
+            <option value="SENIORITY">SENIORITY (RANK HIERARCHY)</option>
+            <option value="NAME_ASC">ALPHABETICAL (A-Z)</option>
+            <option value="NAME_DESC">ALPHABETICAL (Z-A)</option>
+            <option value="APPOINTMENT_DATE">DATE OF APPOINTMENT</option>
+          </select>
+        </div>
+
+        <div class="flex items-end">
+          <button onclick="resetFilters()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 rounded text-xs border border-slate-700 transition">
+            RESET FILTERS
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DYNAMIC MAIN CONTAINER -->
+    <div id="module-container">
+      <!-- Dynamically filled based on active tab -->
+    </div>
+
+  </main>
+
+  <!-- MODAL: OFFICER PROFILE PAGE (PROMINENT REQUIREMENT) -->
+  <div id="profile-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-3xl w-full p-6 space-y-5 shadow-2xl my-8">
+      
+      <!-- Top Profile Title & Close -->
+      <div class="flex justify-between items-start border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-4">
+          <img id="prof-photo" src="" alt="Officer" class="w-16 h-16 rounded-2xl object-cover border-2 border-emerald-500 shadow-lg">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg font-black text-white" id="prof-name">--</h2>
+              <span id="prof-rank-badge" class="px-2 py-0.5 rounded text-[10px] font-black font-mono">--</span>
+            </div>
+            <p class="text-xs text-sky-400 font-mono font-bold mt-0.5" id="prof-serviceno">--</p>
+            <p class="text-xs text-slate-400 mt-0.5" id="prof-role">--</p>
+          </div>
+        </div>
+
+        <button onclick="closeProfileModal()" class="bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold px-3 py-1.5 rounded-lg text-xs transition flex items-center gap-1.5">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>BACK TO MASTER ROLL</span>
+        </button>
+      </div>
+
+      <!-- Detailed Profile Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        
+        <!-- Left Box: Official Assignment -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+          <h4 class="text-[10px] font-black uppercase tracking-wider text-emerald-400 border-b border-slate-800 pb-1">OFFICIAL ASSIGNMENT & COMMAND</h4>
+          <div class="flex justify-between"><span class="text-slate-400">Rank Category:</span><span class="font-bold text-amber-400" id="prof-cadre">--</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Command / Formation:</span><span class="font-bold text-white text-right" id="prof-command">--</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">State Command:</span><span class="font-bold text-sky-400" id="prof-state">--</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Zonal Command:</span><span class="font-bold text-slate-300" id="prof-zone">--</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Unit / Department:</span><span class="font-bold text-slate-300" id="prof-unit">--</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Duty Location:</span><span class="font-bold text-emerald-400" id="prof-location">--</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Specialisation:</span><span class="font-bold text-slate-300" id="prof-specialisation">--</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Current Status:</span><span class="font-bold text-emerald-400" id="prof-status">--</span></div>
+        </div>
+
+        <!-- Right Box: Career & Dates -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+          <h4 class="text-[10px] font-black uppercase tracking-wider text-emerald-400 border-b border-slate-800 pb-1">CAREER DATES & PRIVACY RESTRICTED DATA</h4>
+          <div class="flex justify-between"><span class="text-slate-400">Date of Appointment:</span><span class="font-bold text-white font-mono" id="prof-appt-date">--</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Last Promotion Date:</span><span class="font-bold text-amber-400 font-mono" id="prof-promo-date">--</span></div>
+          <div class="flex justify-between border-t border-slate-800/80 pt-2"><span class="text-slate-400">Contact Info (RBAC Restricted):</span><span class="font-bold text-sky-400 font-mono" id="prof-contact">--</span></div>
+          <div class="text-[10px] text-slate-500 italic mt-2">Note: Sensitive fields (medical, home address, credentials) are protected by RBAC policy.</div>
+        </div>
+      </div>
+
+      <!-- History Timelines: Promotion & Postings -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        
+        <!-- Promotion History -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+          <h4 class="text-[10px] font-black uppercase tracking-wider text-amber-400 border-b border-slate-800 pb-1 flex items-center gap-1.5">
+            <i data-lucide="award" class="w-3.5 h-3.5"></i>
+            <span>PROMOTION HISTORY</span>
+          </h4>
+          <div class="space-y-1.5 font-mono text-[11px]" id="prof-promo-history">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Previous Postings -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
+          <h4 class="text-[10px] font-black uppercase tracking-wider text-sky-400 border-b border-slate-800 pb-1 flex items-center gap-1.5">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+            <span>PREVIOUS POSTINGS HISTORY</span>
+          </h4>
+          <div class="space-y-1.5 font-mono text-[11px]" id="prof-posting-history">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Training & Commendations -->
+      <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
+        <h4 class="text-[10px] font-black uppercase tracking-wider text-emerald-400 border-b border-slate-800 pb-1">TRAINING & PROFESSIONAL COMMENDATIONS</h4>
+        <div id="prof-qualifications" class="flex flex-wrap gap-1.5 pt-1">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-3 border-t border-slate-800 flex justify-between items-center no-print">
+        <div class="flex gap-2" id="prof-admin-actions">
+          <!-- Admin action buttons populated dynamically if role allows -->
+        </div>
+        <button onclick="closeProfileModal()" class="bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold px-4 py-2 rounded-lg text-xs transition">
+          BACK TO MASTER ROLL
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL: PROMOTE OFFICER -->
+  <div id="promote-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-extrabold uppercase text-white flex items-center gap-2">
+          <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
+          <span>PROMOTE OFFICER (AUTOMATIC CATEGORY TRANSFER)</span>
+        </h3>
+        <button onclick="closePromoteModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form onsubmit="handlePromoteOfficer(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="promote-officer-id">
+        <div>
+          <label class="text-[10px] text-slate-400 block font-bold mb-1">OFFICER NAME & SERVICE NO:</label>
+          <input type="text" id="promote-officer-name" readonly class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-400 font-mono">
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400 block font-bold mb-1">CURRENT RANK:</label>
+          <input type="text" id="promote-current-rank" readonly class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-amber-400 font-mono font-bold">
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400 block font-bold mb-1">SELECT NEW PROMOTION RANK:</label>
+          <select id="promote-new-rank" required class="w-full bg-slate-950 border border-slate-800 text-white rounded px-3 py-2 font-mono focus:border-emerald-500 focus:outline-none">
+            <option value="CP">CP - Commissioner of Police (Strategic Command)</option>
+            <option value="DCP">DCP - Deputy Commissioner of Police (Strategic Command)</option>
+            <option value="ACP">ACP - Assistant Commissioner of Police (Strategic Command)</option>
+            <option value="CSP">CSP - Chief Superintendent of Police (Senior Officers)</option>
+            <option value="SP">SP - Superintendent of Police (Senior Officers)</option>
+            <option value="DSP">DSP - Deputy Superintendent of Police (Senior Officers)</option>
+            <option value="ASP_I">ASP I - Assistant Superintendent of Police I (Assistant Supts)</option>
+            <option value="ASP_II">ASP II - Assistant Superintendent of Police II (Assistant Supts)</option>
+            <option value="INSPR">INSPR - Inspector of Police (Inspectorate)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400 block font-bold mb-1">PROMOTION REASON / GAZETTE REF:</label>
+          <input type="text" id="promote-reason" required placeholder="e.g. Police Service Commission Special Promotion 2026" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-emerald-500 focus:outline-none">
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closePromoteModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded">CANCEL</button>
+          <button type="submit" class="w-1/2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold py-2 rounded">CONFIRM PROMOTION</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: TRANSFER OFFICER -->
+  <div id="transfer-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-extrabold uppercase text-white flex items-center gap-2">
+          <i data-lucide="arrow-right-left" class="w-4 h-4 text-sky-400"></i>
+          <span>TRANSFER OFFICER (UPDATE COMMAND & POSTING)</span>
+        </h3>
+        <button onclick="closeTransferModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form onsubmit="handleTransferOfficer(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="transfer-officer-id">
+        <div>
+          <label class="text-[10px] text-slate-400 block font-bold mb-1">OFFICER NAME & SERVICE NO:</label>
+          <input type="text" id="transfer-officer-name" readonly class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-slate-400 font-mono">
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400 block font-bold mb-1">SELECT NEW COMMAND & LOCATION:</label>
+          <select id="transfer-new-posting" required class="w-full bg-slate-950 border border-slate-800 text-white rounded px-3 py-2 focus:border-emerald-500 focus:outline-none">
+            <option value="Apapa Sea Port EOD Unit|Lagos|Zone 2 Lagos|South West|Seaport Formation|Apapa Port Complex">Apapa Sea Port EOD Unit (Lagos)</option>
+            <option value="Murtala Muhammed Airport Aviation EOD Unit|Lagos|Zone 2 Lagos|South West|Aviation Unit|MMIA Ikeja">Murtala Muhammed Airport EOD Unit (MMIA Lagos)</option>
+            <option value="Maiduguri Counter-IED Command Theatre|Borno|Zone 15 Maiduguri|North East|Tactical Theatre|Maiduguri HQ">Maiduguri Counter-IED Theatre (Borno)</option>
+            <option value="Force HQ EOD-CBRN Command HQ|FCT Abuja|Zone 7 Abuja|North Central|Force Headquarters|Louis Edet House">Force HQ EOD Command (Abuja)</option>
+            <option value="National CBRN Emergency Response Centre|FCT Abuja|Zone 7 Abuja|North Central|CBRN Centre|Guzape Complex">National CBRN Centre of Excellence (Abuja)</option>
+            <option value="Tin Can Island Port EOD Detachment|Lagos|Zone 2 Lagos|South West|Seaport Formation|Tin Can Port">Tin Can Island Port Unit (Lagos)</option>
+            <option value="Onne Deep Sea Port EOD Logistics Unit|Rivers|Zone 6 Calabar|South South|Seaport Formation|Onne Port">Onne Deep Sea Port Unit (Port Harcourt)</option>
+            <option value="Zone 1 Command EOD Base|Kano|Zone 1 Kano|North West|Zonal HQ|Kano City Base">Zone 1 Command HQ (Kano)</option>
+            <option value="Zone 13 Command EOD Base|Anambra|Zone 13 Awka|South East|Zonal HQ|Ukpo Awka Base">Zone 13 Command HQ (Ukpo Awka)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400 block font-bold mb-1">TRANSFER REASON / SIGNAL REF:</label>
+          <input type="text" id="transfer-reason" required placeholder="e.g. Inspector-General Signal NPF/FHQ/TR/2026/88" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-emerald-500 focus:outline-none">
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeTransferModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded">CANCEL</button>
+          <button type="submit" class="w-1/2 bg-sky-500 hover:bg-sky-400 text-black font-extrabold py-2 rounded">CONFIRM TRANSFER</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD OFFICER -->
+  <div id="add-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-extrabold uppercase text-white flex items-center gap-2">
+          <i data-lucide="user-plus" class="w-4 h-4 text-emerald-400"></i>
+          <span>ADD OFFICER TO DATABASE</span>
+        </h3>
+        <button onclick="closeAddModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form id="add-officer-form" onsubmit="handleAddOfficer(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="text-[10px] text-slate-400 block font-bold mb-1">SERVICE NUMBER / ID:</label>
+          <input type="text" id="add-serviceno" required placeholder="e.g. AP/78412 or F/410982" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white font-mono focus:border-emerald-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400 block font-bold mb-1">RANK (AUTOMATIC CATEGORY DERIVATION):</label>
+          <select id="add-rank" required class="w-full bg-slate-950 border border-slate-800 text-white rounded px-3 py-2 focus:border-emerald-500 focus:outline-none font-mono">
+            <option value="CP">CP - Commissioner of Police (Strategic Command)</option>
+            <option value="DCP">DCP - Deputy Commissioner of Police (Strategic Command)</option>
+            <option value="ACP">ACP - Assistant Commissioner of Police (Strategic Command)</option>
+            <option value="CSP">CSP - Chief Superintendent of Police (Senior Officers)</option>
+            <option value="SP">SP - Superintendent of Police (Senior Officers)</option>
+            <option value="DSP">DSP - Deputy Superintendent of Police (Senior Officers)</option>
+            <option value="ASP_I">ASP I - Assistant Superintendent I (Assistant Supts)</option>
+            <option value="ASP_II">ASP II - Assistant Superintendent II (Assistant Supts)</option>
+            <option value="INSPR">INSPR - Inspector of Police (Inspectorate)</option>
+            <option value="SGT">SGT - Sergeant (Rank & File)</option>
+            <option value="CPL">CPL - Corporal (Rank & File)</option>
+            <option value="PC">PC - Police Constable (Rank & File)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400 block font-bold mb-1">FULL NAME:</label>
+          <input type="text" id="add-name" required placeholder="e.g. Desmond Agbala" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-emerald-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400 block font-bold mb-1">COMMAND / POSTING:</label>
+          <select id="add-command" required class="w-full bg-slate-950 border border-slate-800 text-white rounded px-3 py-2 focus:border-emerald-500 focus:outline-none">
+            <option value="Apapa Sea Port EOD Unit|Lagos|Zone 2 Lagos|South West|Seaport Formation|Apapa Port Complex">Apapa Sea Port EOD Unit (Lagos)</option>
+            <option value="Murtala Muhammed Airport Aviation EOD Unit|Lagos|Zone 2 Lagos|South West|Aviation Unit|MMIA Ikeja">Murtala Muhammed Airport EOD Unit (MMIA Lagos)</option>
+            <option value="Maiduguri Counter-IED Command Theatre|Borno|Zone 15 Maiduguri|North East|Tactical Theatre|Maiduguri HQ">Maiduguri Counter-IED Theatre (Borno)</option>
+            <option value="Force HQ EOD-CBRN Command HQ|FCT Abuja|Zone 7 Abuja|North Central|Force Headquarters|Louis Edet House">Force HQ EOD Command (Abuja)</option>
+            <option value="National CBRN Emergency Response Centre|FCT Abuja|Zone 7 Abuja|North Central|CBRN Centre|Guzape Complex">National CBRN Centre of Excellence (Abuja)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-[10px] text-slate-400 block font-bold mb-1">SPECIALISATION:</label>
+          <input type="text" id="add-specialisation" required placeholder="e.g. Maritime Explosives, Post-Blast Forensics" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white focus:border-emerald-500 focus:outline-none">
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeAddModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded">CANCEL</button>
+          <button type="submit" class="w-1/2 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold py-2 rounded">SAVE OFFICER</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CORE CENTRAL DATABASE STORE & APP JAVASCRIPT -->
+  <script>
+    // =========================================================================
+    // 1. CENTRAL AUTHORISED POLICE PERSONNEL DATABASE STORE
+    // =========================================================================
+
+    const RANK_HIERARCHY = {
+      'CP': 1, 'DCP': 2, 'ACP': 3,
+      'CSP': 4, 'SP': 5, 'DSP': 6,
+      'ASP_I': 7, 'ASP_II': 8,
+      'INSPR': 9,
+      'SGT': 10, 'CPL': 11, 'PC': 12
+    };
+
+    function deriveCategory(rank) {
+      if (['CP', 'DCP', 'ACP'].includes(rank)) return 'ACP-CP';
+      if (['CSP', 'SP', 'DSP'].includes(rank)) return 'DSP-CSP';
+      if (['ASP_I', 'ASP_II', 'ASP'].includes(rank)) return 'ASP';
+      if (rank === 'INSPR') return 'INSPECTORS';
+      return 'PC-SGT';
+    }
+
+    let currentRole = 'SUPER_ADMIN'; // Default RBAC Role
+
+    let dbPersonnel = [
+      // STRATEGIC COMMAND (ACP - CP)
+      {
+        id: 'POL-001',
+        serviceNo: 'AP/45120',
+        name: 'CP Babatunde Olarinde',
+        rank: 'CP',
+        role: 'Commissioner of Police, EOD-CBRN Command',
+        command: 'Force HQ EOD-CBRN Command',
+        state: 'FCT Abuja',
+        zone: 'Zone 7 Abuja',
+        formation: 'Force Headquarters',
+        unit: 'Command HQ',
+        location: 'Louis Edet House, Abuja',
+        specialisation: 'National Strategic EOD Command & Arms Control',
+        status: 'ACTIVE_READY',
+        appointmentDate: '1998-03-15',
+        lastPromotionDate: '2024-01-10',
+        phone: '+234 803 000 1122',
+        email: 'babatunde.olarinde@npf.gov.ng',
+        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+        promotions: [
+          { date: '2024-01-10', fromRank: 'DCP', toRank: 'CP', gazette: 'PSC/SP/2024/01' },
+          { date: '2019-06-20', fromRank: 'ACP', toRank: 'DCP', gazette: 'PSC/SP/2019/04' }
+        ],
+        postings: [
+          { date: '2024-01-15', command: 'Force HQ EOD Command', location: 'Abuja' },
+          { date: '2019-07-01', command: 'Zone 2 Command HQ', location: 'Lagos' }
+        ],
+        qualifications: ['M.Sc Security Studies', 'NATO Master EOD Certificate', 'Interpol Counter-Terrorism Diploma']
+      },
+      {
+        id: 'POL-002',
+        serviceNo: 'AP/52918',
+        name: 'DCP Amina Bello',
+        rank: 'DCP',
+        role: 'Director, National CBRN Emergency Centre',
+        command: 'National CBRN Emergency Response Centre',
+        state: 'FCT Abuja',
+        zone: 'Zone 7 Abuja',
+        formation: 'CBRN Centre of Excellence',
+        unit: 'Bio-Hazard Response',
+        location: 'Guzape Complex, Abuja',
+        specialisation: 'Bio-Chemical Mitigation & Radiological Safety',
+        status: 'ACTIVE_READY',
+        appointmentDate: '2002-09-01',
+        lastPromotionDate: '2023-11-15',
+        phone: '+234 802 111 2233',
+        email: 'amina.bello@npf.gov.ng',
+        photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
+        promotions: [
+          { date: '2023-11-15', fromRank: 'ACP', toRank: 'DCP', gazette: 'PSC/SP/2023/88' }
+        ],
+        postings: [
+          { date: '2023-11-20', command: 'National CBRN Centre', location: 'Abuja' }
+        ],
+        qualifications: ['B.Sc Chemistry (Unilag)', 'IAEA Nuclear Safety Cert']
+      },
+      {
+        id: 'POL-003',
+        serviceNo: 'AP/61029',
+        name: 'ACP Kemi Adebayo',
+        rank: 'ACP',
+        role: 'Commander, Aviation Security EOD Unit',
+        command: 'Murtala Muhammed Airport EOD Unit',
+        state: 'Lagos',
+        zone: 'Zone 2 Lagos',
+        formation: 'Aviation Police Command',
+        unit: 'Airport EOD Detachment',
+        location: 'MMIA Ikeja, Lagos',
+        specialisation: 'Aviation Cargo Diagnostics & Aircraft EOD',
+        status: 'ACTIVE_READY',
+        appointmentDate: '2005-04-12',
+        lastPromotionDate: '2022-08-01',
+        phone: '+234 802 333 4455',
+        email: 'kemi.adebayo@npf.gov.ng',
+        photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        promotions: [
+          { date: '2022-08-01', fromRank: 'CSP', toRank: 'ACP', gazette: 'PSC/SP/2022/14' }
+        ],
+        postings: [
+          { date: '2022-08-10', command: 'MMIA Airport EOD Unit', location: 'Lagos' }
+        ],
+        qualifications: ['ICAO Aviation Security Master', 'EOD Level 3 Tech']
+      },
+
+      // SENIOR OFFICERS (DSP - CSP)
+      {
+        id: 'POL-006',
+        serviceNo: 'AP/78412',
+        name: 'CSP Desmond Agbala',
+        rank: 'CSP',
+        role: 'Commander, Apapa Sea Port EOD Unit',
+        command: 'Apapa Sea Port EOD Unit',
+        state: 'Lagos',
+        zone: 'Zone 2 Lagos',
+        formation: 'Seaport Police Command',
+        unit: 'EOD Maritime Detachment',
+        location: 'Apapa Port Complex, Lagos',
+        specialisation: 'Commercial Explosives Escort, Maritime EOD & Post-Blast Forensics',
+        status: 'ACTIVE_READY',
+        appointmentDate: '2006-02-18',
+        lastPromotionDate: '2023-04-10',
+        phone: '+234 803 456 7890',
+        email: 'desmond.agbala@npf.gov.ng',
+        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+        promotions: [
+          { date: '2023-04-10', fromRank: 'SP', toRank: 'CSP', gazette: 'PSC/SP/2023/12' },
+          { date: '2018-03-01', fromRank: 'DSP', toRank: 'SP', gazette: 'PSC/SP/2018/09' }
+        ],
+        postings: [
+          { date: '2021-01-10', command: 'Apapa Sea Port EOD Unit', location: 'Lagos' },
+          { date: '2016-05-12', command: 'Force HQ EOD Armory', location: 'Abuja' }
+        ],
+        qualifications: ['B.Sc Criminology', 'UK Defence EOD Master Tech', 'Post-Blast Investigator']
+      },
+      {
+        id: 'POL-007',
+        serviceNo: 'AP/79104',
+        name: 'CSP Chukwudi Nnamdi',
+        rank: 'CSP',
+        role: 'Base Commander, Zone 13 Command',
+        command: 'Zone 13 Command EOD Base',
+        state: 'Anambra',
+        zone: 'Zone 13 Awka',
+        formation: 'Zonal Command HQ',
+        unit: 'Counter-IED Squad',
+        location: 'Ukpo / Awka, Anambra',
+        specialisation: 'Field Demolition & High-Threat IED Clearance',
+        status: 'ACTIVE_READY',
+        appointmentDate: '2007-06-20',
+        lastPromotionDate: '2024-02-01',
+        phone: '+234 803 222 1100',
+        email: 'chukwudi.nnamdi@npf.gov.ng',
+        photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+        promotions: [
+          { date: '2024-02-01', fromRank: 'SP', toRank: 'CSP', gazette: 'PSC/SP/2024/05' }
+        ],
+        postings: [
+          { date: '2024-02-05', command: 'Zone 13 EOD Base', location: 'Anambra' }
+        ],
+        qualifications: ['B.Eng Electrical', 'IEDD Threat Master']
+      },
+      {
+        id: 'POL-008',
+        serviceNo: 'AP/90214',
+        name: 'SP Michael Oladipo',
+        rank: 'SP',
+        role: 'Commander, Tin Can Island Port Unit',
+        command: 'Tin Can Island Port EOD Unit',
+        state: 'Lagos',
+        zone: 'Zone 2 Lagos',
+        formation: 'Seaport Police Command',
+        unit: 'Container Diagnostics',
+        location: 'Tin Can Port, Lagos',
+        specialisation: 'Port Container Scanning & Explosives Escort',
+        status: 'ACTIVE_READY',
+        appointmentDate: '2009-10-10',
+        lastPromotionDate: '2022-12-15',
+        phone: '+234 803 999 8877',
+        email: 'michael.oladipo@npf.gov.ng',
+        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+        promotions: [
+          { date: '2022-12-15', fromRank: 'DSP', toRank: 'SP', gazette: 'PSC/SP/2022/99' }
+        ],
+        postings: [
+          { date: '2022-12-20', command: 'Tin Can Port Unit', location: 'Lagos' }
+        ],
+        qualifications: ['Port Cargo Security Specialist']
+      },
+
+      // ASSISTANT SUPERINTENDENTS (ASP)
+      {
+        id: 'POL-012',
+        serviceNo: 'AP/110293',
+        name: 'ASP I Adebayo Williams',
+        rank: 'ASP_I',
+        role: 'Commercial Escort Officer',
+        command: 'Apapa Sea Port EOD Unit',
+        state: 'Lagos',
+        zone: 'Zone 2 Lagos',
+        formation: 'Seaport Police Command',
+        unit: 'Explosives Transit Escort',
+        location: 'Apapa Port Complex, Lagos',
+        specialisation: 'High-Risk Explosives Transit Escort',
+        status: 'ON_ESCORT',
+        appointmentDate: '2014-05-01',
+        lastPromotionDate: '2023-01-10',
+        phone: '+234 805 123 9988',
+        email: 'adebayo.williams@npf.gov.ng',
+        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+        promotions: [
+          { date: '2023-01-10', fromRank: 'ASP_II', toRank: 'ASP_I', gazette: 'PSC/SP/2023/02' }
+        ],
+        postings: [
+          { date: '2023-01-15', command: 'Apapa Sea Port EOD Unit', location: 'Lagos' }
+        ],
+        qualifications: ['UGV Robotics Level 2']
+      },
+
+      // INSPECTORATE (INSPECTORS)
+      {
+        id: 'POL-018',
+        serviceNo: 'F/410982',
+        name: 'Inspr Chidi Okonkwo',
+        rank: 'INSPR',
+        role: 'Explosives Escort Inspector',
+        command: 'Apapa Sea Port EOD Unit',
+        state: 'Lagos',
+        zone: 'Zone 2 Lagos',
+        formation: 'Seaport Police Command',
+        unit: 'Highway Security',
+        location: 'Apapa Port Complex, Lagos',
+        specialisation: 'Commercial Explosives Escort & Magazine Audit',
+        status: 'ON_ESCORT',
+        appointmentDate: '2015-08-14',
+        lastPromotionDate: '2021-06-01',
+        phone: '+234 805 999 1122',
+        email: 'chidi.okonkwo@npf.gov.ng',
+        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+        promotions: [
+          { date: '2021-06-01', fromRank: 'SGT', toRank: 'INSPR', gazette: 'PSC/CONF/2021/44' }
+        ],
+        postings: [
+          { date: '2021-06-10', command: 'Apapa Sea Port Unit', location: 'Lagos' }
+        ],
+        qualifications: ['Explosives Vault Custodian']
+      },
+
+      // RANK & FILE (PC - SGT)
+      {
+        id: 'POL-024',
+        serviceNo: 'F/458901',
+        name: 'Sgt Haruna Garba',
+        rank: 'SGT',
+        role: 'UGV Robotics Operator',
+        command: 'Maiduguri Counter-IED Theatre',
+        state: 'Borno',
+        zone: 'Zone 15 Maiduguri',
+        formation: 'Tactical Counter-IED Command',
+        unit: 'Bomb Robotics Squad',
+        location: 'Maiduguri HQ, Borno',
+        specialisation: 'Remote UGV Robot Manipulation & Cannon Firing',
+        status: 'FIELD_DEPLOYED',
+        appointmentDate: '2018-02-10',
+        lastPromotionDate: '2022-04-15',
+        phone: '+234 806 111 2233',
+        email: 'haruna.garba@npf.gov.ng',
+        photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+        promotions: [
+          { date: '2022-04-15', fromRank: 'CPL', toRank: 'SGT', gazette: 'NPF/C-PRO/2022/11' }
+        ],
+        postings: [
+          { date: '2022-04-20', command: 'Maiduguri Counter-IED Theatre', location: 'Borno' }
+        ],
+        qualifications: ['UGV Operator Cert']
+      },
+      {
+        id: 'POL-025',
+        serviceNo: 'F/478902',
+        name: 'Cpl Emeka Nwosu',
+        rank: 'CPL',
+        role: 'EOD Bomb Suit Technician',
+        command: 'Force HQ EOD Command',
+        state: 'FCT Abuja',
+        zone: 'Zone 7 Abuja',
+        formation: 'Force Headquarters',
+        unit: 'EOD Response Unit',
+        location: 'Louis Edet House, Abuja',
+        specialisation: 'Manual Bomb Suit Approach & Recon',
+        status: 'ACTIVE_READY',
+        appointmentDate: '2020-01-15',
+        lastPromotionDate: '2023-09-01',
+        phone: '+234 803 777 5544',
+        email: 'emeka.nwosu@npf.gov.ng',
+        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+        promotions: [
+          { date: '2023-09-01', fromRank: 'PC', toRank: 'CPL', gazette: 'NPF/C-PRO/2023/04' }
+        ],
+        postings: [
+          { date: '2023-09-05', command: 'Force HQ EOD Command', location: 'Abuja' }
+        ],
+        qualifications: ['Bomb Suit Cert']
+      },
+      {
+        id: 'POL-026',
+        serviceNo: 'F/510293',
+        name: 'PC Musa Ibrahim',
+        rank: 'PC',
+        role: 'Perimeter Security Constable',
+        command: 'Apapa Sea Port EOD Unit',
+        state: 'Lagos',
+        zone: 'Zone 2 Lagos',
+        formation: 'Seaport Police Command',
+        unit: 'Port Gate Patrol',
+        location: 'Apapa Port Complex, Lagos',
+        specialisation: 'Port Gate Access Control & Explosives Sniffing K9 Lead',
+        status: 'ACTIVE_READY',
+        appointmentDate: '2023-03-01',
+        lastPromotionDate: '2023-03-01',
+        phone: '+234 809 111 8899',
+        email: 'musa.ibrahim@npf.gov.ng',
+        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+        promotions: [],
+        postings: [
+          { date: '2023-03-05', command: 'Apapa Sea Port EOD Unit', location: 'Lagos' }
+        ],
+        qualifications: ['K9 Handler Cert']
+      }
+    ];
+
+    let auditLogs = [
+      {
+        timestamp: '2026-07-29 14:10:22',
+        admin: 'Super Admin (AP/45120)',
+        action: 'PROMOTION',
+        officer: 'CSP Desmond Agbala (AP/78412)',
+        prevValue: 'Rank: SP',
+        newValue: 'Rank: CSP (Automated Strategic Transfer to Senior Officers)',
+        reason: 'Police Service Commission Special Promotion 2026'
+      },
+      {
+        timestamp: '2026-07-29 12:45:00',
+        admin: 'Personnel Admin (AP/52918)',
+        action: 'TRANSFER',
+        officer: 'Sgt Haruna Garba (F/458901)',
+        prevValue: 'Location: Zone 1 Kano',
+        newValue: 'Location: Maiduguri Counter-IED Theatre (Borno)',
+        reason: 'IGP Counter-IED Deployment Signal #402'
+      }
+    ];
+
+    let currentView = 'MASTER_ROLL';
+
+    // =========================================================================
+    // 2. DYNAMIC CALCULATIONS & METRICS (NO HARDCODED TOTALS RULE)
+    // =========================================================================
+
+    function calculateMetrics() {
+      const total = dbPersonnel.length;
+      const acpCp = dbPersonnel.filter(p => deriveCategory(p.rank) === 'ACP-CP').length;
+      const dspCsp = dbPersonnel.filter(p => deriveCategory(p.rank) === 'DSP-CSP').length;
+      const asp = dbPersonnel.filter(p => deriveCategory(p.rank) === 'ASP').length;
+      const inspr = dbPersonnel.filter(p => p.rank === 'INSPR').length;
+      const sgt = dbPersonnel.filter(p => p.rank === 'SGT').length;
+      const cpl = dbPersonnel.filter(p => p.rank === 'CPL').length;
+      const pc = dbPersonnel.filter(p => p.rank === 'PC').length;
+
+      const uniqueCommands = new Set(dbPersonnel.map(p => p.command)).size;
+      const uniqueZones = new Set(dbPersonnel.map(p => p.zone)).size;
+      const uniqueFormations = new Set(dbPersonnel.map(p => p.formation)).size;
+
+      document.getElementById('dash-total').innerText = total;
+      document.getElementById('dash-acp-cp').innerText = acpCp;
+      document.getElementById('dash-dsp-csp').innerText = dspCsp;
+      document.getElementById('dash-asp').innerText = asp;
+      document.getElementById('dash-inspr').innerText = inspr;
+      document.getElementById('dash-sgt').innerText = sgt;
+      document.getElementById('dash-cpl').innerText = cpl;
+      document.getElementById('dash-pc').innerText = pc;
+      document.getElementById('dash-commands').innerText = uniqueCommands;
+      document.getElementById('dash-zones').innerText = uniqueZones;
+      document.getElementById('dash-formations').innerText = uniqueFormations;
+    }
+
+    // =========================================================================
+    // 3. INITIALIZATION & VIEW CONTROLLER
+    // =========================================================================
+
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      document.getElementById('print-date').innerText = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      calculateMetrics();
+      renderModule();
+    });
+
+    function handleRoleChange() {
+      currentRole = document.getElementById('rbac-role-select').value;
+      const btnAdd = document.getElementById('btn-add-officer');
+      if (['SUPER_ADMIN', 'PERSONNEL_ADMIN'].includes(currentRole)) {
+        btnAdd.classList.remove('hidden');
+      } else {
+        btnAdd.classList.add('hidden');
+      }
+      renderModule();
+    }
+
+    function switchView(view) {
+      currentView = view;
+
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.className = 'nav-tab px-3.5 py-2 rounded-lg font-extrabold transition flex items-center gap-2 border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700';
+      });
+
+      const activeTab = document.getElementById(`tab-${view}`);
+      if (activeTab) {
+        activeTab.className = 'nav-tab px-3.5 py-2 rounded-lg font-black transition flex items-center gap-2 border bg-emerald-600 text-black border-emerald-500 glow-active';
+      }
+
+      const bannerMap = {
+        'MASTER_ROLL': { title: '1. POLICE PERSONNEL MASTER ROLL', desc: 'Authorised complete nominal roll of police personnel across all Nigerian State Commands, Zonal HQs, Seaports, Airports, and Tactical Counter-IED Formations.' },
+        'ACP-CP': { title: '2. 👑 STRATEGIC COMMAND DIRECTORY (ACP – CP)', desc: 'Authorised directory of Commissioners of Police (CP), Deputy Commissioners (DCP), and Assistant Commissioners (ACP) leading strategic police commands.' },
+        'DSP-CSP': { title: '3. 🎖️ SENIOR OFFICERS DIRECTORY (DSP – CSP)', desc: 'Dynamically filtered directory of Chief Superintendents (CSP - including CSP Desmond Agbala, Commander, Apapa Sea Port EOD Unit), Superintendents (SP), and Deputy Superintendents (DSP).' },
+        'ASP': { title: '4. 🎗️ ASSISTANT SUPERINTENDENTS DIRECTORY (ASP)', desc: 'Roster of Assistant Superintendents of Police (ASP I & II) supervising sub-units, airport security, and commercial highway escorts.' },
+        'INSPECTORS': { title: '5. 🔍 INSPECTORATE CADRE DIRECTORY (INSPECTORS)', desc: 'Directory of Inspectors of Police (INSPR) managing magazine armories, escort logistics, and post-blast field recons.' },
+        'PC-SGT': { title: '6. 🛡️ RANK & FILE DIRECTORY (PC – SGT)', desc: 'Directory of Sergeants (SGT), Corporals (CPL), and Constables (PC) operating UGV robots, heavy bomb suits, and perimeter security.' },
+        'BASES': { title: '7. 🏰 ALL NIGERIAN BASES & FORMATIONS DIRECTORY', desc: 'Authorised directory of 17 Zonal Commands, Seaport Police Formations (Apapa, Tin Can, Onne), Aviation Police Units, and EOD/Counter-IED Frontlines.' },
+        'AUDIT_LOGS': { title: '8. 📜 IMMUTABLE ADMINISTRATIVE AUDIT TRAIL LOGS', desc: 'Secure, unalterable audit log recording all administrative record creations, promotions, transfers, rank edits, and RBAC security events.' }
+      };
+
+      const info = bannerMap[view] || bannerMap['MASTER_ROLL'];
+      document.getElementById('banner-title').innerText = info.title;
+      document.getElementById('banner-desc').innerText = info.desc;
+      document.getElementById('print-title').innerText = info.title;
+
+      if (['BASES', 'AUDIT_LOGS'].includes(view)) {
+        document.getElementById('search-filter-box').classList.add('hidden');
+      } else {
+        document.getElementById('search-filter-box').classList.remove('hidden');
+      }
+
+      renderModule();
+    }
+
+    function handleSearchFilterChange() {
+      renderModule();
+    }
+
+    function resetFilters() {
+      document.getElementById('global-search-input').value = '';
+      document.getElementById('filter-rank').value = 'ALL';
+      document.getElementById('filter-zone').value = 'ALL';
+      document.getElementById('filter-state').value = 'ALL';
+      document.getElementById('filter-status').value = 'ALL';
+      document.getElementById('sort-by').value = 'SENIORITY';
+      renderModule();
+    }
+
+    // =========================================================================
+    // 4. MAIN DYNAMIC RENDERER
+    // =========================================================================
+
+    function renderModule() {
+      const container = document.getElementById('module-container');
+      container.innerHTML = '';
+
+      if (currentView === 'BASES') {
+        renderBasesModule(container);
+      } else if (currentView === 'AUDIT_LOGS') {
+        renderAuditLogsModule(container);
+      } else {
+        renderMasterRollTable(container);
+      }
+    }
+
+    function renderMasterRollTable(container) {
+      const search = document.getElementById('global-search-input').value.toLowerCase();
+      const rankFilter = document.getElementById('filter-rank').value;
+      const zoneFilter = document.getElementById('filter-zone').value;
+      const stateFilter = document.getElementById('filter-state').value;
+      const statusFilter = document.getElementById('filter-status').value;
+      const sortBy = document.getElementById('sort-by').value;
+
+      // Filter Logic
+      let filtered = dbPersonnel.filter(off => {
+        const cat = deriveCategory(off.rank);
+        const matchCategoryView =
+          currentView === 'MASTER_ROLL' ||
+          (currentView === 'ACP-CP' && cat === 'ACP-CP') ||
+          (currentView === 'DSP-CSP' && cat === 'DSP-CSP') ||
+          (currentView === 'ASP' && cat === 'ASP') ||
+          (currentView === 'INSPECTORS' && off.rank === 'INSPR') ||
+          (currentView === 'PC-SGT' && ['SGT', 'CPL', 'PC'].includes(off.rank));
+
+        const matchRank = rankFilter === 'ALL' || off.rank === rankFilter;
+        const matchZone = zoneFilter === 'ALL' || off.zone === zoneFilter;
+        const matchState = stateFilter === 'ALL' || off.state === stateFilter;
+        const matchStatus = statusFilter === 'ALL' || off.status === statusFilter;
+
+        const matchSearch =
+          off.name.toLowerCase().includes(search) ||
+          off.serviceNo.toLowerCase().includes(search) ||
+          off.command.toLowerCase().includes(search) ||
+          off.unit.toLowerCase().includes(search) ||
+          off.zone.toLowerCase().includes(search) ||
+          off.location.toLowerCase().includes(search);
+
+        return matchCategoryView && matchRank && matchZone && matchState && matchStatus && matchSearch;
+      });
+
+      // Sort Logic (Seniority Hierarchy Order vs Alphabetical vs Date)
+      filtered.sort((a, b) => {
+        if (sortBy === 'SENIORITY') {
+          return (RANK_HIERARCHY[a.rank] || 99) - (RANK_HIERARCHY[b.rank] || 99);
+        }
+        if (sortBy === 'NAME_ASC') {
+          return a.name.localeCompare(b.name);
+        }
+        if (sortBy === 'NAME_DESC') {
+          return b.name.localeCompare(a.name);
+        }
+        if (sortBy === 'APPOINTMENT_DATE') {
+          return new Date(a.appointmentDate) - new Date(b.appointmentDate);
+        }
+        return 0;
+      });
+
+      document.getElementById('banner-count').innerText = filtered.length;
+
+      // Special Sub-Counters for Rank & File View Requirement
+      let subCountersHtml = '';
+      if (currentView === 'PC-SGT') {
+        const countSgt = filtered.filter(p => p.rank === 'SGT').length;
+        const countCpl = filtered.filter(p => p.rank === 'CPL').length;
+        const countPc = filtered.filter(p => p.rank === 'PC').length;
+        subCountersHtml = `
+          <div class="p-3 bg-slate-950/90 border-b border-slate-800 flex gap-4 text-xs font-mono">
+            <span class="text-indigo-400 font-bold">SGTs (Sergeants): ${countSgt}</span>
+            <span class="text-indigo-300 font-bold">CPLs (Corporals): ${countCpl}</span>
+            <span class="text-indigo-200 font-bold">PCs (Constables): ${countPc}</span>
+          </div>
+        `;
+      }
+
+      const tableCard = document.createElement('div');
+      tableCard.className = 'bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl';
+      tableCard.innerHTML = `
+        <div class="p-4 bg-slate-950 border-b border-slate-800 flex justify-between items-center no-print">
+          <div class="flex items-center gap-2">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+            <span class="font-black text-xs uppercase tracking-wider text-white">POLICE PERSONNEL NOMINAL ROLL TABLE</span>
+          </div>
+          <span class="text-xs font-mono text-emerald-400 font-bold">Showing ${filtered.length} Authorised Personnel</span>
+        </div>
+
+        ${subCountersHtml}
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs print-table">
+            <thead class="bg-slate-950 text-slate-400 uppercase text-[11px] border-b border-slate-800 font-mono">
+              <tr>
+                <th class="p-3.5 w-12 text-center">S/N</th>
+                <th class="p-3.5">Photo & Officer Name</th>
+                <th class="p-3.5">Service No</th>
+                <th class="p-3.5">Rank & Category</th>
+                <th class="p-3.5">Command & Formation</th>
+                <th class="p-3.5">State & Zone</th>
+                <th class="p-3.5">Duty Station</th>
+                <th class="p-3.5">Status</th>
+                <th class="p-3.5 text-right no-print">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/80">
+              ${filtered.length === 0 ? `
+                <tr>
+                  <td colspan="9" class="p-8 text-center text-slate-500 font-mono text-sm">
+                    No authorised personnel record found matching search criteria.
+                  </td>
+                </tr>
+              ` : filtered.map((off, idx) => `
+                <tr class="hover:bg-slate-800/50 transition font-mono">
+                  <td class="p-3.5 text-center text-slate-500 font-bold">${idx + 1}</td>
+                  <td class="p-3.5">
+                    <div class="flex items-center gap-3">
+                      <img src="${off.photo}" alt="${off.name}" class="w-9 h-9 rounded-full object-cover border border-slate-700">
+                      <div>
+                        <div class="font-extrabold text-white text-xs font-sans">${off.name}</div>
+                        <div class="text-[10px] text-slate-400 font-sans">${off.role}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="p-3.5 font-bold text-sky-400">${off.serviceNo}</td>
+                  <td class="p-3.5">
+                    <span class="px-2 py-0.5 rounded text-[10px] font-black ${
+                      deriveCategory(off.rank) === 'ACP-CP' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' :
+                      deriveCategory(off.rank) === 'DSP-CSP' ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40' :
+                      deriveCategory(off.rank) === 'ASP' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' :
+                      deriveCategory(off.rank) === 'INSPECTORS' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
+                      'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
+                    }">
+                      ${off.rank} (${deriveCategory(off.rank)})
+                    </span>
+                  </td>
+                  <td class="p-3.5">
+                    <div class="font-bold text-emerald-400 text-xs font-sans">${off.command}</div>
+                    <div class="text-[9px] text-slate-400 font-sans">${off.formation}</div>
+                  </td>
+                  <td class="p-3.5">
+                    <div class="font-bold text-white font-sans">${off.state}</div>
+                    <span class="text-[9px] text-slate-400 font-sans">${off.zone}</span>
+                  </td>
+                  <td class="p-3.5 text-slate-300 font-sans">${off.location}</td>
+                  <td class="p-3.5">
+                    <span class="bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded text-[9px] font-bold">
+                      ${off.status.replace('_', ' ')}
+                    </span>
+                  </td>
+                  <td class="p-3.5 text-right no-print">
+                    <button onclick="openProfileModal('${off.id}')" class="bg-slate-800 hover:bg-slate-700 text-sky-400 px-3 py-1 rounded text-[11px] font-extrabold transition border border-slate-700 flex items-center gap-1 ml-auto">
+                      <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                      <span>VIEW PROFILE</span>
+                    </button>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+      container.appendChild(tableCard);
+      lucide.createIcons();
+    }
+
+    function renderBasesModule(container) {
+      const basesData = [
+        { title: 'ZONAL COMMAND HEADQUARTERS (ZONES 1 - 17)', type: 'ZONAL_COMMANDS', items: [
+          { name: 'Zone 1 Command HQ (Kano)', hq: 'Kano City', states: 'Kano, Jigawa, Katsina', commander: 'AIG Usman Garba', count: 420 },
+          { name: 'Zone 2 Command HQ (Lagos)', hq: 'Onikan / Ikeja', states: 'Lagos, Ogun', commander: 'AIG Segun Ogunleye', count: 680 },
+          { name: 'Zone 6 Command HQ (Calabar)', hq: 'Calabar', states: 'Cross River, Akwa Ibom', commander: 'AIG Monday Akpan', count: 350 },
+          { name: 'Zone 7 Command HQ (Abuja)', hq: 'Guzape Complex', states: 'FCT Abuja, Niger', commander: 'AIG Babatunde Olarinde', count: 890 },
+          { name: 'Zone 13 Command HQ (Awka)', hq: 'Ukpo / Awka', states: 'Anambra, Enugu', commander: 'AIG Chukwudi Nnamdi', count: 390 },
+          { name: 'Zone 15 Command HQ (Maiduguri)', hq: 'Maiduguri HQ', states: 'Borno, Yobe', commander: 'AIG Ibrahim Yakubu', count: 950 }
+        ]},
+        { title: 'SEAPORT POLICE FORMATIONS (RESTRICTED MARITIME PORTS)', type: 'SEAPORTS', items: [
+          { name: 'Apapa Sea Port Police Formation', hq: 'Apapa Port Complex, Lagos', states: 'Lagos State', commander: 'CSP Desmond Agbala', count: 120 },
+          { name: 'Tin Can Island Port Police Formation', hq: 'Tin Can Port, Lagos', states: 'Lagos State', commander: 'SP Michael Oladipo', count: 95 },
+          { name: 'Onne Deep Sea Port Police Formation', hq: 'Onne Port, Port Harcourt', states: 'Rivers State', commander: 'SP Kenneth Okon', count: 110 }
+        ]},
+        { title: 'AIRPORT / AVIATION POLICE UNITS', type: 'AIRPORTS', items: [
+          { name: 'Murtala Muhammed International Airport (MMIA)', hq: 'Ikeja, Lagos', states: 'Lagos State', commander: 'ACP Kemi Adebayo', count: 210 },
+          { name: 'Nnamdi Azikiwe International Airport (NAIA)', hq: 'Abuja Airport', states: 'FCT Abuja', commander: 'ACP Kabiru Sani', count: 180 }
+        ]},
+        { title: 'EOD / COUNTER-IED FORMATIONS (SENSITIVE CLASSIFIED SECTION)', type: 'EOD_CBRN', items: [
+          { name: 'Force HQ EOD-CBRN National Command HQ', hq: 'Louis Edet House, Abuja', states: 'FCT Abuja', commander: 'CP Babatunde Olarinde', count: 150 },
+          { name: 'National CBRN Emergency Centre of Excellence', hq: 'Guzape Complex, Abuja', states: 'FCT Abuja', commander: 'DCP Amina Bello', count: 85 },
+          { name: 'Maiduguri Counter-IED Tactical Theatre Base', hq: 'Maiduguri Sector HQ', states: 'Borno State', commander: 'DCP Ibrahim Yakubu', count: 340 }
+        ]}
+      ];
+
+      basesData.forEach(cat => {
+        const sec = document.createElement('div');
+        sec.className = 'space-y-3';
+        sec.innerHTML = `
+          <h3 class="text-xs font-black uppercase text-emerald-400 tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
+            <i data-lucide="building" class="w-4 h-4"></i>
+            <span>${cat.title}</span>
+          </h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${cat.items.map(b => `
+              <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2 shadow-xl">
+                <div class="flex justify-between items-start">
+                  <h4 class="font-extrabold text-white text-xs">${b.name}</h4>
+                  <span class="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-1.5 py-0.5 rounded font-bold">AUTHORISED</span>
+                </div>
+                <div class="text-[11px] text-slate-400 space-y-1 font-mono">
+                  <div><span class="text-slate-500">HQ:</span> ${b.hq}</div>
+                  <div><span class="text-slate-500">Jurisdiction:</span> ${b.states}</div>
+                  <div><span class="text-slate-500">Commander:</span> <span class="text-white font-bold">${b.commander}</span></div>
+                  <div><span class="text-slate-500">Personnel Strength:</span> <span class="text-emerald-400 font-bold">${b.count} Officers</span></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(sec);
+      });
+      lucide.createIcons();
+    }
+
+    function renderAuditLogsModule(container) {
+      const card = document.createElement('div');
+      card.className = 'bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl';
+      card.innerHTML = `
+        <div class="p-4 bg-slate-950 border-b border-slate-800 flex justify-between items-center">
+          <span class="font-black text-xs uppercase tracking-wider text-white flex items-center gap-2">
+            <i data-lucide="shield" class="w-4 h-4 text-emerald-400"></i>
+            IMMUTABLE ADMINISTRATIVE AUDIT TRAIL LOGS
+          </span>
+          <span class="text-xs font-mono text-emerald-400 font-bold">${auditLogs.length} AUDIT ENTRIES</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 uppercase text-[11px] border-b border-slate-800 font-mono">
+              <tr>
+                <th class="p-3.5">Timestamp</th>
+                <th class="p-3.5">Administrator</th>
+                <th class="p-3.5">Action Event</th>
+                <th class="p-3.5">Affected Officer</th>
+                <th class="p-3.5">Previous Value</th>
+                <th class="p-3.5">New Value</th>
+                <th class="p-3.5">Audit Reason / Signal Ref</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800">
+              ${auditLogs.map(log => `
+                <tr class="hover:bg-slate-800/50 font-mono text-[11px]">
+                  <td class="p-3.5 text-slate-400">${log.timestamp}</td>
+                  <td class="p-3.5 font-bold text-white">${log.admin}</td>
+                  <td class="p-3.5"><span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded font-bold">${log.action}</span></td>
+                  <td class="p-3.5 font-bold text-sky-400">${log.officer}</td>
+                  <td class="p-3.5 text-slate-400">${log.prevValue}</td>
+                  <td class="p-3.5 text-emerald-400 font-bold">${log.newValue}</td>
+                  <td class="p-3.5 text-slate-300">${log.reason}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+      container.appendChild(card);
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 5. PROFILE MODAL & ACTION HANDLERS
+    // =========================================================================
+
+    function openProfileModal(id) {
+      const off = dbPersonnel.find(p => p.id === id);
+      if (!off) return;
+
+      document.getElementById('prof-photo').src = off.photo;
+      document.getElementById('prof-name').innerText = off.name;
+      document.getElementById('prof-serviceno').innerText = `${off.serviceNo} • ${off.rank}`;
+      document.getElementById('prof-role').innerText = off.role;
+
+      const cat = deriveCategory(off.rank);
+      document.getElementById('prof-rank-badge').innerText = `${off.rank} (${cat})`;
+      document.getElementById('prof-rank-badge').className = `px-2 py-0.5 rounded text-[10px] font-black font-mono ${
+        cat === 'ACP-CP' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' :
+        cat === 'DSP-CSP' ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40' :
+        cat === 'ASP' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' :
+        cat === 'INSPECTORS' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
+        'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
+      }`;
+
+      document.getElementById('prof-cadre').innerText = `${cat} Tier`;
+      document.getElementById('prof-command').innerText = off.command;
+      document.getElementById('prof-state').innerText = off.state;
+      document.getElementById('prof-zone').innerText = off.zone;
+      document.getElementById('prof-unit').innerText = `${off.unit} (${off.formation})`;
+      document.getElementById('prof-location').innerText = off.location;
+      document.getElementById('prof-specialisation').innerText = off.specialisation;
+      document.getElementById('prof-status').innerText = off.status.replace('_', ' ');
+
+      document.getElementById('prof-appt-date').innerText = off.appointmentDate;
+      document.getElementById('prof-promo-date').innerText = off.lastPromotionDate;
+
+      // Contact info restricted by RBAC
+      if (['SUPER_ADMIN', 'PERSONNEL_ADMIN', 'COMMAND_ADMIN'].includes(currentRole)) {
+        document.getElementById('prof-contact').innerText = `${off.phone} | ${off.email}`;
+      } else {
+        document.getElementById('prof-contact').innerText = '[RESTRICTED TO PERMITTED ROLES]';
+      }
+
+      // Promotion History Timeline
+      const promoContainer = document.getElementById('prof-promo-history');
+      promoContainer.innerHTML = '';
+      if (off.promotions && off.promotions.length > 0) {
+        off.promotions.forEach(pr => {
+          const div = document.createElement('div');
+          div.className = 'border-l-2 border-amber-500 pl-2.5 py-0.5 text-[#e2e8f0]';
+          div.innerHTML = `<span class="text-amber-400 font-bold">${pr.date}</span> &bull; Promoted from <b>${pr.fromRank}</b> to <b>${pr.toRank}</b> (${pr.gazette})`;
+          promoContainer.appendChild(div);
+        });
+      } else {
+        promoContainer.innerHTML = '<span class="text-slate-500 italic">No promotion history recorded yet.</span>';
+      }
+
+      // Posting History Timeline
+      const postingContainer = document.getElementById('prof-posting-history');
+      postingContainer.innerHTML = '';
+      if (off.postings && off.postings.length > 0) {
+        off.postings.forEach(ps => {
+          const div = document.createElement('div');
+          div.className = 'border-l-2 border-sky-500 pl-2.5 py-0.5 text-[#e2e8f0]';
+          div.innerHTML = `<span class="text-sky-400 font-bold">${ps.date}</span> &bull; Transferred to <b>${ps.command}</b> (${ps.location})`;
+          postingContainer.appendChild(div);
+        });
+      } else {
+        postingContainer.innerHTML = '<span class="text-slate-500 italic">No previous transfer postings.</span>';
+      }
+
+      // Qualifications
+      const qualContainer = document.getElementById('prof-qualifications');
+      qualContainer.innerHTML = '';
+      if (off.qualifications) {
+        off.qualifications.forEach(q => {
+          const span = document.createElement('span');
+          span.className = 'bg-slate-900 border border-slate-800 text-slate-300 px-2 py-1 rounded text-[10px] font-mono';
+          span.innerText = q;
+          qualContainer.appendChild(span);
+        });
+      }
+
+      // Admin actions
+      const adminActions = document.getElementById('prof-admin-actions');
+      adminActions.innerHTML = '';
+      if (['SUPER_ADMIN', 'PERSONNEL_ADMIN'].includes(currentRole)) {
+        adminActions.innerHTML = `
+          <button onclick="openPromoteModal('${off.id}')" class="bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3 py-1.5 rounded-lg text-xs transition flex items-center gap-1">
+            <i data-lucide="award" class="w-3.5 h-3.5"></i>
+            <span>PROMOTE OFFICER</span>
+          </button>
+          <button onclick="openTransferModal('${off.id}')" class="bg-sky-500 hover:bg-sky-400 text-black font-extrabold px-3 py-1.5 rounded-lg text-xs transition flex items-center gap-1">
+            <i data-lucide="arrow-right-left" class="w-3.5 h-3.5"></i>
+            <span>TRANSFER OFFICER</span>
+          </button>
+        `;
+        lucide.createIcons();
+      }
+
+      document.getElementById('profile-modal').classList.remove('hidden');
+    }
+
+    function closeProfileModal() {
+      document.getElementById('profile-modal').classList.add('hidden');
+    }
+
+    // --- PROMOTION MODAL & AUTOMATION ---
+    function openPromoteModal(id) {
+      const off = dbPersonnel.find(p => p.id === id);
+      if (!off) return;
+      document.getElementById('promote-officer-id').value = off.id;
+      document.getElementById('promote-officer-name').value = `${off.name} (${off.serviceNo})`;
+      document.getElementById('promote-current-rank').value = off.rank;
+      document.getElementById('promote-modal').classList.remove('hidden');
+    }
+
+    function closePromoteModal() {
+      document.getElementById('promote-modal').classList.add('hidden');
+    }
+
+    function handlePromoteOfficer(e) {
+      e.preventDefault();
+      const id = document.getElementById('promote-officer-id').value;
+      const newRank = document.getElementById('promote-new-rank').value;
+      const reason = document.getElementById('promote-reason').value;
+
+      const off = dbPersonnel.find(p => p.id === id);
+      if (!off) return;
+
+      const oldRank = off.rank;
+      const oldCat = deriveCategory(oldRank);
+      const newCat = deriveCategory(newRank);
+      const today = new Date().toISOString().split('T')[0];
+
+      off.rank = newRank;
+      off.lastPromotionDate = today;
+
+      if (!off.promotions) off.promotions = [];
+      off.promotions.unshift({
+        date: today,
+        fromRank: oldRank,
+        toRank: newRank,
+        gazette: reason
+      });
+
+      // Immutable Audit Log entry
+      auditLogs.unshift({
+        timestamp: new Date().toLocaleString(),
+        admin: `${currentRole} Admin`,
+        action: 'PROMOTION',
+        officer: `${off.name} (${off.serviceNo})`,
+        prevValue: `Rank: ${oldRank} (${oldCat})`,
+        newValue: `Rank: ${newRank} (${newCat})`,
+        reason: reason
+      });
+
+      calculateMetrics();
+      closePromoteModal();
+      openProfileModal(id);
+      renderModule();
+      alert(`Officer ${off.name} successfully promoted from ${oldRank} to ${newRank}! Automatically updated category tier to ${newCat}.`);
+    }
+
+    // --- TRANSFER MODAL & POSTING AUTOMATION ---
+    function openTransferModal(id) {
+      const off = dbPersonnel.find(p => p.id === id);
+      if (!off) return;
+      document.getElementById('transfer-officer-id').value = off.id;
+      document.getElementById('transfer-officer-name').value = `${off.name} (${off.serviceNo})`;
+      document.getElementById('transfer-modal').classList.remove('hidden');
+    }
+
+    function closeTransferModal() {
+      document.getElementById('transfer-modal').classList.add('hidden');
+    }
+
+    function handleTransferOfficer(e) {
+      e.preventDefault();
+      const id = document.getElementById('transfer-officer-id').value;
+      const postingVal = document.getElementById('transfer-new-posting').value;
+      const reason = document.getElementById('transfer-reason').value;
+
+      const [command, state, zone, region, formation, location] = postingVal.split('|');
+      const off = dbPersonnel.find(p => p.id === id);
+      if (!off) return;
+
+      const prevLocation = `${off.command} (${off.state})`;
+      const today = new Date().toISOString().split('T')[0];
+
+      if (!off.postings) off.postings = [];
+      off.postings.unshift({
+        date: today,
+        command: command,
+        location: location
+      });
+
+      off.command = command;
+      off.state = state;
+      off.zone = zone;
+      off.formation = formation;
+      off.location = location;
+
+      auditLogs.unshift({
+        timestamp: new Date().toLocaleString(),
+        admin: `${currentRole} Admin`,
+        action: 'TRANSFER',
+        officer: `${off.name} (${off.serviceNo})`,
+        prevValue: prevLocation,
+        newValue: `${command} (${state})`,
+        reason: reason
+      });
+
+      calculateMetrics();
+      closeTransferModal();
+      openProfileModal(id);
+      renderModule();
+      alert(`Officer ${off.name} transferred to ${command} (${state})! Transfer history preserved.`);
+    }
+
+    // --- ADD OFFICER HANDLER ---
+    function openAddModal() {
+      document.getElementById('add-modal').classList.remove('hidden');
+    }
+
+    function closeAddModal() {
+      document.getElementById('add-modal').classList.add('hidden');
+    }
+
+    function handleAddOfficer(e) {
+      e.preventDefault();
+      const serviceNo = document.getElementById('add-serviceno').value;
+      const rank = document.getElementById('add-rank').value;
+      const name = document.getElementById('add-name').value;
+      const postingVal = document.getElementById('add-command').value;
+      const specialisation = document.getElementById('add-specialisation').value;
+
+      const [command, state, zone, region, formation, location] = postingVal.split('|');
+      const today = new Date().toISOString().split('T')[0];
+
+      const newOff = {
+        id: 'POL-' + (dbPersonnel.length + 100),
+        serviceNo,
+        name,
+        rank,
+        role: `Officer, ${command}`,
+        command,
+        state,
+        zone,
+        formation,
+        unit: 'Standard Unit',
+        location,
+        specialisation,
+        status: 'ACTIVE_READY',
+        appointmentDate: today,
+        lastPromotionDate: today,
+        phone: '+234 800 000 0000',
+        email: 'officer@npf.gov.ng',
+        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+        promotions: [],
+        postings: [{ date: today, command, location }],
+        qualifications: [specialisation]
+      };
+
+      dbPersonnel.unshift(newOff);
+
+      auditLogs.unshift({
+        timestamp: new Date().toLocaleString(),
+        admin: `${currentRole} Admin`,
+        action: 'NEW_RECORD',
+        officer: `${name} (${serviceNo})`,
+        prevValue: 'N/A',
+        newValue: `Created ${rank} in ${command}`,
+        reason: 'New Personnel Enlistment'
+      });
+
+      calculateMetrics();
+      closeAddModal();
+      renderModule();
+      alert(`Officer ${name} successfully added to database!`);
+    }
+  </script>
+</body>
+</html>
