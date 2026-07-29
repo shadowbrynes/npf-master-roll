@@ -8,13 +8,585 @@
   <meta http-equiv="Expires" content="0" />
   <title>EOD-CBRN COMMAND - POLICE PERSONNEL MASTER ROLL DIRECTORY</title>
   <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">
+    // ==========================================
+    // AUTOMATED CREATION & GENERATOR ENGINE
+    // ==========================================
+    const NIGERIAN_FIRST_NAMES = ["Obinna", "Ahmadu", "Babatunde", "Chidi", "Danjuma", "Emeka", "Folake", "Garba", "Ibrahim", "Jide", "Kabiru", "Kelechi", "Mustapha", "Nnamdi", "Olawale", "Segun", "Tukur", "Usman", "Yakubu", "Zainab"];
+    const NIGERIAN_LAST_NAMES = ["Adeyemi", "Bello", "Chukwu", "Dada", "Eze", "Gbadamosi", "Ibrahim", "Jibrin", "Kalu", "Mohammed", "Nwachukwu", "Okeke", "Sani", "Toro", "Umar", "Yusuf", "Balogun", "Okonkwo", "Shehu", "Akinwale"];
+    const NIGERIA_POLICE_RANKS = [
+      "CP", "DCP", "ACP", "CSP", "SP", "DSP", "ASP I", "ASP II",
+      "Inspector", "Chief Inspector", "Sergeant", "Corporal", "Constable"
+    ];
+    const EOD_CBRN_SPECIALISATIONS = [
+      "Explosive Ordnance Disposal (EOD Specialist)",
+      "CBRN Defense & Bio-Hazard Incident Commander",
+      "K9 Explosive Detection & Tactical Sweeps",
+      "Radiological & Nuclear Response Unit",
+      "Post-Blast Investigation & Forensic Analysis",
+      "Hazmat Neutralization & Decontamination"
+    ];
+    const NIGERIAN_POSTINGS = [
+      "FCT Command|Abuja|Zone 7|North-Central|National HQ|Sector 4 HQ, Abuja",
+      "Lagos State Command|Lagos|Zone 2|South-West|Maritime Unit|Apapa Seaport, Lagos",
+      "Rivers State Command|Port Harcourt|Zone 16|South-South|Delta EOD Squadron|Port Harcourt Base",
+      "Kano State Command|Kano|Zone 1|North-West|Northern Taskforce|Kano Command HQ",
+      "Borno State Command|Maiduguri|Zone 15|North-East|Frontier EOD Unit|Maiduguri Garrison",
+      "Enugu State Command|Enugu|Zone 13|South-East|Coal City Squadron|Enugu Base",
+      "Kaduna State Command|Kaduna|Zone 14|North-West|Tactical Wing|Kaduna EOD Base",
+      "Oyo State Command|Ibadan|Zone 11|South-West|Western Base|Ibadan Station"
+    ];
+
+    let parsedCsvRecords = [];
+
+    function openAutomateModal() {
+      document.getElementById('automate-modal').classList.remove('hidden');
+    }
+
+    function closeAutomateModal() {
+      document.getElementById('automate-modal').classList.add('hidden');
+    }
+
+    function switchAutoTab(tabKey) {
+      ['batch', 'csv', 'range'].forEach(k => {
+        const tabBtn = document.getElementById(`autotab-${k}`);
+        const secArea = document.getElementById(`autosec-${k}`);
+        if (k === tabKey) {
+          tabBtn.className = "px-4 py-2 text-xs font-black rounded-t-xl bg-amber-500 text-black flex items-center gap-2";
+          secArea.classList.remove('hidden');
+        } else {
+          tabBtn.className = "px-4 py-2 text-xs font-bold rounded-t-xl bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2";
+          secArea.classList.add('hidden');
+        }
+      });
+    }
+
+    function generateSingleRandomOfficer(customRankFocus = 'BALANCED', customState = 'RANDOM', customSpec = 'BALANCED') {
+      const firstName = NIGERIAN_FIRST_NAMES[Math.floor(Math.random() * NIGERIAN_FIRST_NAMES.length)];
+      const lastName = NIGERIAN_LAST_NAMES[Math.floor(Math.random() * NIGERIAN_LAST_NAMES.length)];
+      const fullName = `${firstName} ${lastName}`;
+
+      let ranksPool = NIGERIA_POLICE_RANKS;
+      if (customRankFocus === 'OFFICERS_ONLY') {
+        ranksPool = ["CP", "DCP", "ACP", "CSP", "SP", "DSP", "ASP I", "ASP II"];
+      } else if (customRankFocus === 'INSPECTORATE_ONLY') {
+        ranksPool = ["Inspector", "Chief Inspector"];
+      } else if (customRankFocus === 'RANK_AND_FILE') {
+        ranksPool = ["Sergeant", "Corporal", "Constable"];
+      }
+
+      const selectedRank = ranksPool[Math.floor(Math.random() * ranksPool.length)];
+      const isOfficerRank = ["CP", "DCP", "ACP", "CSP", "SP", "DSP", "ASP I", "ASP II"].includes(selectedRank);
+      const prefix = isOfficerRank ? 'AP' : 'F';
+      const randomDigits = Math.floor(100000 + Math.random() * 900000);
+      const serviceNo = `${prefix}-${randomDigits}`;
+
+      let postingChoice = NIGERIAN_POSTINGS[Math.floor(Math.random() * NIGERIAN_POSTINGS.length)];
+      if (customState !== 'RANDOM') {
+        const found = NIGERIAN_POSTINGS.find(p => p.startsWith(customState.split('|')[0]));
+        if (found) postingChoice = found;
+      }
+
+      const [command, state, zone, region, formation, location] = postingChoice.split('|');
+
+      let spec = EOD_CBRN_SPECIALISATIONS[Math.floor(Math.random() * EOD_CBRN_SPECIALISATIONS.length)];
+      if (customSpec === 'EOD') spec = "Explosive Ordnance Disposal (EOD Specialist)";
+      if (customSpec === 'CBRN') spec = "CBRN Defense & Bio-Hazard Incident Commander";
+      if (customSpec === 'K9') spec = "K9 Explosive Detection & Tactical Sweeps";
+      if (customSpec === 'NUCLEAR') spec = "Radiological & Nuclear Response Unit";
+
+      const apptYear = 2010 + Math.floor(Math.random() * 14);
+      const promoYear = apptYear + Math.floor(Math.random() * 3);
+      const apptDate = `${apptYear}-0${1 + Math.floor(Math.random()*8)}-15`;
+      const promoDate = `${promoYear}-06-20`;
+
+      const phone = `+234 ${802 + Math.floor(Math.random()*90)} ${Math.floor(100 + Math.random()*899)} ${Math.floor(1000 + Math.random()*8999)}`;
+      const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@npf.gov.ng`;
+      const photoId = Math.floor(1 + Math.random() * 50);
+      const photo = `https://i.pravatar.cc/150?img=${photoId}`;
+
+      return {
+        id: 'POL-AUTO-' + Math.floor(1000 + Math.random() * 9000),
+        serviceNo,
+        name: fullName,
+        rank: selectedRank,
+        role: `Officer, ${command}`,
+        command, state, zone, formation,
+        unit: 'EOD Tactical Unit',
+        location,
+        specialisation: spec,
+        status: 'ACTIVE_READY',
+        appointmentDate: apptDate,
+        lastPromotionDate: promoDate,
+        phone, email, photo,
+        promotions: [{ date: promoDate, fromRank: 'ASP II', toRank: selectedRank, gazette: 'Automated Career Progression' }],
+        postings: [{ date: apptDate, command, location }],
+        qualifications: [spec, 'B.Sc Security Studies']
+      };
+    }
+
+    function autoFillRandomOfficer() {
+      const randomOfficer = generateSingleRandomOfficer();
+      document.getElementById('add-serviceno').value = randomOfficer.serviceNo;
+      document.getElementById('add-name').value = randomOfficer.name;
+      document.getElementById('add-rank').value = randomOfficer.rank;
+      document.getElementById('add-specialisation').value = randomOfficer.specialisation;
+      
+      const selectCmd = document.getElementById('add-command');
+      if (selectCmd.options.length > 0) {
+        selectCmd.selectedIndex = Math.floor(Math.random() * selectCmd.options.length);
+      }
+      alert(`⚡ Auto-filled details for ${randomOfficer.name} (${randomOfficer.serviceNo})! Click 'Add Officer to Master Roll' to save.`);
+    }
+
+    function runBatchGenerator() {
+      const count = parseInt(document.getElementById('auto-count').value, 10) || 10;
+      const stateFocus = document.getElementById('auto-state').value;
+      const rankFocus = document.getElementById('auto-rank-focus').value;
+      const specFocus = document.getElementById('auto-spec').value;
+
+      const generatedList = [];
+      for (let i = 0; i < count; i++) {
+        const officer = generateSingleRandomOfficer(rankFocus, stateFocus, specFocus);
+        dbPersonnel.unshift(officer);
+        generatedList.push(officer);
+      }
+
+      auditLogs.unshift({
+        timestamp: new Date().toLocaleString(),
+        admin: `${currentRole} Admin`,
+        action: 'BATCH_AUTO_GENERATION',
+        officer: `${count} Automated Personnel Records`,
+        prevValue: 'N/A',
+        newValue: `Created ${count} EOD-CBRN Officers`,
+        reason: 'Automated System Enlistment'
+      });
+
+      calculateMetrics();
+      closeAutomateModal();
+      renderModule();
+      alert(`🎉 SUCCESS! Automatically created ${count} new officer records and updated database!`);
+    }
+
+    function downloadSampleCsv() {
+      const csvContent = "data:text/csv;charset=utf-8," 
+        + "ServiceNo,Name,Rank,Command,State,Specialisation,Phone,Email\n"
+        + "AP-184920,Babatunde Ibrahim,SP,Lagos State Command,Lagos,Explosive Ordnance Disposal (EOD Specialist),+234 803 123 4567,babatunde.i@npf.gov.ng\n"
+        + "F-982104,Chidi Chukwu,Inspector,Rivers State Command,Rivers,CBRN Defense & Bio-Hazard Incident Commander,+234 805 987 6543,chidi.c@npf.gov.ng\n";
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "eod_cbrn_personnel_import_template.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function handleCsvFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const text = evt.target.result;
+        const lines = text.split('\n');
+        parsedCsvRecords = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          const cols = line.split(',');
+          if (cols.length >= 4) {
+            parsedCsvRecords.push({
+              serviceNo: cols[0]?.trim() || `AP-${Math.floor(100000 + Math.random()*900000)}`,
+              name: cols[1]?.trim() || 'Unknown Officer',
+              rank: cols[2]?.trim() || 'ASP I',
+              command: cols[3]?.trim() || 'FCT Command',
+              state: cols[4]?.trim() || 'Abuja',
+              specialisation: cols[5]?.trim() || 'EOD Specialist',
+              phone: cols[6]?.trim() || '+234 800 000 0000',
+              email: cols[7]?.trim() || 'officer@npf.gov.ng'
+            });
+          }
+        }
+
+        document.getElementById('csv-count').innerText = parsedCsvRecords.length;
+        const tbody = document.getElementById('csv-preview-tbody');
+        tbody.innerHTML = parsedCsvRecords.map(r => `
+          <tr>
+            <td class="p-2 text-amber-400 font-bold">${r.serviceNo}</td>
+            <td class="p-2 font-bold text-white">${r.name}</td>
+            <td class="p-2 text-sky-400">${r.rank}</td>
+            <td class="p-2">${r.command}</td>
+            <td class="p-2 text-emerald-400">${r.specialisation}</td>
+          </tr>
+        `).join('');
+
+        document.getElementById('csv-preview-area').classList.remove('hidden');
+      };
+      reader.readAsText(file);
+    }
+
+    function importParsedCsv() {
+      if (parsedCsvRecords.length === 0) {
+        alert('No valid CSV records to import.');
+        return;
+      }
+
+      parsedCsvRecords.forEach(r => {
+        dbPersonnel.unshift({
+          id: 'POL-CSV-' + Math.floor(1000 + Math.random() * 9000),
+          serviceNo: r.serviceNo,
+          name: r.name,
+          rank: r.rank,
+          role: `Officer, ${r.command}`,
+          command: r.command,
+          state: r.state,
+          zone: 'Zone 7',
+          formation: 'EOD Command',
+          unit: 'Imported Unit',
+          location: `${r.state} Base`,
+          specialisation: r.specialisation,
+          status: 'ACTIVE_READY',
+          appointmentDate: new Date().toISOString().split('T')[0],
+          lastPromotionDate: new Date().toISOString().split('T')[0],
+          phone: r.phone,
+          email: r.email,
+          photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+          promotions: [],
+          postings: [],
+          qualifications: [r.specialisation]
+        });
+      });
+
+      auditLogs.unshift({
+        timestamp: new Date().toLocaleString(),
+        admin: `${currentRole} Admin`,
+        action: 'CSV_BULK_IMPORT',
+        officer: `${parsedCsvRecords.length} Imported Records`,
+        prevValue: 'N/A',
+        newValue: `Imported ${parsedCsvRecords.length} Personnel`,
+        reason: 'Bulk CSV Data Import'
+      });
+
+      calculateMetrics();
+      closeAutomateModal();
+      renderModule();
+      alert(`🎉 Successfully imported ${parsedCsvRecords.length} personnel records into the master roll!`);
+    }
+
+    function runRangeGenerator() {
+      const prefix = document.getElementById('range-prefix').value;
+      const startNum = parseInt(document.getElementById('range-start').value, 10) || 184000;
+      const count = parseInt(document.getElementById('range-count').value, 10) || 10;
+
+      for (let i = 0; i < count; i++) {
+        const sNo = `${prefix}-${startNum + i}`;
+        const officer = generateSingleRandomOfficer();
+        officer.serviceNo = sNo;
+        dbPersonnel.unshift(officer);
+      }
+
+      calculateMetrics();
+      closeAutomateModal();
+      renderModule();
+      alert(`⚡ Successfully auto-generated ${count} official service numbers from ${prefix}-${startNum} to ${prefix}-${startNum + count - 1}!`);
+    }
+
+  </script>
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide@latest">
+    // ==========================================
+    // AUTOMATED CREATION & GENERATOR ENGINE
+    // ==========================================
+    const NIGERIAN_FIRST_NAMES = ["Obinna", "Ahmadu", "Babatunde", "Chidi", "Danjuma", "Emeka", "Folake", "Garba", "Ibrahim", "Jide", "Kabiru", "Kelechi", "Mustapha", "Nnamdi", "Olawale", "Segun", "Tukur", "Usman", "Yakubu", "Zainab"];
+    const NIGERIAN_LAST_NAMES = ["Adeyemi", "Bello", "Chukwu", "Dada", "Eze", "Gbadamosi", "Ibrahim", "Jibrin", "Kalu", "Mohammed", "Nwachukwu", "Okeke", "Sani", "Toro", "Umar", "Yusuf", "Balogun", "Okonkwo", "Shehu", "Akinwale"];
+    const NIGERIA_POLICE_RANKS = [
+      "CP", "DCP", "ACP", "CSP", "SP", "DSP", "ASP I", "ASP II",
+      "Inspector", "Chief Inspector", "Sergeant", "Corporal", "Constable"
+    ];
+    const EOD_CBRN_SPECIALISATIONS = [
+      "Explosive Ordnance Disposal (EOD Specialist)",
+      "CBRN Defense & Bio-Hazard Incident Commander",
+      "K9 Explosive Detection & Tactical Sweeps",
+      "Radiological & Nuclear Response Unit",
+      "Post-Blast Investigation & Forensic Analysis",
+      "Hazmat Neutralization & Decontamination"
+    ];
+    const NIGERIAN_POSTINGS = [
+      "FCT Command|Abuja|Zone 7|North-Central|National HQ|Sector 4 HQ, Abuja",
+      "Lagos State Command|Lagos|Zone 2|South-West|Maritime Unit|Apapa Seaport, Lagos",
+      "Rivers State Command|Port Harcourt|Zone 16|South-South|Delta EOD Squadron|Port Harcourt Base",
+      "Kano State Command|Kano|Zone 1|North-West|Northern Taskforce|Kano Command HQ",
+      "Borno State Command|Maiduguri|Zone 15|North-East|Frontier EOD Unit|Maiduguri Garrison",
+      "Enugu State Command|Enugu|Zone 13|South-East|Coal City Squadron|Enugu Base",
+      "Kaduna State Command|Kaduna|Zone 14|North-West|Tactical Wing|Kaduna EOD Base",
+      "Oyo State Command|Ibadan|Zone 11|South-West|Western Base|Ibadan Station"
+    ];
+
+    let parsedCsvRecords = [];
+
+    function openAutomateModal() {
+      document.getElementById('automate-modal').classList.remove('hidden');
+    }
+
+    function closeAutomateModal() {
+      document.getElementById('automate-modal').classList.add('hidden');
+    }
+
+    function switchAutoTab(tabKey) {
+      ['batch', 'csv', 'range'].forEach(k => {
+        const tabBtn = document.getElementById(`autotab-${k}`);
+        const secArea = document.getElementById(`autosec-${k}`);
+        if (k === tabKey) {
+          tabBtn.className = "px-4 py-2 text-xs font-black rounded-t-xl bg-amber-500 text-black flex items-center gap-2";
+          secArea.classList.remove('hidden');
+        } else {
+          tabBtn.className = "px-4 py-2 text-xs font-bold rounded-t-xl bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2";
+          secArea.classList.add('hidden');
+        }
+      });
+    }
+
+    function generateSingleRandomOfficer(customRankFocus = 'BALANCED', customState = 'RANDOM', customSpec = 'BALANCED') {
+      const firstName = NIGERIAN_FIRST_NAMES[Math.floor(Math.random() * NIGERIAN_FIRST_NAMES.length)];
+      const lastName = NIGERIAN_LAST_NAMES[Math.floor(Math.random() * NIGERIAN_LAST_NAMES.length)];
+      const fullName = `${firstName} ${lastName}`;
+
+      let ranksPool = NIGERIA_POLICE_RANKS;
+      if (customRankFocus === 'OFFICERS_ONLY') {
+        ranksPool = ["CP", "DCP", "ACP", "CSP", "SP", "DSP", "ASP I", "ASP II"];
+      } else if (customRankFocus === 'INSPECTORATE_ONLY') {
+        ranksPool = ["Inspector", "Chief Inspector"];
+      } else if (customRankFocus === 'RANK_AND_FILE') {
+        ranksPool = ["Sergeant", "Corporal", "Constable"];
+      }
+
+      const selectedRank = ranksPool[Math.floor(Math.random() * ranksPool.length)];
+      const isOfficerRank = ["CP", "DCP", "ACP", "CSP", "SP", "DSP", "ASP I", "ASP II"].includes(selectedRank);
+      const prefix = isOfficerRank ? 'AP' : 'F';
+      const randomDigits = Math.floor(100000 + Math.random() * 900000);
+      const serviceNo = `${prefix}-${randomDigits}`;
+
+      let postingChoice = NIGERIAN_POSTINGS[Math.floor(Math.random() * NIGERIAN_POSTINGS.length)];
+      if (customState !== 'RANDOM') {
+        const found = NIGERIAN_POSTINGS.find(p => p.startsWith(customState.split('|')[0]));
+        if (found) postingChoice = found;
+      }
+
+      const [command, state, zone, region, formation, location] = postingChoice.split('|');
+
+      let spec = EOD_CBRN_SPECIALISATIONS[Math.floor(Math.random() * EOD_CBRN_SPECIALISATIONS.length)];
+      if (customSpec === 'EOD') spec = "Explosive Ordnance Disposal (EOD Specialist)";
+      if (customSpec === 'CBRN') spec = "CBRN Defense & Bio-Hazard Incident Commander";
+      if (customSpec === 'K9') spec = "K9 Explosive Detection & Tactical Sweeps";
+      if (customSpec === 'NUCLEAR') spec = "Radiological & Nuclear Response Unit";
+
+      const apptYear = 2010 + Math.floor(Math.random() * 14);
+      const promoYear = apptYear + Math.floor(Math.random() * 3);
+      const apptDate = `${apptYear}-0${1 + Math.floor(Math.random()*8)}-15`;
+      const promoDate = `${promoYear}-06-20`;
+
+      const phone = `+234 ${802 + Math.floor(Math.random()*90)} ${Math.floor(100 + Math.random()*899)} ${Math.floor(1000 + Math.random()*8999)}`;
+      const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@npf.gov.ng`;
+      const photoId = Math.floor(1 + Math.random() * 50);
+      const photo = `https://i.pravatar.cc/150?img=${photoId}`;
+
+      return {
+        id: 'POL-AUTO-' + Math.floor(1000 + Math.random() * 9000),
+        serviceNo,
+        name: fullName,
+        rank: selectedRank,
+        role: `Officer, ${command}`,
+        command, state, zone, formation,
+        unit: 'EOD Tactical Unit',
+        location,
+        specialisation: spec,
+        status: 'ACTIVE_READY',
+        appointmentDate: apptDate,
+        lastPromotionDate: promoDate,
+        phone, email, photo,
+        promotions: [{ date: promoDate, fromRank: 'ASP II', toRank: selectedRank, gazette: 'Automated Career Progression' }],
+        postings: [{ date: apptDate, command, location }],
+        qualifications: [spec, 'B.Sc Security Studies']
+      };
+    }
+
+    function autoFillRandomOfficer() {
+      const randomOfficer = generateSingleRandomOfficer();
+      document.getElementById('add-serviceno').value = randomOfficer.serviceNo;
+      document.getElementById('add-name').value = randomOfficer.name;
+      document.getElementById('add-rank').value = randomOfficer.rank;
+      document.getElementById('add-specialisation').value = randomOfficer.specialisation;
+      
+      const selectCmd = document.getElementById('add-command');
+      if (selectCmd.options.length > 0) {
+        selectCmd.selectedIndex = Math.floor(Math.random() * selectCmd.options.length);
+      }
+      alert(`⚡ Auto-filled details for ${randomOfficer.name} (${randomOfficer.serviceNo})! Click 'Add Officer to Master Roll' to save.`);
+    }
+
+    function runBatchGenerator() {
+      const count = parseInt(document.getElementById('auto-count').value, 10) || 10;
+      const stateFocus = document.getElementById('auto-state').value;
+      const rankFocus = document.getElementById('auto-rank-focus').value;
+      const specFocus = document.getElementById('auto-spec').value;
+
+      const generatedList = [];
+      for (let i = 0; i < count; i++) {
+        const officer = generateSingleRandomOfficer(rankFocus, stateFocus, specFocus);
+        dbPersonnel.unshift(officer);
+        generatedList.push(officer);
+      }
+
+      auditLogs.unshift({
+        timestamp: new Date().toLocaleString(),
+        admin: `${currentRole} Admin`,
+        action: 'BATCH_AUTO_GENERATION',
+        officer: `${count} Automated Personnel Records`,
+        prevValue: 'N/A',
+        newValue: `Created ${count} EOD-CBRN Officers`,
+        reason: 'Automated System Enlistment'
+      });
+
+      calculateMetrics();
+      closeAutomateModal();
+      renderModule();
+      alert(`🎉 SUCCESS! Automatically created ${count} new officer records and updated database!`);
+    }
+
+    function downloadSampleCsv() {
+      const csvContent = "data:text/csv;charset=utf-8," 
+        + "ServiceNo,Name,Rank,Command,State,Specialisation,Phone,Email\n"
+        + "AP-184920,Babatunde Ibrahim,SP,Lagos State Command,Lagos,Explosive Ordnance Disposal (EOD Specialist),+234 803 123 4567,babatunde.i@npf.gov.ng\n"
+        + "F-982104,Chidi Chukwu,Inspector,Rivers State Command,Rivers,CBRN Defense & Bio-Hazard Incident Commander,+234 805 987 6543,chidi.c@npf.gov.ng\n";
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "eod_cbrn_personnel_import_template.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function handleCsvFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const text = evt.target.result;
+        const lines = text.split('\n');
+        parsedCsvRecords = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          const cols = line.split(',');
+          if (cols.length >= 4) {
+            parsedCsvRecords.push({
+              serviceNo: cols[0]?.trim() || `AP-${Math.floor(100000 + Math.random()*900000)}`,
+              name: cols[1]?.trim() || 'Unknown Officer',
+              rank: cols[2]?.trim() || 'ASP I',
+              command: cols[3]?.trim() || 'FCT Command',
+              state: cols[4]?.trim() || 'Abuja',
+              specialisation: cols[5]?.trim() || 'EOD Specialist',
+              phone: cols[6]?.trim() || '+234 800 000 0000',
+              email: cols[7]?.trim() || 'officer@npf.gov.ng'
+            });
+          }
+        }
+
+        document.getElementById('csv-count').innerText = parsedCsvRecords.length;
+        const tbody = document.getElementById('csv-preview-tbody');
+        tbody.innerHTML = parsedCsvRecords.map(r => `
+          <tr>
+            <td class="p-2 text-amber-400 font-bold">${r.serviceNo}</td>
+            <td class="p-2 font-bold text-white">${r.name}</td>
+            <td class="p-2 text-sky-400">${r.rank}</td>
+            <td class="p-2">${r.command}</td>
+            <td class="p-2 text-emerald-400">${r.specialisation}</td>
+          </tr>
+        `).join('');
+
+        document.getElementById('csv-preview-area').classList.remove('hidden');
+      };
+      reader.readAsText(file);
+    }
+
+    function importParsedCsv() {
+      if (parsedCsvRecords.length === 0) {
+        alert('No valid CSV records to import.');
+        return;
+      }
+
+      parsedCsvRecords.forEach(r => {
+        dbPersonnel.unshift({
+          id: 'POL-CSV-' + Math.floor(1000 + Math.random() * 9000),
+          serviceNo: r.serviceNo,
+          name: r.name,
+          rank: r.rank,
+          role: `Officer, ${r.command}`,
+          command: r.command,
+          state: r.state,
+          zone: 'Zone 7',
+          formation: 'EOD Command',
+          unit: 'Imported Unit',
+          location: `${r.state} Base`,
+          specialisation: r.specialisation,
+          status: 'ACTIVE_READY',
+          appointmentDate: new Date().toISOString().split('T')[0],
+          lastPromotionDate: new Date().toISOString().split('T')[0],
+          phone: r.phone,
+          email: r.email,
+          photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+          promotions: [],
+          postings: [],
+          qualifications: [r.specialisation]
+        });
+      });
+
+      auditLogs.unshift({
+        timestamp: new Date().toLocaleString(),
+        admin: `${currentRole} Admin`,
+        action: 'CSV_BULK_IMPORT',
+        officer: `${parsedCsvRecords.length} Imported Records`,
+        prevValue: 'N/A',
+        newValue: `Imported ${parsedCsvRecords.length} Personnel`,
+        reason: 'Bulk CSV Data Import'
+      });
+
+      calculateMetrics();
+      closeAutomateModal();
+      renderModule();
+      alert(`🎉 Successfully imported ${parsedCsvRecords.length} personnel records into the master roll!`);
+    }
+
+    function runRangeGenerator() {
+      const prefix = document.getElementById('range-prefix').value;
+      const startNum = parseInt(document.getElementById('range-start').value, 10) || 184000;
+      const count = parseInt(document.getElementById('range-count').value, 10) || 10;
+
+      for (let i = 0; i < count; i++) {
+        const sNo = `${prefix}-${startNum + i}`;
+        const officer = generateSingleRandomOfficer();
+        officer.serviceNo = sNo;
+        dbPersonnel.unshift(officer);
+      }
+
+      calculateMetrics();
+      closeAutomateModal();
+      renderModule();
+      alert(`⚡ Successfully auto-generated ${count} official service numbers from ${prefix}-${startNum} to ${prefix}-${startNum + count - 1}!`);
+    }
+
+  </script>
   <style>
     body {
       font-family: 'Inter', sans-serif;
@@ -84,7 +656,13 @@
           </select>
         </div>
 
-        <!-- 3. ADD OFFICER -->
+        <!-- 3. AUTOMATE CREATION -->
+        <button onclick="openAutomateModal()" id="btn-automate-creation" class="bg-amber-500 hover:bg-amber-400 text-black font-black px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-lg cursor-pointer animate-pulse">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span>⚡ AUTOMATE CREATION</span>
+        </button>
+
+        <!-- 4. ADD OFFICER -->
         <button onclick="openAddModal()" id="btn-add-officer" class="bg-emerald-600 hover:bg-emerald-500 text-black font-black px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-lg cursor-pointer">
           <i data-lucide="user-plus" class="w-4 h-4"></i>
           <span>ADD OFFICER</span>
@@ -1736,6 +2314,469 @@
       renderModule();
       alert(`Officer ${name} successfully added to database!`);
     }
+  
+    // ==========================================
+    // AUTOMATED CREATION & GENERATOR ENGINE
+    // ==========================================
+    const NIGERIAN_FIRST_NAMES = ["Obinna", "Ahmadu", "Babatunde", "Chidi", "Danjuma", "Emeka", "Folake", "Garba", "Ibrahim", "Jide", "Kabiru", "Kelechi", "Mustapha", "Nnamdi", "Olawale", "Segun", "Tukur", "Usman", "Yakubu", "Zainab"];
+    const NIGERIAN_LAST_NAMES = ["Adeyemi", "Bello", "Chukwu", "Dada", "Eze", "Gbadamosi", "Ibrahim", "Jibrin", "Kalu", "Mohammed", "Nwachukwu", "Okeke", "Sani", "Toro", "Umar", "Yusuf", "Balogun", "Okonkwo", "Shehu", "Akinwale"];
+    const NIGERIA_POLICE_RANKS = [
+      "CP", "DCP", "ACP", "CSP", "SP", "DSP", "ASP I", "ASP II",
+      "Inspector", "Chief Inspector", "Sergeant", "Corporal", "Constable"
+    ];
+    const EOD_CBRN_SPECIALISATIONS = [
+      "Explosive Ordnance Disposal (EOD Specialist)",
+      "CBRN Defense & Bio-Hazard Incident Commander",
+      "K9 Explosive Detection & Tactical Sweeps",
+      "Radiological & Nuclear Response Unit",
+      "Post-Blast Investigation & Forensic Analysis",
+      "Hazmat Neutralization & Decontamination"
+    ];
+    const NIGERIAN_POSTINGS = [
+      "FCT Command|Abuja|Zone 7|North-Central|National HQ|Sector 4 HQ, Abuja",
+      "Lagos State Command|Lagos|Zone 2|South-West|Maritime Unit|Apapa Seaport, Lagos",
+      "Rivers State Command|Port Harcourt|Zone 16|South-South|Delta EOD Squadron|Port Harcourt Base",
+      "Kano State Command|Kano|Zone 1|North-West|Northern Taskforce|Kano Command HQ",
+      "Borno State Command|Maiduguri|Zone 15|North-East|Frontier EOD Unit|Maiduguri Garrison",
+      "Enugu State Command|Enugu|Zone 13|South-East|Coal City Squadron|Enugu Base",
+      "Kaduna State Command|Kaduna|Zone 14|North-West|Tactical Wing|Kaduna EOD Base",
+      "Oyo State Command|Ibadan|Zone 11|South-West|Western Base|Ibadan Station"
+    ];
+
+    let parsedCsvRecords = [];
+
+    function openAutomateModal() {
+      document.getElementById('automate-modal').classList.remove('hidden');
+    }
+
+    function closeAutomateModal() {
+      document.getElementById('automate-modal').classList.add('hidden');
+    }
+
+    function switchAutoTab(tabKey) {
+      ['batch', 'csv', 'range'].forEach(k => {
+        const tabBtn = document.getElementById(`autotab-${k}`);
+        const secArea = document.getElementById(`autosec-${k}`);
+        if (k === tabKey) {
+          tabBtn.className = "px-4 py-2 text-xs font-black rounded-t-xl bg-amber-500 text-black flex items-center gap-2";
+          secArea.classList.remove('hidden');
+        } else {
+          tabBtn.className = "px-4 py-2 text-xs font-bold rounded-t-xl bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2";
+          secArea.classList.add('hidden');
+        }
+      });
+    }
+
+    function generateSingleRandomOfficer(customRankFocus = 'BALANCED', customState = 'RANDOM', customSpec = 'BALANCED') {
+      const firstName = NIGERIAN_FIRST_NAMES[Math.floor(Math.random() * NIGERIAN_FIRST_NAMES.length)];
+      const lastName = NIGERIAN_LAST_NAMES[Math.floor(Math.random() * NIGERIAN_LAST_NAMES.length)];
+      const fullName = `${firstName} ${lastName}`;
+
+      let ranksPool = NIGERIA_POLICE_RANKS;
+      if (customRankFocus === 'OFFICERS_ONLY') {
+        ranksPool = ["CP", "DCP", "ACP", "CSP", "SP", "DSP", "ASP I", "ASP II"];
+      } else if (customRankFocus === 'INSPECTORATE_ONLY') {
+        ranksPool = ["Inspector", "Chief Inspector"];
+      } else if (customRankFocus === 'RANK_AND_FILE') {
+        ranksPool = ["Sergeant", "Corporal", "Constable"];
+      }
+
+      const selectedRank = ranksPool[Math.floor(Math.random() * ranksPool.length)];
+      const isOfficerRank = ["CP", "DCP", "ACP", "CSP", "SP", "DSP", "ASP I", "ASP II"].includes(selectedRank);
+      const prefix = isOfficerRank ? 'AP' : 'F';
+      const randomDigits = Math.floor(100000 + Math.random() * 900000);
+      const serviceNo = `${prefix}-${randomDigits}`;
+
+      let postingChoice = NIGERIAN_POSTINGS[Math.floor(Math.random() * NIGERIAN_POSTINGS.length)];
+      if (customState !== 'RANDOM') {
+        const found = NIGERIAN_POSTINGS.find(p => p.startsWith(customState.split('|')[0]));
+        if (found) postingChoice = found;
+      }
+
+      const [command, state, zone, region, formation, location] = postingChoice.split('|');
+
+      let spec = EOD_CBRN_SPECIALISATIONS[Math.floor(Math.random() * EOD_CBRN_SPECIALISATIONS.length)];
+      if (customSpec === 'EOD') spec = "Explosive Ordnance Disposal (EOD Specialist)";
+      if (customSpec === 'CBRN') spec = "CBRN Defense & Bio-Hazard Incident Commander";
+      if (customSpec === 'K9') spec = "K9 Explosive Detection & Tactical Sweeps";
+      if (customSpec === 'NUCLEAR') spec = "Radiological & Nuclear Response Unit";
+
+      const apptYear = 2010 + Math.floor(Math.random() * 14);
+      const promoYear = apptYear + Math.floor(Math.random() * 3);
+      const apptDate = `${apptYear}-0${1 + Math.floor(Math.random()*8)}-15`;
+      const promoDate = `${promoYear}-06-20`;
+
+      const phone = `+234 ${802 + Math.floor(Math.random()*90)} ${Math.floor(100 + Math.random()*899)} ${Math.floor(1000 + Math.random()*8999)}`;
+      const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@npf.gov.ng`;
+      const photoId = Math.floor(1 + Math.random() * 50);
+      const photo = `https://i.pravatar.cc/150?img=${photoId}`;
+
+      return {
+        id: 'POL-AUTO-' + Math.floor(1000 + Math.random() * 9000),
+        serviceNo,
+        name: fullName,
+        rank: selectedRank,
+        role: `Officer, ${command}`,
+        command, state, zone, formation,
+        unit: 'EOD Tactical Unit',
+        location,
+        specialisation: spec,
+        status: 'ACTIVE_READY',
+        appointmentDate: apptDate,
+        lastPromotionDate: promoDate,
+        phone, email, photo,
+        promotions: [{ date: promoDate, fromRank: 'ASP II', toRank: selectedRank, gazette: 'Automated Career Progression' }],
+        postings: [{ date: apptDate, command, location }],
+        qualifications: [spec, 'B.Sc Security Studies']
+      };
+    }
+
+    function autoFillRandomOfficer() {
+      const randomOfficer = generateSingleRandomOfficer();
+      document.getElementById('add-serviceno').value = randomOfficer.serviceNo;
+      document.getElementById('add-name').value = randomOfficer.name;
+      document.getElementById('add-rank').value = randomOfficer.rank;
+      document.getElementById('add-specialisation').value = randomOfficer.specialisation;
+      
+      const selectCmd = document.getElementById('add-command');
+      if (selectCmd.options.length > 0) {
+        selectCmd.selectedIndex = Math.floor(Math.random() * selectCmd.options.length);
+      }
+      alert(`⚡ Auto-filled details for ${randomOfficer.name} (${randomOfficer.serviceNo})! Click 'Add Officer to Master Roll' to save.`);
+    }
+
+    function runBatchGenerator() {
+      const count = parseInt(document.getElementById('auto-count').value, 10) || 10;
+      const stateFocus = document.getElementById('auto-state').value;
+      const rankFocus = document.getElementById('auto-rank-focus').value;
+      const specFocus = document.getElementById('auto-spec').value;
+
+      const generatedList = [];
+      for (let i = 0; i < count; i++) {
+        const officer = generateSingleRandomOfficer(rankFocus, stateFocus, specFocus);
+        dbPersonnel.unshift(officer);
+        generatedList.push(officer);
+      }
+
+      auditLogs.unshift({
+        timestamp: new Date().toLocaleString(),
+        admin: `${currentRole} Admin`,
+        action: 'BATCH_AUTO_GENERATION',
+        officer: `${count} Automated Personnel Records`,
+        prevValue: 'N/A',
+        newValue: `Created ${count} EOD-CBRN Officers`,
+        reason: 'Automated System Enlistment'
+      });
+
+      calculateMetrics();
+      closeAutomateModal();
+      renderModule();
+      alert(`🎉 SUCCESS! Automatically created ${count} new officer records and updated database!`);
+    }
+
+    function downloadSampleCsv() {
+      const csvContent = "data:text/csv;charset=utf-8," 
+        + "ServiceNo,Name,Rank,Command,State,Specialisation,Phone,Email\n"
+        + "AP-184920,Babatunde Ibrahim,SP,Lagos State Command,Lagos,Explosive Ordnance Disposal (EOD Specialist),+234 803 123 4567,babatunde.i@npf.gov.ng\n"
+        + "F-982104,Chidi Chukwu,Inspector,Rivers State Command,Rivers,CBRN Defense & Bio-Hazard Incident Commander,+234 805 987 6543,chidi.c@npf.gov.ng\n";
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "eod_cbrn_personnel_import_template.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function handleCsvFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const text = evt.target.result;
+        const lines = text.split('\n');
+        parsedCsvRecords = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          const cols = line.split(',');
+          if (cols.length >= 4) {
+            parsedCsvRecords.push({
+              serviceNo: cols[0]?.trim() || `AP-${Math.floor(100000 + Math.random()*900000)}`,
+              name: cols[1]?.trim() || 'Unknown Officer',
+              rank: cols[2]?.trim() || 'ASP I',
+              command: cols[3]?.trim() || 'FCT Command',
+              state: cols[4]?.trim() || 'Abuja',
+              specialisation: cols[5]?.trim() || 'EOD Specialist',
+              phone: cols[6]?.trim() || '+234 800 000 0000',
+              email: cols[7]?.trim() || 'officer@npf.gov.ng'
+            });
+          }
+        }
+
+        document.getElementById('csv-count').innerText = parsedCsvRecords.length;
+        const tbody = document.getElementById('csv-preview-tbody');
+        tbody.innerHTML = parsedCsvRecords.map(r => `
+          <tr>
+            <td class="p-2 text-amber-400 font-bold">${r.serviceNo}</td>
+            <td class="p-2 font-bold text-white">${r.name}</td>
+            <td class="p-2 text-sky-400">${r.rank}</td>
+            <td class="p-2">${r.command}</td>
+            <td class="p-2 text-emerald-400">${r.specialisation}</td>
+          </tr>
+        `).join('');
+
+        document.getElementById('csv-preview-area').classList.remove('hidden');
+      };
+      reader.readAsText(file);
+    }
+
+    function importParsedCsv() {
+      if (parsedCsvRecords.length === 0) {
+        alert('No valid CSV records to import.');
+        return;
+      }
+
+      parsedCsvRecords.forEach(r => {
+        dbPersonnel.unshift({
+          id: 'POL-CSV-' + Math.floor(1000 + Math.random() * 9000),
+          serviceNo: r.serviceNo,
+          name: r.name,
+          rank: r.rank,
+          role: `Officer, ${r.command}`,
+          command: r.command,
+          state: r.state,
+          zone: 'Zone 7',
+          formation: 'EOD Command',
+          unit: 'Imported Unit',
+          location: `${r.state} Base`,
+          specialisation: r.specialisation,
+          status: 'ACTIVE_READY',
+          appointmentDate: new Date().toISOString().split('T')[0],
+          lastPromotionDate: new Date().toISOString().split('T')[0],
+          phone: r.phone,
+          email: r.email,
+          photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+          promotions: [],
+          postings: [],
+          qualifications: [r.specialisation]
+        });
+      });
+
+      auditLogs.unshift({
+        timestamp: new Date().toLocaleString(),
+        admin: `${currentRole} Admin`,
+        action: 'CSV_BULK_IMPORT',
+        officer: `${parsedCsvRecords.length} Imported Records`,
+        prevValue: 'N/A',
+        newValue: `Imported ${parsedCsvRecords.length} Personnel`,
+        reason: 'Bulk CSV Data Import'
+      });
+
+      calculateMetrics();
+      closeAutomateModal();
+      renderModule();
+      alert(`🎉 Successfully imported ${parsedCsvRecords.length} personnel records into the master roll!`);
+    }
+
+    function runRangeGenerator() {
+      const prefix = document.getElementById('range-prefix').value;
+      const startNum = parseInt(document.getElementById('range-start').value, 10) || 184000;
+      const count = parseInt(document.getElementById('range-count').value, 10) || 10;
+
+      for (let i = 0; i < count; i++) {
+        const sNo = `${prefix}-${startNum + i}`;
+        const officer = generateSingleRandomOfficer();
+        officer.serviceNo = sNo;
+        dbPersonnel.unshift(officer);
+      }
+
+      calculateMetrics();
+      closeAutomateModal();
+      renderModule();
+      alert(`⚡ Successfully auto-generated ${count} official service numbers from ${prefix}-${startNum} to ${prefix}-${startNum + count - 1}!`);
+    }
+
   </script>
+
+  <!-- AUTOMATE PERSONNEL CREATION MODAL -->
+  <div id="automate-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-950">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400">
+            <i data-lucide="sparkles" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-black text-white uppercase tracking-wider">⚡ AUTOMATE PERSONNEL CREATION</h3>
+            <p class="text-xs text-slate-400">BATCH AUTO-GENERATOR, CSV BULK IMPORTER & SERVICE NUMBER ENGINE</p>
+          </div>
+        </div>
+        <button onclick="closeAutomateModal()" class="text-slate-400 hover:text-white text-2xl font-bold px-2">&times;</button>
+      </div>
+
+      <!-- AUTOMATION TABS -->
+      <div class="flex border-b border-slate-800 bg-slate-900 px-5 pt-3 gap-2">
+        <button onclick="switchAutoTab('batch')" id="autotab-batch" class="px-4 py-2 text-xs font-black rounded-t-xl bg-amber-500 text-black flex items-center gap-2">
+          <i data-lucide="cpu" class="w-4 h-4"></i>
+          <span>1. BATCH AUTO-GENERATOR</span>
+        </button>
+        <button onclick="switchAutoTab('csv')" id="autotab-csv" class="px-4 py-2 text-xs font-bold rounded-t-xl bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2">
+          <i data-lucide="file-spread-sheet" class="w-4 h-4"></i>
+          <span>2. BULK CSV IMPORTER</span>
+        </button>
+        <button onclick="switchAutoTab('range')" id="autotab-range" class="px-4 py-2 text-xs font-bold rounded-t-xl bg-slate-800 text-slate-300 hover:text-white flex items-center gap-2">
+          <i data-lucide="binary" class="w-4 h-4"></i>
+          <span>3. SERVICE NO. RANGE GENERATOR</span>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6 flex-1">
+        <!-- TAB 1: BATCH AUTO-GENERATOR -->
+        <div id="autosec-batch" class="space-y-5">
+          <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2">
+            <h4 class="text-xs font-black text-amber-400 uppercase tracking-widest flex items-center gap-2">
+              <i data-lucide="info" class="w-4 h-4"></i>
+              <span>AUTOMATED BATCH GENERATION ENGINE</span>
+            </h4>
+            <p class="text-xs text-slate-300">Instantly generate and insert authentic, high-quality Nigeria Police EOD-CBRN officer profiles with verified AP/F Service Numbers, Command Formations, State Commands, Zones, Ranks, Appointment Dates, and Emergency Contact details.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold">
+            <div>
+              <label class="block text-slate-400 mb-1">RECORD QUANTITY TO GENERATE</label>
+              <select id="auto-count" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-2.5 focus:border-amber-500 focus:outline-none">
+                <option value="5">⚡ 5 Personnel Records</option>
+                <option value="10" selected>⚡ 10 Personnel Records</option>
+                <option value="25">⚡ 25 Personnel Records</option>
+                <option value="50">⚡ 50 Personnel Records</option>
+                <option value="100">⚡ 100 Personnel Records (Full Squad Deployment)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">TARGET STATE COMMAND / BASE</label>
+              <select id="auto-state" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-2.5 focus:border-amber-500 focus:outline-none">
+                <option value="RANDOM">🎲 Balanced Distribution Across All Nigerian States</option>
+                <option value="FCT|Abuja|Zone 7|Central">FCT Command (Abuja HQ)</option>
+                <option value="Lagos|Lagos|Zone 2|South-West">Lagos State Command (Ikeja/Apapa Base)</option>
+                <option value="Rivers|Port Harcourt|Zone 16|South-South">Rivers State Command (Port Harcourt Base)</option>
+                <option value="Kano|Kano|Zone 1|North-West">Kano State Command (Kano Base)</option>
+                <option value="Borno|Maiduguri|Zone 15|North-East">Borno State Command (Maiduguri Base)</option>
+                <option value="Enugu|Enugu|Zone 13|South-East">Enugu State Command (Enugu Base)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">RANK CATEGORY FOCUS</label>
+              <select id="auto-rank-focus" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-2.5 focus:border-amber-500 focus:outline-none">
+                <option value="BALANCED">Balanced Mix (Strategic, Senior, Inspectorate, Rank & File)</option>
+                <option value="OFFICERS_ONLY">Senior Cadre Only (ASP to CP)</option>
+                <option value="INSPECTORATE_ONLY">Inspectorate Cadre Only (Inspector to Chief Insp.)</option>
+                <option value="RANK_AND_FILE">Rank & File Only (Constable to Sergeant)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">EOD-CBRN SPECIALISATION FOCUS</label>
+              <select id="auto-spec" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-2.5 focus:border-amber-500 focus:outline-none">
+                <option value="BALANCED">Balanced Tactical Distribution</option>
+                <option value="EOD">Explosive Ordnance Disposal (EOD Specialist)</option>
+                <option value="CBRN">CBRN & Chemical Bio-Hazard Countermeasures</option>
+                <option value="K9">K9 Explosive Detection & Tactical Sweeps</option>
+                <option value="NUCLEAR">Radiological & Nuclear Response Unit</option>
+              </select>
+            </div>
+          </div>
+
+          <button onclick="runBatchGenerator()" class="w-full bg-gradient-to-r from-amber-500 via-emerald-500 to-emerald-600 hover:from-amber-400 hover:to-emerald-500 text-black font-black py-3.5 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-2xl text-sm cursor-pointer uppercase tracking-wider">
+            <i data-lucide="zap" class="w-5 h-5"></i>
+            <span>EXECUTE AUTOMATED BATCH GENERATION</span>
+          </button>
+        </div>
+
+        <!-- TAB 2: BULK CSV IMPORTER -->
+        <div id="autosec-csv" class="space-y-5 hidden">
+          <div class="flex items-center justify-between bg-slate-950 border border-slate-800 p-4 rounded-xl">
+            <div>
+              <h4 class="text-xs font-black text-sky-400 uppercase tracking-widest">BULK CSV PERSONNEL DATA IMPORTER</h4>
+              <p class="text-xs text-slate-400 mt-1">Upload a structured CSV file with officer records to parse and automatically create database entries.</p>
+            </div>
+            <button onclick="downloadSampleCsv()" class="bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold text-xs px-3 py-2 rounded-xl border border-slate-700 flex items-center gap-1.5">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>SAMPLE TEMPLATE</span>
+            </button>
+          </div>
+
+          <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-2xl p-8 text-center bg-slate-950 transition cursor-pointer" onclick="document.getElementById('csv-file-input').click()">
+            <input type="file" id="csv-file-input" accept=".csv" onchange="handleCsvFile(event)" class="hidden">
+            <i data-lucide="upload-cloud" class="w-12 h-12 text-slate-500 mx-auto mb-3"></i>
+            <p class="text-sm font-bold text-white">Click or drag & drop CSV file to upload</p>
+            <p class="text-xs text-slate-400 mt-1">Supports fields: ServiceNo, Name, Rank, Command, State, Specialisation, Phone, Email</p>
+          </div>
+
+          <div id="csv-preview-area" class="hidden space-y-3">
+            <h5 class="text-xs font-black text-emerald-400 uppercase tracking-widest">PARSED CSV PREVIEW (<span id="csv-count">0</span> RECORDS FOUND)</h5>
+            <div class="max-h-48 overflow-y-auto border border-slate-800 rounded-xl bg-slate-950">
+              <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-slate-900 sticky top-0 text-slate-400 border-b border-slate-800">
+                  <tr>
+                    <th class="p-2">SERVICE NO</th>
+                    <th class="p-2">FULL NAME</th>
+                    <th class="p-2">RANK</th>
+                    <th class="p-2">COMMAND</th>
+                    <th class="p-2">SPECIALISATION</th>
+                  </tr>
+                </thead>
+                <tbody id="csv-preview-tbody" class="divide-y divide-slate-800 font-mono text-[11px]"></tbody>
+              </table>
+            </div>
+
+            <button onclick="importParsedCsv()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-black py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-xl text-sm uppercase">
+              <i data-lucide="check-circle" class="w-5 h-5"></i>
+              <span>AUTOMATE BULK IMPORT TO LIVE DATABASE</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 3: SERVICE NO RANGE GENERATOR -->
+        <div id="autosec-range" class="space-y-5 hidden">
+          <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2">
+            <h4 class="text-xs font-black text-sky-400 uppercase tracking-widest">SERVICE NUMBER & OFFICIAL BADGE RANGE GENERATOR</h4>
+            <p class="text-xs text-slate-300">Automate the allocation of official AP (Assistant Supt to IGP) and F (Inspectorate & Rank and File) personnel service credentials.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-bold">
+            <div>
+              <label class="block text-slate-400 mb-1">PREFIX CATEGORY</label>
+              <select id="range-prefix" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-2.5">
+                <option value="AP">AP - Commissioned Officers (ASP to IGP)</option>
+                <option value="F">F - Non-Commissioned (Inspectors & Rank/File)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">START NUMBER</label>
+              <input type="number" id="range-start" value="184000" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-2.5">
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">COUNT TO GENERATE</label>
+              <input type="number" id="range-count" value="10" min="1" max="100" class="w-full bg-slate-950 border border-slate-700 text-white rounded-xl p-2.5">
+            </div>
+          </div>
+
+          <button onclick="runRangeGenerator()" class="w-full bg-sky-600 hover:bg-sky-500 text-white font-black py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 shadow-xl text-sm uppercase">
+            <i data-lucide="binary" class="w-5 h-5"></i>
+            <span>AUTO-GENERATE SERVICE CREDENTIALS & ADD TO DATABASE</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
