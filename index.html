@@ -70,17 +70,16 @@
           <span>PERSONNEL PORTAL LOGIN</span>
         </button>
 
-        <!-- 2. ROLE: SUPER ADMINISTRATOR -->
+        <!-- 2. ROLE: GLOBAL ADMIN & RBAC SELECTOR -->
         <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-xl">
           <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
           <span class="text-[10px] text-slate-400 font-bold uppercase">ROLE:</span>
           <select id="rbac-role-select" onchange="handleRoleChange()" class="bg-transparent text-emerald-400 font-black text-xs focus:outline-none cursor-pointer">
-            <option value="SUPER_ADMIN">SUPER ADMINISTRATOR</option>
+            <option value="GLOBAL_ADMIN">GLOBAL ADMINISTRATOR / BACKEND ENGINEER</option>
+            <option value="SUPER_ADMIN">SUPER ADMINISTRATOR (FULL ACCESS)</option>
             <option value="PERSONNEL_ADMIN">PERSONNEL ADMINISTRATOR</option>
-            <option value="COMMAND_ADMIN">COMMAND ADMINISTRATOR</option>
-            <option value="SENIOR_MGMT">SENIOR MANAGEMENT VIEWER</option>
-            <option value="OFFICER">OFFICER (SELF-SERVICE ACCESS)</option>
-            <option value="READ_ONLY">READ-ONLY USER</option>
+            <option value="OFFICER">PERSONNEL / OFFICER (SELF-SERVICE PORTAL ONLY)</option>
+            <option value="READ_ONLY">READ-ONLY USER (RESTRICTED)</option>
           </select>
         </div>
 
@@ -820,7 +819,11 @@
     }
   
 
-    let currentRole = 'SUPER_ADMIN';
+    let currentRole = 'GLOBAL_ADMIN';
+
+    function isGlobalAdminOrBackendEngineer() {
+      return ['GLOBAL_ADMIN', 'BACKEND_ENGINEER', 'SUPER_ADMIN'].includes(currentRole);
+    }
     let loggedInOfficerId = 'POL-006';
 
     let portalAuthTab = 'LOGIN'; // 'LOGIN' or 'REGISTER'
@@ -1479,21 +1482,33 @@
     function handleRoleChange() {
       currentRole = document.getElementById('rbac-role-select').value;
       const btnAdd = document.getElementById('btn-add-officer');
-      if (['SUPER_ADMIN', 'PERSONNEL_ADMIN'].includes(currentRole)) {
-        btnAdd.classList.remove('hidden');
-      } else {
-        btnAdd.classList.add('hidden');
+      if (btnAdd) {
+        if (isGlobalAdminOrBackendEngineer()) {
+          btnAdd.classList.remove('hidden');
+        } else {
+          btnAdd.classList.add('hidden');
+        }
       }
-      renderModule();
+      if (!isGlobalAdminOrBackendEngineer() && currentView !== 'SELF_SERVICE') {
+        currentView = 'SELF_SERVICE';
+      }
+      switchView(currentView);
     }
 
     function switchView(view) {
       currentView = view;
+
+      // ENFORCE ACCESS CONTROL: Only Global Admin & Backend Engineer have access to Dashboard / Master Roll
+      if (!isGlobalAdminOrBackendEngineer() && view !== 'SELF_SERVICE') {
+        alert('⛔ ACCESS DENIED: DASHBOARD & NATIONAL DIRECTORY RESTRICTED!\n\nOnly the Global Administrator or Backend Engineer has access to the Dashboard and everyone\'s profiles.\n\nPersonnel are strictly limited to accessing their own data and personal profile via the Personnel Self-Service Portal.');
+        currentView = 'SELF_SERVICE';
+      }
+
       document.querySelectorAll('.nav-tab').forEach(tab => {
         tab.className = 'nav-tab px-3.5 py-2 rounded-xl font-extrabold transition flex items-center gap-2 border bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700';
       });
 
-      const activeTab = document.getElementById(`tab-${view}`);
+      const activeTab = document.getElementById(`tab-${currentView}`);
       if (activeTab) {
         activeTab.className = 'nav-tab px-3.5 py-2 rounded-xl font-black transition flex items-center gap-2 border bg-emerald-600 text-black border-emerald-500 glow-active';
       }
@@ -1511,11 +1526,11 @@
         'AUDIT_LOGS': { title: '8. 📜 IMMUTABLE ADMINISTRATIVE AUDIT TRAIL LOGS', desc: 'Secure, unalterable audit log recording all administrative record creations, promotions, transfers, rank edits, and RBAC security events.' }
       };
 
-      const info = bannerMap[view] || bannerMap['MASTER_ROLL'];
+      const info = bannerMap[currentView] || bannerMap['MASTER_ROLL'];
       document.getElementById('banner-title').innerText = info.title;
       document.getElementById('banner-desc').innerText = info.desc;
 
-      if (['BASES', 'AUDIT_LOGS', 'SELF_SERVICE'].includes(view)) {
+      if (['BASES', 'AUDIT_LOGS', 'SELF_SERVICE'].includes(currentView)) {
         document.getElementById('search-filter-box').classList.add('hidden');
       } else {
         document.getElementById('search-filter-box').classList.remove('hidden');
@@ -1543,6 +1558,33 @@
       calculateMetrics();
       const container = document.getElementById('module-container');
       container.innerHTML = '';
+
+      if (!isGlobalAdminOrBackendEngineer() && currentView !== 'SELF_SERVICE') {
+        const restrictedCard = document.createElement('div');
+        restrictedCard.className = 'max-w-2xl mx-auto bg-slate-900 border-2 border-rose-500/50 rounded-3xl p-8 space-y-6 text-center shadow-2xl my-8 relative overflow-hidden';
+        restrictedCard.innerHTML = `
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-[0_0_25px_rgba(244,63,94,0.3)]">
+            <i data-lucide="shield-alert" class="w-10 h-10"></i>
+          </div>
+          <h2 class="text-xl sm:text-2xl font-black text-white uppercase tracking-wider">⛔ ACCESS RESTRICTED TO GLOBAL ADMIN & BACKEND ENGINEER</h2>
+          
+          <div class="bg-rose-950/40 border border-rose-500/40 p-4 rounded-2xl text-left space-y-2 text-xs leading-relaxed text-rose-200">
+            <span class="font-bold text-rose-400 font-mono uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="lock" class="w-4 h-4"></i> SECURITY POLICY ENFORCEMENT:
+            </span>
+            <p>• Only the <strong>Global Administrator</strong> or <strong>Backend Engineer</strong> has access to the Dashboard, Master Roll Directory, and Everyone's Profile.</p>
+            <p>• Personnel are restricted strictly to accessing <strong>their own data and profile</strong> only, and NOT anyone else's profile or data.</p>
+          </div>
+
+          <button onclick="switchView('SELF_SERVICE')" class="bg-emerald-500 hover:bg-emerald-400 text-black font-black px-6 py-3 rounded-xl transition inline-flex items-center gap-2 shadow-lg cursor-pointer text-xs uppercase tracking-wider">
+            <i data-lucide="user-check" class="w-4 h-4"></i>
+            <span>GO TO MY PERSONAL SELF-SERVICE PORTAL</span>
+          </button>
+        `;
+        container.appendChild(restrictedCard);
+        lucide.createIcons();
+        return;
+      }
 
       if (currentView === 'SELF_SERVICE') {
         renderSelfServicePortal(container);
@@ -2376,6 +2418,13 @@
     function openProfileModal(id) {
       const off = dbPersonnel.find(p => p.id === id);
       if (!off) return;
+
+      // ENFORCE RBAC PROFILE ISOLATION: Only Global Admin / Backend Engineer OR the specific logged-in officer can view profile
+      const isSelfProfile = (sessionPortalOfficerId && sessionPortalOfficerId === id);
+      if (!isGlobalAdminOrBackendEngineer() && !isSelfProfile) {
+        alert('⛔ ACCESS DENIED: PROFILE ACCESS RESTRICTED!\n\nOnly the Global Administrator or Backend Engineer has access to everyone\'s profile.\n\nPersonnel only have access to their own data and profile, and NOT to anyone else\'s profile or data.');
+        return;
+      }
 
       document.getElementById('prof-photo').src = off.photo;
       document.getElementById('prof-name').innerText = off.name;
