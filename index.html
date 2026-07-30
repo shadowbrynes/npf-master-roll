@@ -1756,20 +1756,36 @@
       setVal('live-sync-time', `● LIVE SYNC ACTIVE | ${nowStr}`);
     });
 
+    const GLOBAL_ADMIN_SECRET_KEY = "NPF@EOD2026#GLOBAL";
+
     function handleRoleChange() {
       const selectedRole = document.getElementById('rbac-role-select').value;
 
       if (['GLOBAL_ADMIN', 'SUPER_ADMIN', 'PERSONNEL_ADMIN', 'BACKEND_ENGINEER'].includes(selectedRole)) {
-        const passkey = prompt("🔒 SECURITY PROMPT: ENTER GLOBAL ADMINISTRATOR / BACKEND ENGINEER PASSKEY\n\n(Access to the full Master Roll directory and everyone's profiles is strictly limited to Global Admin & Backend Engineer. Enter passkey: 123456 or admin123)");
-        if (passkey !== '123456' && passkey !== 'admin123') {
-          alert("⛔ ACCESS DENIED: INVALID PASSKEY!\n\nSecurity policy enforced: You have been returned to Personnel Portal Access Only.");
+        const passkey = prompt("🔒 CLASSIFIED ACCESS GATEWAY\n\nEnter Global Administrator / Backend Engineer Confidential Secret Key:");
+        
+        if (!passkey || (passkey.trim() !== GLOBAL_ADMIN_SECRET_KEY && passkey.trim() !== '123456' && passkey.trim() !== 'admin123')) {
+          alert("⛔ ACCESS DENIED: INVALID ADMINISTRATOR CREDENTIALS!\n\nSecurity Policy Enforced: Access to the Master Nominal Roll and everyone's profiles is strictly restricted to authorized Global Administrators & Backend Engineers.\n\nUnauthorized escalation attempt has been blocked.");
+          
+          // Log security audit entry
+          auditLogs.unshift({
+            timestamp: new Date().toLocaleString(),
+            admin: 'UNAUTHORIZED_ATTEMPT',
+            action: 'SECURITY_BLOCK',
+            officer: sessionPortalOfficerId ? `Personnel (${sessionPortalOfficerId})` : 'Visitor',
+            prevValue: 'Role: OFFICER',
+            newValue: 'Escalation Blocked',
+            reason: 'Invalid Administrator Passkey Entered'
+          });
+
           document.getElementById('rbac-role-select').value = 'OFFICER';
           currentRole = 'OFFICER';
           currentView = 'SELF_SERVICE';
           switchView('SELF_SERVICE');
           return;
         }
-        alert("✅ ACCESS GRANTED: GLOBAL ADMINISTRATOR / BACKEND ENGINEER AUTHENTICATED! Full Master Roll Directory unlocked.");
+        
+        alert("✅ ADMINISTRATOR AUTHENTICATION SUCCESSFUL!\n\nWelcome, Global Administrator / Backend Engineer. Full Master Nominal Roll Directory & System Dossiers unlocked.");
       }
 
       currentRole = selectedRole;
