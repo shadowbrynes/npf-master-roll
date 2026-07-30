@@ -725,6 +725,28 @@
             <input type="text" id="add-name" required placeholder="e.g. Babatunde Desmond Agbala" class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-white text-xs focus:border-emerald-500 focus:outline-none">
           </div>
 
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div>
+              <label class="text-amber-400 block font-bold mb-1 text-[10px]">ASSIGNED EOD BASE (BASE 1 - BASE 38):</label>
+              <select id="add-base" required class="w-full bg-slate-900 border border-slate-800 text-amber-300 rounded px-2.5 py-1.5 font-mono text-xs font-bold focus:border-emerald-500 focus:outline-none">
+                <option value="">-- SELECT EOD BASE (1-38) --</option>
+                ${EOD_BASES.map(b => `<option value="Base ${b.number}">${b.name}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="text-emerald-400 block font-bold mb-1 text-[10px]">ASSIGNED TACTICAL UNIT:</label>
+              <select id="add-unit" required class="w-full bg-slate-900 border border-slate-800 text-emerald-300 rounded px-2.5 py-1.5 font-mono text-xs font-bold focus:border-emerald-500 focus:outline-none">
+                <option value="Counter-IED Operations Unit">Counter-IED Operations Unit</option>
+                <option value="CBRN Response & Decontamination Unit">CBRN Response & Decontamination Unit</option>
+                <option value="Bomb Detection & Canine Unit">Bomb Detection & Canine Unit</option>
+                <option value="Magazine Armory & Demolition Unit">Magazine Armory & Demolition Unit</option>
+                <option value="Airport Security EOD Unit">Airport Security EOD Unit</option>
+                <option value="Seaport Security EOD Unit">Seaport Security EOD Unit</option>
+                <option value="Post-Blast Reconnaissance Unit">Post-Blast Reconnaissance Unit</option>
+              </select>
+            </div>
+          </div>
+
           <div>
             <label class="text-slate-400 block font-bold mb-1 text-[10px]">ASSIGNED COMMAND / POSTING:</label>
             <select id="add-command" required class="w-full bg-slate-900 border border-slate-800 text-white rounded px-2.5 py-1.5 text-xs focus:border-emerald-500 focus:outline-none">
@@ -2772,6 +2794,8 @@
       const serviceNo = document.getElementById('add-serviceno').value.trim();
       const rank = document.getElementById('add-rank').value;
       const name = document.getElementById('add-name').value.trim();
+      const base = document.getElementById('add-base')?.value || 'Base 1';
+      const unit = document.getElementById('add-unit')?.value || 'Counter-IED Operations Unit';
       const postingVal = document.getElementById('add-command').value;
       const specialisation = document.getElementById('add-specialisation').value.trim();
 
@@ -2799,9 +2823,10 @@
       const newOff = {
         id: 'POL-' + (dbPersonnel.length + 100) + '-' + Math.floor(Math.random()*1000),
         serviceNo, name, rank,
-        role: `Officer, ${command}`,
-        command, state, zone, formation,
-        unit: 'EOD Command Unit',
+        base,
+        unit,
+        role: `Officer, ${base} (${unit})`,
+        command: `${base} - ${command}`, state, zone, formation,
         location, specialisation,
         status: 'ACTIVE_READY',
         appointmentDate: apptDateVal,
@@ -2948,6 +2973,11 @@
     }
 
             function autoFillRandomOfficer() {
+      setTimeout(() => {
+        const baseNo = Math.floor(Math.random() * 38) + 1;
+        const addBaseEl = document.getElementById('add-base');
+        if (addBaseEl) addBaseEl.value = `Base ${baseNo}`;
+      }, 50);
       const randomOfficer = generateSingleRandomOfficer();
 
       const serviceNoEl = document.getElementById('add-serviceno');
