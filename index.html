@@ -224,7 +224,7 @@
           <span>TACTICAL COMMAND QUICK ACTIONS</span>
         </h3>
 
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-bold">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs font-bold">
           <button onclick="alert('Initiating Live Operation Dispatch Matrix...')" class="bg-emerald-600 hover:bg-emerald-500 text-black py-2.5 px-3 rounded-xl transition flex items-center justify-center gap-2 shadow-lg">
             <i data-lucide="send" class="w-4 h-4"></i>
             <span>Dispatch Operation</span>
@@ -428,6 +428,28 @@
 
     <!-- GLOBAL SEARCH BAR & ADVANCED FILTERS -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 no-print space-y-3 shadow-xl" id="search-filter-box">
+      <!-- 🧮 DASHBOARD STATUTORY RETIREMENT CALCULATOR & ALERT PANEL -->
+      <div class="bg-gradient-to-r from-rose-950/90 via-slate-950 to-amber-950/90 p-3 rounded-xl border border-rose-500/50 flex flex-wrap items-center justify-between gap-2 shadow-lg">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-rose-500/20 border border-rose-500/60 flex items-center justify-center text-rose-400 font-black shrink-0 shadow-[0_0_10px_rgba(244,63,94,0.3)]">
+            <i data-lucide="calculator" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <span class="text-xs font-black text-rose-300 font-mono uppercase block">35-YEAR STATUTORY RETIREMENT CALCULATOR & ALERT ENGINE</span>
+            <span class="text-[10px] text-slate-400 block">Calculates 35-year service milestone & monitors personnel due for retirement within 60 days</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="filterRetiringPersonnel()" class="bg-rose-950 hover:bg-rose-900 border border-rose-500/60 text-rose-300 font-black px-3 py-1.5 rounded-lg text-xs font-mono transition cursor-pointer flex items-center gap-1.5 shadow">
+            <i data-lucide="filter" class="w-3.5 h-3.5"></i>
+            <span>FILTER DUE (≤60 DAYS)</span>
+          </button>
+          <button onclick="openRetirementCalculatorModal()" class="bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-black px-4 py-1.5 rounded-lg text-xs font-mono transition cursor-pointer flex items-center gap-1.5 shadow-[0_0_15px_rgba(244,63,94,0.4)]">
+            <i data-lucide="calculator" class="w-3.5 h-3.5 text-white"></i>
+            <span>LAUNCH CALCULATOR</span>
+          </button>
+        </div>
+      </div>
       <div>
         <label class="text-[10px] text-emerald-400 font-black block mb-1 uppercase tracking-wider">GLOBAL PROMINENT SEARCH BAR:</label>
         <div class="relative">
