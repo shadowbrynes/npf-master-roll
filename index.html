@@ -1025,7 +1025,7 @@
     }
   
 
-    let currentRole = 'GLOBAL_ADMIN';
+    let currentRole = 'OFFICER';
 
     // OFFICIAL 38 EOD BASES OF NIGERIA POLICE FORCE EOD-CBRN COMMAND
     const EOD_BASES = Array.from({ length: 38 }, (_, i) => {
@@ -1657,7 +1657,7 @@
       }
     ];
 
-    let currentView = 'MASTER_ROLL';
+    let currentView = 'SELF_SERVICE';
     loadSavedState();
 
     
@@ -1757,7 +1757,22 @@
     });
 
     function handleRoleChange() {
-      currentRole = document.getElementById('rbac-role-select').value;
+      const selectedRole = document.getElementById('rbac-role-select').value;
+
+      if (['GLOBAL_ADMIN', 'SUPER_ADMIN', 'PERSONNEL_ADMIN', 'BACKEND_ENGINEER'].includes(selectedRole)) {
+        const passkey = prompt("🔒 SECURITY PROMPT: ENTER GLOBAL ADMINISTRATOR / BACKEND ENGINEER PASSKEY\n\n(Access to the full Master Roll directory and everyone's profiles is strictly limited to Global Admin & Backend Engineer. Enter passkey: 123456 or admin123)");
+        if (passkey !== '123456' && passkey !== 'admin123') {
+          alert("⛔ ACCESS DENIED: INVALID PASSKEY!\n\nSecurity policy enforced: You have been returned to Personnel Portal Access Only.");
+          document.getElementById('rbac-role-select').value = 'OFFICER';
+          currentRole = 'OFFICER';
+          currentView = 'SELF_SERVICE';
+          switchView('SELF_SERVICE');
+          return;
+        }
+        alert("✅ ACCESS GRANTED: GLOBAL ADMINISTRATOR / BACKEND ENGINEER AUTHENTICATED! Full Master Roll Directory unlocked.");
+      }
+
+      currentRole = selectedRole;
       const btnAdd = document.getElementById('btn-add-officer');
       if (btnAdd) {
         if (isGlobalAdminOrBackendEngineer()) {
