@@ -895,7 +895,7 @@
       renderModule();
     }
 
-    function handlePortalRegistration(e) {
+        function handlePortalRegistration(e) {
       e.preventDefault();
       const serviceNoInput = document.getElementById('reg-serviceno').value.trim();
       const nameInput = document.getElementById('reg-name').value.trim();
@@ -912,12 +912,14 @@
         return;
       }
 
+      // STEP 1: VERIFY RECORD IN MASTER ROLL DATABASE
       const officer = findOfficerByServiceNo(serviceNoInput);
       if (!officer) {
-        alert(`❌ REGISTRATION FAILED: No personnel record was found matching Force/AP Service Number "${serviceNoInput}".\n\nPlease verify your Service Number or contact the System Administrator to be added to the database.`);
+        alert(`🚫 REGISTRATION REJECTED: PERSONNEL RECORD NOT IN MASTER ROLL!\n\nNo police personnel record was found matching Force/AP Number "${serviceNoInput}" in the Master Nominal Roll.\n\nPOLICY ENFORCEMENT:\nYou cannot register or access the portal unless your record is first added to the Master Roll by a Personnel Administrator.\n\nNO ACCESS IS GRANTED.`);
         return;
       }
 
+      // STEP 2: VERIFY REGISTERED NAME MATCHES MASTER ROLL
       const officerNameLower = officer.name.toLowerCase();
       const inputNameLower = nameInput.toLowerCase();
 
@@ -925,10 +927,11 @@
       const isNameMatch = nameTokens.some(token => officerNameLower.includes(token)) || officerNameLower.includes(inputNameLower);
 
       if (!isNameMatch) {
-        alert(`❌ REGISTRATION FAILED: Name verification mismatch!\n\nThe provided name "${nameInput}" does not match official police records for Service Number "${officer.serviceNo}".\n\nPlease ensure you enter your registered name as recorded in the master roll.`);
+        alert(`🚫 REGISTRATION REJECTED: NAME MISMATCH WITH MASTER ROLL!\n\nThe entered name "${nameInput}" does not match the official Master Roll record for Service Number "${officer.serviceNo}" (${officer.rank} ${officer.name}).\n\nPOLICY ENFORCEMENT:\nBoth your Force/AP Number and Name must match your official Master Roll record exactly.\n\nNO ACCESS IS GRANTED.`);
         return;
       }
 
+      // STEP 3: REGISTER ACCOUNT SECURELY
       const accounts = getRegisteredAccounts();
       const normKey = normalizeServiceNo(officer.serviceNo);
       accounts[normKey] = {
@@ -943,7 +946,17 @@
       officer.isRegistered = true;
       officer.registeredPassword = passInput;
 
-      alert(`🎉 REGISTRATION SUCCESSFUL!\n\nWelcome ${officer.rank} ${officer.name} (${officer.serviceNo}).\nYour portal account is now active. Please log in using your Force/AP Number and Password.`);
+      auditLogs.unshift({
+        timestamp: new Date().toLocaleString(),
+        admin: `${officer.name} (${officer.serviceNo})`,
+        action: 'PORTAL_REGISTRATION',
+        officer: `${officer.name} (${officer.serviceNo})`,
+        prevValue: 'Unregistered',
+        newValue: 'Registered Master Roll Account',
+        reason: 'Officer Master Roll Self-Service Registration'
+      });
+
+      alert(`🎉 MASTER ROLL VERIFICATION PASSED & REGISTRATION SUCCESSFUL!\n\nPersonnel ${officer.rank} ${officer.name} (${officer.serviceNo}) verified in Master Roll.\n\nYour portal account is now active. Log in with your Force/AP Number and Password.`);
 
       portalAuthTab = 'LOGIN';
       renderModule();
@@ -1617,9 +1630,14 @@
             </form>
           ` : `
             <form onsubmit="handlePortalRegistration(event)" class="space-y-4 text-xs font-mono relative z-10">
-              <div class="bg-amber-500/10 border border-amber-500/30 p-3 rounded-xl text-center">
-                <p class="text-[11px] text-amber-300 font-bold">⚠️ FIRST-TIME PORTAL REGISTRATION</p>
-                <p class="text-[10px] text-slate-300">Enter your official Force Number or AP Number and registered Name to create your portal login credentials.</p>
+              <div class="bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-500/20 border-2 border-amber-500/60 p-3.5 rounded-2xl text-left space-y-1">
+                <span class="text-[11px] font-black text-amber-400 font-mono uppercase tracking-wider flex items-center gap-1.5">
+                  <i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i>
+                  <span>🛡️ MANDATORY MASTER ROLL VERIFICATION REQUIREMENT</span>
+                </span>
+                <p class="text-[11px] text-amber-200 leading-snug">
+                  Your record <strong>MUST FIRST EXIST IN THE MASTER ROLL DATABASE</strong>. The system will cross-check your Force / AP Number and Registered Name against official Master Roll records. <strong>If your record is not in the Master Roll, access is strictly DENIED.</strong>
+                </p>
               </div>
 
               <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-3.5">
