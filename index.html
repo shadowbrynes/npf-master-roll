@@ -420,7 +420,35 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 text-xs pt-1">
+      <!-- EOD BASE 1 - BASE 38 DASHBOARD SELECTOR BAR -->
+      <div class="bg-slate-950 p-3 rounded-xl border border-amber-500/40 space-y-2">
+        <div class="flex items-center justify-between">
+          <label class="text-[10px] text-amber-400 font-mono font-black uppercase flex items-center gap-1.5">
+            <i data-lucide="building-2" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>EOD BASE DIRECTORY QUICK FILTER (BASE 1 TO BASE 38):</span>
+          </label>
+          <span class="text-[10px] text-slate-400 font-mono">Click any Base to filter Nominal Roll</span>
+        </div>
+        <div class="max-h-24 overflow-y-auto pr-1 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-10 lg:grid-cols-13 gap-1 font-mono text-[10px]">
+          <button onclick="filterByEodBase('ALL')" class="p-1 rounded bg-emerald-600 text-black font-black text-center col-span-2">
+            ALL BASES (1-38)
+          </button>
+          ${EOD_BASES.map(b => `
+            <button onclick="filterByEodBase('${b.number}')" class="p-1 rounded border border-slate-800 bg-slate-900 text-amber-400 hover:bg-amber-500 hover:text-black font-bold text-center transition cursor-pointer truncate">
+              BASE ${b.number}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-7 gap-2 text-xs pt-1">
+        <div>
+          <label class="text-[9px] text-amber-400 block mb-1 font-bold">EOD BASE (1-38):</label>
+          <select id="filter-base" onchange="handleSearchFilterChange()" class="w-full bg-slate-950 border border-slate-800 text-amber-300 rounded px-2.5 py-1.5 font-mono font-bold">
+            <option value="ALL">ALL 38 EOD BASES</option>
+            ${EOD_BASES.map(b => `<option value="Base ${b.number}">${b.name}</option>`).join('')}
+          </select>
+        </div>
         <div>
           <label class="text-[9px] text-slate-400 block mb-1 font-bold">RANK:</label>
           <select id="filter-rank" onchange="handleSearchFilterChange()" class="w-full bg-slate-950 border border-slate-800 text-white rounded px-2.5 py-1.5 font-mono">
@@ -1132,6 +1160,7 @@
     let dbPersonnel = [
       {
         id: 'POL-001',
+        base: 'Base 1',
         serviceNo: 'AP/45120',
         name: 'CP Babatunde Olarinde',
         rank: 'CP',
@@ -1161,6 +1190,7 @@
       },
       {
         id: 'POL-002',
+        base: 'Base 1',
         serviceNo: 'AP/52918',
         name: 'DCP Amina Bello',
         rank: 'DCP',
@@ -1187,6 +1217,7 @@
       },
       {
         id: 'POL-003',
+        base: 'Base 13',
         serviceNo: 'AP/61029',
         name: 'ACP Kemi Adebayo',
         rank: 'ACP',
@@ -1213,6 +1244,7 @@
       },
       {
         id: 'POL-006',
+        base: 'Base 38',
         serviceNo: 'AP/78412',
         name: 'CSP Desmond Agbala',
         rank: 'CSP',
@@ -1242,6 +1274,7 @@
       },
       {
         id: 'POL-007',
+        base: 'Base 6',
         serviceNo: 'AP/79104',
         name: 'CSP Chukwudi Nnamdi',
         rank: 'CSP',
@@ -1268,6 +1301,7 @@
       },
       {
         id: 'POL-008',
+        base: 'Base 4',
         serviceNo: 'AP/90214',
         name: 'SP Michael Oladipo',
         rank: 'SP',
@@ -2037,6 +2071,7 @@
       const zoneFilter = document.getElementById('filter-zone').value;
       const stateFilter = document.getElementById('filter-state').value;
       const statusFilter = document.getElementById('filter-status').value;
+      const baseFilter = document.getElementById('filter-base') ? document.getElementById('filter-base').value : 'ALL';
       const sortBy = document.getElementById('sort-by').value;
 
       let filtered = dbPersonnel.filter(off => {
@@ -2053,16 +2088,20 @@
         const matchZone = zoneFilter === 'ALL' || off.zone === zoneFilter;
         const matchState = stateFilter === 'ALL' || off.state === stateFilter;
         const matchStatus = statusFilter === 'ALL' || off.status === statusFilter;
+        const matchBase = (baseFilter === 'ALL' && selectedBaseFilter === 'ALL') || 
+                          (baseFilter !== 'ALL' && off.base === baseFilter) || 
+                          (selectedBaseFilter !== 'ALL' && off.base === `Base ${selectedBaseFilter}`);
 
         const matchSearch =
           off.name.toLowerCase().includes(search) ||
           off.serviceNo.toLowerCase().includes(search) ||
           off.command.toLowerCase().includes(search) ||
+          (off.base && off.base.toLowerCase().includes(search)) ||
           off.unit.toLowerCase().includes(search) ||
           off.zone.toLowerCase().includes(search) ||
           off.location.toLowerCase().includes(search);
 
-        return matchCategoryView && matchRank && matchZone && matchState && matchStatus && matchSearch;
+        return matchCategoryView && matchRank && matchZone && matchState && matchStatus && matchBase && matchSearch;
       });
 
       filtered.sort((a, b) => {
@@ -2153,6 +2192,7 @@
                 <th class="p-3.5">Photo & Officer Name</th>
                 <th class="p-3.5">Service No</th>
                 <th class="p-3.5">Rank & Category</th>
+                <th class="p-3.5 text-amber-400 font-bold">Assigned EOD Base (1-38)</th>
                 <th class="p-3.5">Command & Formation</th>
                 <th class="p-3.5">State & Zone</th>
                 <th class="p-3.5">Career & Service Dates</th>
@@ -2190,6 +2230,12 @@
                       'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
                     }">
                       ${off.rank} (${deriveCategory(off.rank)})
+                    </span>
+                  </td>
+                  <td class="p-3.5">
+                    <span class="px-2.5 py-1 rounded-lg text-[11px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 inline-flex items-center gap-1 shadow">
+                      <i data-lucide="building-2" class="w-3.5 h-3.5 text-amber-400"></i>
+                      <span>${off.base || 'Base 1'}</span>
                     </span>
                   </td>
                   <td class="p-3.5 text-slate-300">${off.command}</td>
@@ -2546,6 +2592,7 @@
       document.getElementById('prof-rank-badge').innerText = `${off.rank} (${cat})`;
 
       document.getElementById('prof-cadre').innerText = `${cat} Tier`;
+      if (document.getElementById('prof-base')) document.getElementById('prof-base').innerText = off.base || 'Base 1';
       document.getElementById('prof-command').innerText = off.command;
       document.getElementById('prof-state').innerText = off.state;
       document.getElementById('prof-zone').innerText = off.zone;
