@@ -425,13 +425,13 @@
         <div class="flex items-center justify-between">
           <label class="text-[10px] text-amber-400 font-mono font-black uppercase flex items-center gap-1.5">
             <i data-lucide="building-2" class="w-3.5 h-3.5 text-amber-400"></i>
-            <span>EOD BASE DIRECTORY QUICK FILTER (BASE 1 TO BASE 38):</span>
+            <span>EOD STATE COMMAND BASES DIRECTORY (BASE 1 TO BASE 36):</span>
           </label>
           <span class="text-[10px] text-slate-400 font-mono">Click any Base to filter Nominal Roll</span>
         </div>
         <div class="max-h-24 overflow-y-auto pr-1 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-10 lg:grid-cols-13 gap-1 font-mono text-[10px]">
           <button onclick="filterByEodBase('ALL')" class="p-1 rounded bg-emerald-600 text-black font-black text-center col-span-2">
-            ALL BASES (1-38)
+            ALL BASES (1-36)
           </button>
           <button onclick="filterByEodBase('1')" class="p-1 rounded border border-slate-800 bg-slate-900 text-amber-400 hover:bg-amber-500 hover:text-black font-bold text-center transition cursor-pointer truncate">BASE 1</button>
           <button onclick="filterByEodBase('2')" class="p-1 rounded border border-slate-800 bg-slate-900 text-amber-400 hover:bg-amber-500 hover:text-black font-bold text-center transition cursor-pointer truncate">BASE 2</button>
@@ -478,7 +478,7 @@
         <div>
           <label class="text-[9px] text-amber-400 block mb-1 font-bold">EOD BASE (1-38):</label>
           <select id="filter-base" onchange="handleSearchFilterChange()" class="w-full bg-slate-950 border border-slate-800 text-amber-300 rounded px-2.5 py-1.5 font-mono font-bold">
-            <option value="ALL">ALL 38 EOD BASES</option>
+            <option value="ALL">ALL 36 EOD BASES</option>
             <option value="Base 1">Base 1 - Force HQ EOD Command, Abuja (FCT)</option>
                 <option value="Base 2">Base 2 - Lagos State Command EOD Base, Ikeja</option>
                 <option value="Base 3">Base 3 - Kano State Command EOD Base</option>
@@ -515,8 +515,7 @@
                 <option value="Base 34">Base 34 - Taraba State Command EOD Base, Jalingo</option>
                 <option value="Base 35">Base 35 - Yobe State Command EOD Base, Damaturu</option>
                 <option value="Base 36">Base 36 - Zamfara State Command EOD Base, Gusau</option>
-                <option value="Base 37">Base 37 - Apapa & Tin Can Sea Ports EOD Base, Lagos</option>
-                <option value="Base 38">Base 38 - Murtala Muhammed International Airport (MMIA) EOD Base, Lagos</option>
+                
           </select>
         </div>
         <div>
@@ -836,21 +835,37 @@
                 <option value="Base 34">Base 34 - Taraba State Command EOD Base, Jalingo</option>
                 <option value="Base 35">Base 35 - Yobe State Command EOD Base, Damaturu</option>
                 <option value="Base 36">Base 36 - Zamfara State Command EOD Base, Gusau</option>
-                <option value="Base 37">Base 37 - Apapa & Tin Can Sea Ports EOD Base, Lagos</option>
-                <option value="Base 38">Base 38 - Murtala Muhammed International Airport (MMIA) EOD Base, Lagos</option>
+                
               </select>
             </div>
             <div>
               <label class="text-emerald-400 block font-bold mb-1 text-[10px]">ASSIGNED TACTICAL UNIT:</label>
               <select id="add-unit" required class="w-full bg-slate-900 border border-slate-800 text-emerald-300 rounded px-2.5 py-1.5 font-mono text-xs font-bold focus:border-emerald-500 focus:outline-none">
-                <option value="Counter-IED Operations Unit">Counter-IED Operations Unit</option>
-                <option value="CBRN Response & Decontamination Unit">CBRN Response & Decontamination Unit</option>
-                <option value="Bomb Detection & Canine Unit">Bomb Detection & Canine Unit</option>
-                <option value="Magazine Armory & Demolition Unit">Magazine Armory & Demolition Unit</option>
-                <option value="Airport Security EOD Unit">Airport Security EOD Unit</option>
-                <option value="Seaport Security EOD Unit">Seaport Security EOD Unit</option>
-                <option value="Post-Blast Reconnaissance Unit">Post-Blast Reconnaissance Unit</option>
-              </select>
+                <optgroup label="⚓ SEAPORT MARITIME EOD UNITS (SPECIALIZED UNITS)">
+                          <option value="Apapa Sea Port EOD Unit (Lagos)">Apapa Sea Port EOD Unit (Lagos)</option>
+                          <option value="Tin Can Island Port EOD Unit (Lagos)">Tin Can Island Port EOD Unit (Lagos)</option>
+                          <option value="Onne Sea Port EOD Unit (Rivers)">Onne Sea Port EOD Unit (Rivers)</option>
+                          <option value="Calabar Deep Sea Port EOD Unit (Cross River)">Calabar Deep Sea Port EOD Unit (Cross River)</option>
+                          <option value="Delta Warri Sea Port EOD Unit (Delta)">Delta Warri Sea Port EOD Unit (Delta)</option>
+                        </optgroup>
+
+                        <optgroup label="✈️ AIRPORT AVIATION EOD UNITS (SPECIALIZED UNITS)">
+                          <option value="Murtala Muhammed International Airport (MMIA) EOD Unit (Lagos)">Murtala Muhammed International Airport (MMIA) EOD Unit (Lagos)</option>
+                          <option value="Nnamdi Azikiwe International Airport EOD Unit (Abuja)">Nnamdi Azikiwe International Airport EOD Unit (Abuja)</option>
+                          <option value="Mallam Aminu Kano International Airport EOD Unit (Kano)">Mallam Aminu Kano International Airport EOD Unit (Kano)</option>
+                          <option value="Port Harcourt International Airport EOD Unit (Rivers)">Port Harcourt International Airport EOD Unit (Rivers)</option>
+                          <option value="Akanu Ibiam International Airport EOD Unit (Enugu)">Akanu Ibiam International Airport EOD Unit (Enugu)</option>
+                        </optgroup>
+
+                        <optgroup label="🛡️ TACTICAL & FRONTLINE OPERATIONAL UNITS">
+                          <option value="Counter-IED Operations Unit">Counter-IED Operations Unit</option>
+                          <option value="CBRN Response & Decontamination Unit">CBRN Response & Decontamination Unit</option>
+                          <option value="Bomb Detection & K9 Canine Unit">Bomb Detection & K9 Canine Unit</option>
+                          <option value="Magazine Armory & Demolition Unit">Magazine Armory & Demolition Unit</option>
+                          <option value="Post-Blast Investigation & Forensics Unit">Post-Blast Investigation & Forensics Unit</option>
+                          <option value="Maiduguri Counter-IED Frontline Command Unit">Maiduguri Counter-IED Frontline Command Unit</option>
+                        </optgroup>
+                      </select>
             </div>
           </div>
 
@@ -1407,7 +1422,7 @@
       },
       {
         id: 'POL-006',
-        base: 'Base 38',
+        base: 'Base 2', unit: 'Murtala Muhammed International Airport (MMIA) EOD Unit (Lagos)',
         serviceNo: 'AP/78412',
         name: 'CSP Desmond Agbala',
         rank: 'CSP',
@@ -2012,21 +2027,37 @@
                 <option value="Base 34">Base 34 - Taraba State Command EOD Base, Jalingo</option>
                 <option value="Base 35">Base 35 - Yobe State Command EOD Base, Damaturu</option>
                 <option value="Base 36">Base 36 - Zamfara State Command EOD Base, Gusau</option>
-                <option value="Base 37">Base 37 - Apapa & Tin Can Sea Ports EOD Base, Lagos</option>
-                <option value="Base 38">Base 38 - Murtala Muhammed International Airport (MMIA) EOD Base, Lagos</option>
+                
                       </select>
                     </div>
 
                     <div>
                       <label class="text-slate-300 block font-bold mb-1 text-[11px]">UNIT / FORMATION:</label>
                       <select id="reg-unit" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-emerald-300 font-mono focus:border-amber-500 focus:outline-none text-xs font-bold">
-                        <option value="Counter-IED Operations Unit">Counter-IED Operations Unit</option>
-                        <option value="CBRN Response & Decontamination Unit">CBRN Response & Decontamination Unit</option>
-                        <option value="Bomb Detection & Canine Unit">Bomb Detection & Canine Unit</option>
-                        <option value="Magazine Armory & Demolition Unit">Magazine Armory & Demolition Unit</option>
-                        <option value="Airport Security EOD Unit">Airport Security EOD Unit</option>
-                        <option value="Seaport Security EOD Unit">Seaport Security EOD Unit</option>
-                        <option value="Post-Blast Reconnaissance Unit">Post-Blast Reconnaissance Unit</option>
+                        <optgroup label="⚓ SEAPORT MARITIME EOD UNITS (SPECIALIZED UNITS)">
+                          <option value="Apapa Sea Port EOD Unit (Lagos)">Apapa Sea Port EOD Unit (Lagos)</option>
+                          <option value="Tin Can Island Port EOD Unit (Lagos)">Tin Can Island Port EOD Unit (Lagos)</option>
+                          <option value="Onne Sea Port EOD Unit (Rivers)">Onne Sea Port EOD Unit (Rivers)</option>
+                          <option value="Calabar Deep Sea Port EOD Unit (Cross River)">Calabar Deep Sea Port EOD Unit (Cross River)</option>
+                          <option value="Delta Warri Sea Port EOD Unit (Delta)">Delta Warri Sea Port EOD Unit (Delta)</option>
+                        </optgroup>
+
+                        <optgroup label="✈️ AIRPORT AVIATION EOD UNITS (SPECIALIZED UNITS)">
+                          <option value="Murtala Muhammed International Airport (MMIA) EOD Unit (Lagos)">Murtala Muhammed International Airport (MMIA) EOD Unit (Lagos)</option>
+                          <option value="Nnamdi Azikiwe International Airport EOD Unit (Abuja)">Nnamdi Azikiwe International Airport EOD Unit (Abuja)</option>
+                          <option value="Mallam Aminu Kano International Airport EOD Unit (Kano)">Mallam Aminu Kano International Airport EOD Unit (Kano)</option>
+                          <option value="Port Harcourt International Airport EOD Unit (Rivers)">Port Harcourt International Airport EOD Unit (Rivers)</option>
+                          <option value="Akanu Ibiam International Airport EOD Unit (Enugu)">Akanu Ibiam International Airport EOD Unit (Enugu)</option>
+                        </optgroup>
+
+                        <optgroup label="🛡️ TACTICAL & FRONTLINE OPERATIONAL UNITS">
+                          <option value="Counter-IED Operations Unit">Counter-IED Operations Unit</option>
+                          <option value="CBRN Response & Decontamination Unit">CBRN Response & Decontamination Unit</option>
+                          <option value="Bomb Detection & K9 Canine Unit">Bomb Detection & K9 Canine Unit</option>
+                          <option value="Magazine Armory & Demolition Unit">Magazine Armory & Demolition Unit</option>
+                          <option value="Post-Blast Investigation & Forensics Unit">Post-Blast Investigation & Forensics Unit</option>
+                          <option value="Maiduguri Counter-IED Frontline Command Unit">Maiduguri Counter-IED Frontline Command Unit</option>
+                        </optgroup>
                       </select>
                     </div>
                   </div>
