@@ -578,6 +578,7 @@
           <label class="text-[9px] text-slate-400 block mb-1 font-bold">STATUS:</label>
           <select id="filter-status" onchange="handleSearchFilterChange()" class="w-full bg-slate-950 border border-slate-800 text-white rounded px-2.5 py-1.5">
             <option value="ALL">ALL STATUSES</option>
+            <option value="RETIREMENT_DUE">⚠️ RETIREMENT DUE (≤ 2 MONTHS)</option>
             <option value="ACTIVE_READY">ACTIVE & READY</option>
             <option value="FIELD_DEPLOYED">FIELD DEPLOYED</option>
             <option value="ON_ESCORT">ON ESCORT</option>
@@ -1133,6 +1134,26 @@
       return dbPersonnel.find(p => normalizeServiceNo(p.serviceNo) === normInput) || null;
     }
 
+    
+    // =========================================================================
+    // STATUTORY RETIREMENT CALCULATOR & ALERT ENGINE (35 YEARS / 60 DAYS ALERTS)
+    // =========================================================================
+    function getDaysUntilRetirement(officer) {
+      const retStr = getRetirementDate(officer);
+      if (!retStr) return 99999;
+      const parts = retStr.split('-');
+      if (parts.length !== 3) return 99999;
+      const retDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      const today = new Date();
+      const diffTime = retDate - today;
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    function isRetirementDueWithin60Days(officer) {
+      const days = getDaysUntilRetirement(officer);
+      return days <= 60 && days >= -365;
+    }
+
     function getRetirementDate(officer) {
       if (officer.retirementDate) return officer.retirementDate;
       if (officer.appointmentDate) {
@@ -1361,7 +1382,7 @@
         location: 'Louis Edet House, Abuja',
         specialisation: 'National Strategic EOD Command & Arms Control',
         status: 'ACTIVE_READY',
-        appointmentDate: '1998-03-15',
+        appointmentDate: '1991-09-15', retirementDate: '2026-09-15',
         lastPromotionDate: '2024-01-10',
         phone: '+234 803 000 1122',
         email: 'babatunde.olarinde@npf.gov.ng',
@@ -1391,7 +1412,7 @@
         location: 'Guzape Complex, Abuja',
         specialisation: 'Bio-Chemical Mitigation & Radiological Safety',
         status: 'ACTIVE_READY',
-        appointmentDate: '2002-09-01',
+        appointmentDate: '1991-09-01', retirementDate: '2026-09-01',
         lastPromotionDate: '2023-11-15',
         phone: '+234 802 111 2233',
         email: 'amina.bello@npf.gov.ng',
@@ -1732,6 +1753,8 @@
       setVal('dash-inspr', inspr);
       setVal('dash-sgt', sgt);
       setVal('dash-cpl', cpl);
+      const retiringCount = dbPersonnel.filter(isRetirementDueWithin60Days).length;
+      setVal('dash-retiring-count', retiringCount);
       setVal('dash-pc', pc);
       setVal('dash-commands', uniqueCommands);
       setVal('dash-zones', uniqueZones);
@@ -2515,7 +2538,8 @@
         const matchRank = rankFilter === 'ALL' || off.rank === rankFilter;
         const matchZone = zoneFilter === 'ALL' || off.zone === zoneFilter;
         const matchState = stateFilter === 'ALL' || off.state === stateFilter;
-        const matchStatus = statusFilter === 'ALL' || off.status === statusFilter;
+        const matchStatus = statusFilter === 'ALL' || 
+                           (statusFilter === 'RETIREMENT_DUE' ? isRetirementDueWithin60Days(off) : off.status === statusFilter);
         const matchBase = (baseFilter === 'ALL' && selectedBaseFilter === 'ALL') || 
                           (baseFilter !== 'ALL' && off.base === baseFilter) || 
                           (selectedBaseFilter !== 'ALL' && off.base === `Base ${selectedBaseFilter}`);
@@ -2674,7 +2698,13 @@
                   <td class="p-3.5 text-[10px] font-mono leading-tight">
                     <div class="text-emerald-400 font-bold">Enlisted: ${off.appointmentDate || 'N/A'}</div>
                     <div class="text-sky-400">Promoted: ${off.lastPromotionDate || 'N/A'}</div>
-                    <div class="text-amber-400 font-bold">Retiring: ${getRetirementDate(off)}</div>
+                    <div class="${isRetirementDueWithin60Days(off) ? 'text-rose-400 font-black' : 'text-amber-400 font-bold'}">Retiring: ${getRetirementDate(off)}</div>
+                    ${isRetirementDueWithin60Days(off) ? `
+                      <span class="px-2 py-0.5 rounded text-[9px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/50 inline-flex items-center gap-1 mt-1 animate-pulse">
+                        <i data-lucide="alert-triangle" class="w-3 h-3 text-rose-400"></i>
+                        <span>${getDaysUntilRetirement(off) <= 0 ? 'DUE NOW' : `DUE IN ${getDaysUntilRetirement(off)} DAYS`}</span>
+                      </span>
+                    ` : ''}
                   </td>
                   <td class="p-3.5 text-slate-300">${off.location}</td>
                   <td class="p-3.5">
