@@ -821,6 +821,71 @@
 
     let currentRole = 'GLOBAL_ADMIN';
 
+    // OFFICIAL 38 EOD BASES OF NIGERIA POLICE FORCE EOD-CBRN COMMAND
+    const EOD_BASES = Array.from({ length: 38 }, (_, i) => {
+      const baseNo = i + 1;
+      const baseNames = [
+        "Base 1 - Force HQ EOD Command, Abuja (FCT)",
+        "Base 2 - Lagos State Command EOD Base, Ikeja",
+        "Base 3 - Kano State Command EOD Base",
+        "Base 4 - Rivers State Command EOD Base, Port Harcourt",
+        "Base 5 - Oyo State Command EOD Base, Ibadan",
+        "Base 6 - Kaduna State Command EOD Base",
+        "Base 7 - Edo State Command EOD Base, Benin",
+        "Base 8 - Enugu State Command EOD Base",
+        "Base 9 - Borno State Counter-IED Base, Maiduguri",
+        "Base 10 - Delta State Command EOD Base, Asaba",
+        "Base 11 - Anambra State Command EOD Base, Awka",
+        "Base 12 - Abia State Command EOD Base, Umuahia",
+        "Base 13 - Akwa Ibom State Command EOD Base, Uyo",
+        "Base 14 - Bauchi State Command EOD Base",
+        "Base 15 - Bayelsa State Command EOD Base, Yenagoa",
+        "Base 16 - Benue State Command EOD Base, Makurdi",
+        "Base 17 - Cross River State Command EOD Base, Calabar",
+        "Base 18 - Ebonyi State Command EOD Base, Abakaliki",
+        "Base 19 - Ekiti State Command EOD Base, Ado-Ekiti",
+        "Base 20 - Gombe State Command EOD Base",
+        "Base 21 - Imo State Command EOD Base, Owerri",
+        "Base 22 - Jigawa State Command EOD Base, Dutse",
+        "Base 23 - Katsina State Command EOD Base",
+        "Base 24 - Kebbi State Command EOD Base, Birnin Kebbi",
+        "Base 25 - Kogi State Command EOD Base, Lokoja",
+        "Base 26 - Kwara State Command EOD Base, Ilorin",
+        "Base 27 - Nasarawa State Command EOD Base, Lafia",
+        "Base 28 - Niger State Command EOD Base, Minna",
+        "Base 29 - Ogun State Command EOD Base, Abeokuta",
+        "Base 30 - Ondo State Command EOD Base, Akure",
+        "Base 31 - Osun State Command EOD Base, Osogbo",
+        "Base 32 - Plateau State Command EOD Base, Jos",
+        "Base 33 - Sokoto State Command EOD Base",
+        "Base 34 - Taraba State Command EOD Base, Jalingo",
+        "Base 35 - Yobe State Command EOD Base, Damaturu",
+        "Base 36 - Zamfara State Command EOD Base, Gusau",
+        "Base 37 - Apapa & Tin Can Sea Ports EOD Base, Lagos",
+        "Base 38 - Murtala Muhammed International Airport (MMIA) EOD Base, Lagos"
+      ];
+      return {
+        id: `BASE-${baseNo}`,
+        number: baseNo,
+        name: baseNames[i] || `Base ${baseNo} - EOD Tactical Base`
+      };
+    });
+
+    let selectedBaseFilter = 'ALL';
+
+    function selectBaseForRegistration(baseNumber) {
+      const selectEl = document.getElementById('reg-base');
+      if (selectEl) {
+        selectEl.value = `Base ${baseNumber}`;
+        alert(`✅ EOD Base ${baseNumber} selected for registration.`);
+      }
+    }
+
+    function filterByEodBase(baseNo) {
+      selectedBaseFilter = baseNo;
+      renderModule();
+    }
+
     function isGlobalAdminOrBackendEngineer() {
       return ['GLOBAL_ADMIN', 'BACKEND_ENGINEER', 'SUPER_ADMIN'].includes(currentRole);
     }
@@ -1697,6 +1762,52 @@
                     <span>OFFICER FULL NAME (AS REGISTERED IN DATABASE):</span>
                   </label>
                   <input type="text" id="reg-name" required placeholder="e.g. Babatunde Olarinde or Desmond Agbala" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-mono focus:border-amber-500 focus:outline-none">
+                </div>
+
+                <!-- EOD BASE & UNIT SELECTION (BASE 1 - BASE 38) -->
+                <div class="bg-slate-900/90 p-4 rounded-2xl border border-amber-500/40 space-y-3">
+                  <div class="flex items-center justify-between">
+                    <label class="text-amber-400 font-black flex items-center gap-1.5 text-xs font-mono uppercase">
+                      <i data-lucide="building-2" class="w-4 h-4 text-amber-400"></i>
+                      <span>SELECT YOUR ASSIGNED EOD BASE (BASE 1 - BASE 38) & UNIT:</span>
+                    </label>
+                    <span class="text-[10px] text-slate-400 font-mono">Select from list or click button</span>
+                  </div>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="text-slate-300 block font-bold mb-1 text-[11px]">EOD BASE ASSIGNMENT:</label>
+                      <select id="reg-base" required class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-amber-300 font-mono focus:border-amber-500 focus:outline-none text-xs font-bold">
+                        <option value="">-- SELECT EOD BASE (BASE 1 - 38) --</option>
+                        ${EOD_BASES.map(b => `<option value="Base ${b.number}">${b.name}</option>`).join('')}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label class="text-slate-300 block font-bold mb-1 text-[11px]">UNIT / FORMATION:</label>
+                      <select id="reg-unit" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-emerald-300 font-mono focus:border-amber-500 focus:outline-none text-xs font-bold">
+                        <option value="Counter-IED Operations Unit">Counter-IED Operations Unit</option>
+                        <option value="CBRN Response & Decontamination Unit">CBRN Response & Decontamination Unit</option>
+                        <option value="Bomb Detection & Canine Unit">Bomb Detection & Canine Unit</option>
+                        <option value="Magazine Armory & Demolition Unit">Magazine Armory & Demolition Unit</option>
+                        <option value="Airport Security EOD Unit">Airport Security EOD Unit</option>
+                        <option value="Seaport Security EOD Unit">Seaport Security EOD Unit</option>
+                        <option value="Post-Blast Reconnaissance Unit">Post-Blast Reconnaissance Unit</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- QUICK BUTTON GRID FOR BASE 1 TO BASE 38 -->
+                  <div>
+                    <span class="text-[10px] text-slate-400 font-mono font-bold block mb-1.5 uppercase">QUICK BASE SELECTOR BUTTONS (BASE 1 - BASE 38):</span>
+                    <div class="max-h-32 overflow-y-auto pr-1 grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-1.5 font-mono text-[10px]">
+                      ${EOD_BASES.map(b => `
+                        <button type="button" onclick="selectBaseForRegistration('${b.number}')" class="bg-slate-950 hover:bg-amber-500 hover:text-black border border-slate-800 text-amber-400 font-bold p-1.5 rounded-lg transition text-center truncate cursor-pointer">
+                          BASE ${b.number}
+                        </button>
+                      `).join('')}
+                    </div>
+                  </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
