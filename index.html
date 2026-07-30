@@ -1182,6 +1182,98 @@
       return days <= 60 && days >= -365;
     }
 
+    // =========================================================================
+    // STATUTORY RETIREMENT CALCULATOR INTERACTIVE MODAL & ROSTER ENGINE
+    // =========================================================================
+    function openRetirementCalculatorModal() {
+      runRetirementCalc();
+      renderModalRetirementRoster();
+      const modal = document.getElementById('retirement-calculator-modal');
+      if (modal) modal.classList.remove('hidden');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+    window.openRetirementCalculatorModal = openRetirementCalculatorModal;
+
+    function closeRetirementCalculatorModal() {
+      const modal = document.getElementById('retirement-calculator-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+    window.closeRetirementCalculatorModal = closeRetirementCalculatorModal;
+
+    function runRetirementCalc() {
+      const enlistEl = document.getElementById('calc-enlist-date');
+      const enlistVal = enlistEl ? enlistEl.value : '1991-09-15';
+      if (!enlistVal) return;
+
+      const enlistParts = enlistVal.split('-');
+      if (enlistParts.length !== 3) return;
+      
+      const retYear = parseInt(enlistParts[0], 10) + 35;
+      const retDateStr = `${retYear}-${enlistParts[1]}-${enlistParts[2]}`;
+
+      const retDateObj = new Date(retYear, parseInt(enlistParts[1], 10) - 1, parseInt(enlistParts[2], 10));
+      const today = new Date();
+      const diffTime = retDateObj - today;
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      const resDateEl = document.getElementById('calc-res-date');
+      if (resDateEl) resDateEl.innerText = retDateStr;
+      
+      const resDaysEl = document.getElementById('calc-res-days');
+      if (resDaysEl) {
+        if (diffDays <= 0) {
+          resDaysEl.innerText = `🚨 STATUTORY RETIREMENT DUE NOW (${Math.abs(diffDays)} Days Overdue)`;
+        } else {
+          const months = (diffDays / 30.4).toFixed(1);
+          resDaysEl.innerText = `⚠️ ${diffDays} Days Remaining (~${months} Months to Retirement)`;
+        }
+      }
+
+      const resBasisEl = document.getElementById('calc-res-basis');
+      if (resBasisEl) resBasisEl.innerText = "35-Year Statutory Service Milestone";
+    }
+    window.runRetirementCalc = runRetirementCalc;
+
+    function renderModalRetirementRoster() {
+      const container = document.getElementById('modal-retiring-roster');
+      if (!container) return;
+
+      const retiring = dbPersonnel.filter(isRetirementDueWithin60Days);
+
+      if (retiring.length === 0) {
+        container.innerHTML = `<div class="p-4 bg-slate-950 rounded-xl text-center text-slate-500 font-mono text-xs">No personnel currently due for retirement within 60 days.</div>`;
+        return;
+      }
+
+      container.innerHTML = retiring.map(p => {
+        const days = getDaysUntilRetirement(p);
+        const retDate = getRetirementDate(p);
+        return `
+          <div class="bg-slate-950 p-3 rounded-xl border border-rose-500/40 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 truncate">
+              <img src="${p.photo}" alt="${p.name}" class="w-8 h-8 rounded-full object-cover border border-rose-400 shrink-0">
+              <div class="truncate font-mono">
+                <span class="font-bold text-white text-xs block truncate">${p.name}</span>
+                <span class="text-[10px] text-sky-400 block font-bold">${p.rank} &bull; ${p.serviceNo} &bull; ${p.base || 'Base 1'}</span>
+                <span class="text-[10px] text-rose-300 block font-black">Retiring: ${retDate} (${days <= 0 ? 'DUE NOW' : `${days} Days Left`})</span>
+              </div>
+            </div>
+            <button onclick="closeRetirementCalculatorModal(); openProfileModal('${p.id}')" class="bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 font-bold px-2 py-1 rounded text-[10px] shrink-0">
+              DOSSIER
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterRetiringPersonnel() {
+      closeRetirementCalculatorModal();
+      const statusEl = document.getElementById('filter-status');
+      if (statusEl) statusEl.value = 'RETIREMENT_DUE';
+      handleSearchFilterChange();
+    }
+    window.filterRetiringPersonnel = filterRetiringPersonnel;
+
     function getRetirementDate(officer) {
       if (officer.retirementDate) return officer.retirementDate;
       if (officer.appointmentDate) {
