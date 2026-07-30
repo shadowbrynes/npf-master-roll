@@ -954,14 +954,14 @@
       }, 100);
     }
 
-    function handlePortalLogin(e) {
+        function handlePortalLogin(e) {
       e.preventDefault();
       const serviceNoInput = document.getElementById('login-serviceno').value.trim();
       const passInput = document.getElementById('login-password').value;
 
       const officer = findOfficerByServiceNo(serviceNoInput);
       if (!officer) {
-        alert(`❌ LOGIN FAILED: Force/AP Service Number "${serviceNoInput}" was not found in the police database.`);
+        alert(`❌ ACCESS DENIED: Force/AP Service Number "${serviceNoInput}" was not found in the police database.\n\nPlease check your Service Number or contact the Administrator.`);
         return;
       }
 
@@ -970,7 +970,7 @@
       const acc = accounts[normKey] || (officer.registeredPassword ? { password: officer.registeredPassword } : null);
 
       if (!acc) {
-        alert(`⚠️ ACCOUNT NOT REGISTERED YET!\n\nPersonnel ${officer.rank} ${officer.name} (${officer.serviceNo}) has not registered a portal account yet.\n\nPlease click the "REGISTER ACCOUNT" tab to register using your FORCE NUMBER OR AP NUMBER AND NAME.`);
+        alert(`🔒 REGISTRATION REQUIRED BEFORE PORTAL ACCESS!\n\nOfficer ${officer.rank} ${officer.name} (${officer.serviceNo}) has NOT registered a portal password yet.\n\nPOLICY REQUIREMENT:\nYou must first click "2. REGISTER ACCOUNT" to register with your FULL NAME, FORCE/AP NUMBER, and CREATE A PASSWORD before having access to your portal.`);
         portalAuthTab = 'REGISTER';
         renderModule();
         setTimeout(() => {
@@ -983,14 +983,23 @@
       }
 
       if (acc.password !== passInput) {
-        alert(`❌ LOGIN FAILED: Invalid password entered for Service Number "${officer.serviceNo}".`);
+        alert(`❌ LOGIN FAILED: Incorrect password for ${officer.rank} ${officer.name} (${officer.serviceNo}).\n\nPlease check your password and try again.`);
         return;
       }
 
       sessionPortalOfficerId = officer.id;
-      localStorage.setItem('nfp_portal_session_id', officer.id);
+      auditLogs.unshift({
+        timestamp: new Date().toLocaleString(),
+        admin: `${officer.name} (${officer.serviceNo})`,
+        action: 'PORTAL_LOGIN',
+        officer: `${officer.name} (${officer.serviceNo})`,
+        prevValue: 'Logged Out',
+        newValue: 'Authenticated Portal Session',
+        reason: 'Officer Self-Service Portal Access'
+      });
+
       renderModule();
-      alert(`✅ WELCOME BACK, ${officer.rank} ${officer.name}!\nSuccessfully authenticated into Officer Self-Service Portal.`);
+      alert(`🔓 PORTAL ACCESS GRANTED!\n\nWelcome ${officer.rank} ${officer.name} (${officer.serviceNo}).\nYou have successfully logged into your Self-Service Portal.`);
     }
 
     function handlePortalLogout() {
@@ -1550,10 +1559,22 @@
           <div class="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
           <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-          <div class="text-center space-y-2 border-b border-slate-800 pb-6 relative z-10">
-            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 mb-2 shadow-[0_0_20px_rgba(16,185,129,0.25)]">
+          <div class="text-center space-y-3 border-b border-slate-800 pb-6 relative z-10">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 mb-1 shadow-[0_0_20px_rgba(16,185,129,0.25)]">
               <i data-lucide="shield-check" class="w-8 h-8"></i>
             </div>
+            <h2 class="text-xl sm:text-2xl font-black text-white uppercase tracking-wider">PERSONNEL SELF-SERVICE PORTAL ACCESS GATEWAY</h2>
+            
+            <div class="bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-500/20 border border-amber-500/50 p-3 rounded-2xl max-w-lg mx-auto text-left space-y-1">
+              <span class="text-[11px] font-black text-amber-400 font-mono uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="lock" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>MANDATORY ACCESS POLICY:</span>
+              </span>
+              <p class="text-[11px] text-amber-200 leading-snug">
+                Every personnel <strong>MUST FIRST REGISTER</strong> using their <strong>FULL NAME, AP / FORCE NUMBER</strong>, and a <strong>CREATED PASSWORD</strong> before access to their portal is granted.
+              </p>
+            </div>
+          </div>
             <h2 class="text-xl sm:text-2xl font-black text-white uppercase tracking-wider">PERSONNEL SELF-SERVICE PORTAL</h2>
             <p class="text-xs text-slate-400 max-w-md mx-auto">Official Access Gateway for Nigeria Police Force EOD-CBRN Command Officers & Personnel.</p>
           </div>
