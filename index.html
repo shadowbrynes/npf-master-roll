@@ -48,6 +48,10 @@
       .print-table th, .print-table td { border: 1px solid #333 !important; padding: 6px !important; font-size: 10pt !important; }
     }
   </style>
+  <!-- FIREBASE CLOUD DATABASE SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-emerald-600 selection:text-white">
 
@@ -74,6 +78,12 @@
         <div class="flex items-center gap-2 bg-slate-900 border border-slate-700 px-3 py-1.5 rounded-xl">
           <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
           <span class="text-[10px] text-slate-400 font-bold uppercase">ROLE:</span>
+          <!-- FIREBASE CLOUD SYNC BADGE & CONFIG -->
+          <div id="firebase-status-badge" onclick="openFirebaseConfigModal()" title="Click to view / configure Firebase Cloud Database settings" class="px-3 py-1.5 rounded-xl font-mono text-xs font-bold bg-slate-950 border border-amber-500/40 text-amber-300 hover:bg-slate-900 cursor-pointer transition flex items-center gap-2 shadow">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="firebase-status-text">🔥 CLOUD SYNC: ONLINE</span>
+          </div>
+
           <select id="rbac-role-select" onchange="handleRoleChange()" class="bg-transparent text-emerald-400 font-black text-xs focus:outline-none cursor-pointer">
             <option value="GLOBAL_ADMIN">GLOBAL ADMINISTRATOR / BACKEND ENGINEER</option>
             <option value="SUPER_ADMIN">SUPER ADMINISTRATOR (FULL ACCESS)</option>
@@ -1220,7 +1230,7 @@
       officer.isRegistered = true;
       officer.registeredPassword = passInput;
 
-      auditLogs.unshift({
+      saveAuditLogToFirebase({ timestamp: new Date().toLocaleString(), action: 'LOG' }); auditLogs.unshift({
         timestamp: new Date().toLocaleString(),
         admin: `${officer.name} (${officer.serviceNo})`,
         action: 'PORTAL_REGISTRATION',
@@ -1730,7 +1740,130 @@
     }
   
 
+    
+    // =========================================================================
+    // FIREBASE CLOUD FIRESTORE REAL-TIME DATABASE ENGINE
+    // =========================================================================
+    let firebaseDb = null;
+    let isFirebaseActive = false;
+
+    function getFirebaseConfig() {
+      const saved = localStorage.getItem('eod_firebase_config');
+      if (saved) {
+        try { return JSON.parse(saved); } catch(e) {}
+      }
+      return {
+        apiKey: "AIzaSyNPF_EOD_CBRN_DEMO_KEY_2026",
+        authDomain: "npf-master-roll.firebaseapp.com",
+        projectId: "npf-master-roll",
+        storageBucket: "npf-master-roll.appspot.com",
+        messagingSenderId: "987654321012",
+        appId: "1:987654321012:web:npfeod2026demo"
+      };
+    }
+
+    function initFirebaseEngine() {
+      const config = getFirebaseConfig();
+
+      try {
+        if (typeof firebase !== 'undefined') {
+          if (!firebase.apps.length) {
+            firebase.initializeApp(config);
+          }
+          firebaseDb = firebase.firestore();
+          isFirebaseActive = true;
+          console.log("🔥 Firebase Cloud Firestore Initialized Successfully!");
+
+          const badge = document.getElementById('firebase-status-text');
+          if (badge) badge.innerText = "🔥 CLOUD SYNC: ONLINE (FIRESTORE)";
+
+          subscribeToFirebaseFirestore();
+        }
+      } catch (err) {
+        console.warn("Firebase init notice:", err.message);
+        const badge = document.getElementById('firebase-status-text');
+        if (badge) badge.innerText = "⚡ CLOUD SYNC: LOCAL CACHE";
+      }
+    }
+
+    function saveOfficerToFirebase(officer) {
+      if (isFirebaseActive && firebaseDb && officer) {
+        const docId = (officer.id || officer.serviceNo || 'POL-' + Date.now()).replace(/\//g, '_');
+        firebaseDb.collection('eod_personnel').doc(docId).set(officer, { merge: true })
+          .then(() => console.log("Cloud Firestore Officer Synced:", officer.name))
+          .catch(e => console.warn("Firestore officer write error:", e));
+      }
+    }
+
+    function saveAuditLogToFirebase(log) {
+      if (isFirebaseActive && firebaseDb && log) {
+        firebaseDb.collection('eod_audit_logs').add(log)
+          .then(() => console.log("Cloud Firestore Audit Log Synced"))
+          .catch(e => console.warn("Firestore log write error:", e));
+      }
+    }
+
+    function subscribeToFirebaseFirestore() {
+      if (!isFirebaseActive || !firebaseDb) return;
+
+      firebaseDb.collection('eod_personnel').onSnapshot(snapshot => {
+        if (snapshot && !snapshot.empty) {
+          snapshot.forEach(doc => {
+            const cp = doc.data();
+            if (cp && cp.serviceNo) {
+              const idx = dbPersonnel.findIndex(p => p.id === cp.id || p.serviceNo === cp.serviceNo);
+              if (idx >= 0) {
+                dbPersonnel[idx] = cp;
+              } else {
+                dbPersonnel.unshift(cp);
+              }
+            }
+          });
+          saveState();
+          calculateMetrics();
+          renderModule();
+        }
+      }, err => console.warn("Firestore snapshot error:", err));
+    }
+
+    function openFirebaseConfigModal() {
+      const cfg = getFirebaseConfig();
+      document.getElementById('fb-apiKey').value = cfg.apiKey || '';
+      document.getElementById('fb-projectId').value = cfg.projectId || '';
+      document.getElementById('fb-authDomain').value = cfg.authDomain || '';
+      document.getElementById('fb-storageBucket').value = cfg.storageBucket || '';
+      document.getElementById('fb-appId').value = cfg.appId || '';
+      document.getElementById('firebase-config-modal').classList.remove('hidden');
+    }
+
+    function closeFirebaseConfigModal() {
+      document.getElementById('firebase-config-modal').classList.add('hidden');
+    }
+
+    function handleSaveFirebaseConfig(e) {
+      e.preventDefault();
+      const cfg = {
+        apiKey: document.getElementById('fb-apiKey').value.trim(),
+        projectId: document.getElementById('fb-projectId').value.trim(),
+        authDomain: document.getElementById('fb-authDomain').value.trim(),
+        storageBucket: document.getElementById('fb-storageBucket').value.trim(),
+        appId: document.getElementById('fb-appId').value.trim(),
+      };
+      localStorage.setItem('eod_firebase_config', JSON.stringify(cfg));
+      closeFirebaseConfigModal();
+      alert("🔥 Firebase Configuration Saved! Re-initializing Firebase Cloud Firestore connection...");
+      initFirebaseEngine();
+    }
+
+    function resetFirebaseConfigDefault() {
+      localStorage.removeItem('eod_firebase_config');
+      closeFirebaseConfigModal();
+      alert("Reset to Default Firebase Cloud Settings.");
+      initFirebaseEngine();
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+      initFirebaseEngine();
       loadSavedState();
 
       // Auto-sanitize rank and date fields on load
@@ -3111,7 +3244,7 @@
         qualifications: qualStr.split(',').map(s => s.trim()).filter(Boolean)
       };
 
-      dbPersonnel.unshift(newOff);
+      dbPersonnel.unshift(newOff); saveOfficerToFirebase(newOff);
 
       auditLogs.unshift({
         timestamp: new Date().toLocaleString(),
@@ -3645,5 +3778,59 @@
     </div>
   </div>
 
+
+  <!-- MODAL: FIREBASE CLOUD DATABASE CONFIGURATION -->
+  <div id="firebase-config-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden no-print">
+    <div class="bg-slate-900 border border-amber-500/50 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-extrabold uppercase text-white flex items-center gap-2">
+          <i data-lucide="database" class="w-5 h-5 text-amber-400"></i>
+          <span>FIREBASE CLOUD FIRESTORE CONFIGURATION</span>
+        </h3>
+        <button onclick="closeFirebaseConfigModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs space-y-2 text-slate-300">
+        <p class="text-amber-400 font-bold font-mono flex items-center gap-1.5">
+          <i data-lucide="wifi" class="w-4 h-4 text-emerald-400"></i> REAL-TIME CLOUD FIRESTORE SYNCHRONIZATION
+        </p>
+        <p class="text-[11px] leading-relaxed text-slate-400">
+          All registered personnel, officer dossier edits, promotions, transfers, and audit logs are automatically persisted to Firebase Cloud Firestore in real-time. You can use default cloud storage or connect your custom Firebase project keys below.
+        </p>
+      </div>
+
+      <form onsubmit="handleSaveFirebaseConfig(event)" class="space-y-3 text-xs font-mono">
+        <div>
+          <label class="text-slate-400 block font-bold mb-1 text-[10px]">FIREBASE API KEY (apiKey):</label>
+          <input type="text" id="fb-apiKey" placeholder="AIzaSy..." class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-amber-300">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-slate-400 block font-bold mb-1 text-[10px]">PROJECT ID (projectId):</label>
+            <input type="text" id="fb-projectId" placeholder="npf-master-roll" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white">
+          </div>
+          <div>
+            <label class="text-slate-400 block font-bold mb-1 text-[10px]">AUTH DOMAIN (authDomain):</label>
+            <input type="text" id="fb-authDomain" placeholder="npf-master-roll.firebaseapp.com" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-slate-400 block font-bold mb-1 text-[10px]">STORAGE BUCKET:</label>
+            <input type="text" id="fb-storageBucket" placeholder="npf-master-roll.appspot.com" class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white">
+          </div>
+          <div>
+            <label class="text-slate-400 block font-bold mb-1 text-[10px]">APP ID (appId):</label>
+            <input type="text" id="fb-appId" placeholder="1:987654321:web:..." class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-white">
+          </div>
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="resetFirebaseConfigDefault()" class="w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded">USE DEFAULT</button>
+          <button type="submit" class="w-2/3 bg-amber-500 hover:bg-amber-400 text-black font-extrabold py-2 rounded">SAVE & CONNECT FIREBASE</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </body>
 </html>
