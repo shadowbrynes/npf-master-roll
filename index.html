@@ -1166,6 +1166,98 @@
     // =========================================================================
     // STATUTORY RETIREMENT CALCULATOR & ALERT ENGINE (35 YEARS / 60 DAYS ALERTS)
     // =========================================================================
+    
+    // =========================================================================
+    // AUTOMATED REAL-TIME STATUTORY RETIREMENT SCANNER ENGINE
+    // Automatically scans dbPersonnel and extracts all officers within 2 months of retirement
+    // =========================================================================
+    function getAutomatedRetiringPersonnel() {
+      return dbPersonnel.filter(officer => {
+        const days = getDaysUntilRetirement(officer);
+        return days <= 60 && days >= -365;
+      });
+    }
+
+    function renderAutomatedRetirementWidget() {
+      const retiring = getAutomatedRetiringPersonnel();
+      const container = document.getElementById('auto-retirement-dashboard-container');
+      if (!container) return;
+
+      if (retiring.length === 0) {
+        container.innerHTML = `
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 text-center space-y-1">
+            <span class="text-xs font-black text-emerald-400 font-mono uppercase flex items-center justify-center gap-2">
+              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+              <span>AUTOMATED SCAN COMPLETE: NO PERSONNEL DUE FOR RETIREMENT WITHIN 2 MONTHS</span>
+            </span>
+            <p class="text-[10px] text-slate-500 font-mono">Real-time scanner monitors all 35-year enlistment milestones continuously.</p>
+          </div>
+        `;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="bg-gradient-to-r from-rose-950/90 via-slate-950 to-amber-950/90 border-2 border-rose-500/70 rounded-3xl p-5 space-y-4 shadow-2xl">
+          <div class="flex items-center justify-between border-b border-rose-500/40 pb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-rose-500/20 border border-rose-500/60 flex items-center justify-center text-rose-400 font-black shrink-0 animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.4)]">
+                <i data-lucide="shield-alert" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black bg-rose-500/30 text-rose-300 border border-rose-500/50 uppercase tracking-wider inline-block mb-1">
+                  ⚡ AUTOMATED REAL-TIME DATABASE SCANNER (SYSTEM AUTO-PULLED)
+                </span>
+                <h3 class="text-sm sm:text-base font-black text-white uppercase font-mono tracking-wider">
+                  AUTOMATED RETIREMENT ALERT SYSTEM (OFFICERS RETIRING WITHIN 2 MONTHS)
+                </h3>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-3.5 py-1.5 rounded-xl text-xs font-mono font-black bg-rose-500/30 text-rose-300 border border-rose-500/50">
+                ${retiring.length} Officers Extracted
+              </span>
+              <button onclick="filterRetiringPersonnel()" class="bg-rose-600 hover:bg-rose-500 text-white font-black px-3 py-1.5 rounded-xl text-xs font-mono transition cursor-pointer">
+                FILTER NOMINAL ROLL
+              </button>
+            </div>
+          </div>
+
+          <!-- AUTOMATED EXTRACTED CARDS ROSTER -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 font-mono text-xs">
+            ${retiring.map(p => {
+              const days = getDaysUntilRetirement(p);
+              const retDate = getRetirementDate(p);
+              const months = (days / 30.4).toFixed(1);
+              return `
+                <div class="bg-slate-950 p-4 rounded-2xl border border-rose-500/50 space-y-2.5 relative shadow-lg hover:border-rose-400 transition">
+                  <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse">
+                      ${days <= 0 ? '🚨 RETIREMENT DUE NOW' : `⚠️ DUE IN ${days} DAYS (~${months} Mos)`}
+                    </span>
+                    <span class="text-[10px] text-amber-400 font-black">${p.base || 'Base 1'}</span>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <img src="${p.photo}" alt="${p.name}" class="w-11 h-11 rounded-full object-cover border-2 border-rose-400 shrink-0">
+                    <div class="truncate">
+                      <span class="font-black text-white text-xs block truncate">${p.name}</span>
+                      <span class="text-[10px] text-sky-400 block font-bold">${p.rank} &bull; ${p.serviceNo}</span>
+                      <span class="text-[10px] text-emerald-400 block font-bold">Enlisted: ${p.appointmentDate || 'N/A'}</span>
+                      <span class="text-[10px] text-rose-300 block font-black">Statutory Retirement: ${retDate}</span>
+                    </div>
+                  </div>
+                  <button onclick="openProfileModal('${p.id}')" class="w-full mt-1 bg-slate-900 hover:bg-slate-800 text-sky-400 border border-slate-700 font-bold py-1.5 rounded-xl text-[10px] text-center transition">
+                    INSPECT RETIREMENT DOSSIER
+                  </button>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
     function getDaysUntilRetirement(officer) {
       const retStr = getRetirementDate(officer);
       if (!retStr) return 99999;
