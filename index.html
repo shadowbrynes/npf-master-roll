@@ -2620,8 +2620,10 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      initFirebaseEngine();
       loadSavedState();
+      calculateMetrics();
+      renderModule();
+      initFirebaseEngine();
 
       // Auto-sanitize rank and date fields on load
       dbPersonnel.forEach(p => {
