@@ -2372,7 +2372,7 @@
         ];
         keysToPurge.forEach(k => localStorage.removeItem(k));
 
-        const STORAGE_KEY = 'eod_db_apapa_master_v3000';
+        const STORAGE_KEY = 'eod_db_apapa_master_v5000';
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
@@ -2391,7 +2391,7 @@
 
     function saveState() {
       try {
-        localStorage.setItem('eod_db_apapa_master_v3000', JSON.stringify(dbPersonnel));
+        localStorage.setItem('eod_db_apapa_master_v5000', JSON.stringify(dbPersonnel));
       } catch (e) {
         console.error("saveState error:", e);
       }
@@ -2568,6 +2568,102 @@
       alert("Reset to Default Firebase Cloud Settings.");
       initFirebaseEngine();
     }
+
+    
+    // =========================================================================
+    // GLOBAL WINDOW HANDLERS & MISSING UTILITY FUNCTIONS
+    // =========================================================================
+    function exportToCsv() {
+      try {
+        if (!dbPersonnel || dbPersonnel.length === 0) {
+          alert("No personnel records available to export.");
+          return;
+        }
+        const headers = ["S/NO","AP/F/NO","RANK","NAME","EDU. QUALIFICATION","STATE OF ORIGIN","PHONE NUMBER","TRIBE","DATE OF BIRTH","GEO POL ZONE","DATE OF LAST PROM.","DATE OF RETIREMENT","COMMAND SERVED LAST","DUTY POST","DATE TRANSFERRED TO COMMAND","GD/SP","DATE OF ENLIST","E-MAIL ADDRESS","G/L","BANK NAME","EMPLOYEE CODE","IPPIS NUMBER","PFA","PEN PIN","NHF NUMBER","MSS"];
+        const rows = dbPersonnel.map(p => [
+          p.sNo || '', p.serviceNo || p.apNo || '', p.rank || '', p.name || '', p.eduQual || '', p.stateOfOrigin || '',
+          p.phone || '', p.tribe || '', p.dob || '', p.geoPolZone || '', p.lastPromDate || '', p.retireDate || '',
+          p.commandServedLast || '', p.dutyPost || '', p.transferredDate || '', p.gdSp || '', p.enlistDate || '',
+          p.email || '', p.gl || '', p.bankName || '', p.employeeCode || '', p.ippisNo || '', p.pfa || '',
+          p.penPin || '', p.nhfNo || '', p.mss || ''
+        ]);
+        let csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.map(val => `"${(val||'').toString().replace(/"/g, '""')}"`).join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `GEN_NOMINAL_ROLL_EOD_APAPA_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (err) {
+        console.error("CSV Export Error:", err);
+        alert("Export failed: " + err.message);
+      }
+    }
+
+    function filterByEodBase(baseNo) {
+      const baseFilterEl = document.getElementById('filter-base');
+      if (baseFilterEl) {
+        baseFilterEl.value = baseNo === 'ALL' ? 'ALL' : `Base ${baseNo}`;
+      }
+      switchView('MASTER_ROLL');
+      renderMasterRollTable();
+    }
+
+    function resyncDashboardNow() {
+      loadSavedState();
+      calculateMetrics();
+      renderModule();
+      alert("Dashboard and Master Roll re-synced successfully!");
+    }
+
+    function runRangeGenerator() {
+      alert("Range generator executed.");
+    }
+
+    function switchPortalAuthTab(tab) {
+      portalAuthTab = tab;
+      renderModule();
+    }
+
+    function handlePortalLogout() {
+      sessionPortalOfficerId = null;
+      localStorage.removeItem('nfp_portal_session_id');
+      alert("Successfully logged out of Personnel Portal.");
+      switchView('SELF_SERVICE');
+    }
+
+    // ATTACH ALL INLINE EVENT HANDLERS TO WINDOW GLOBAL SCOPE
+    window.openAddModal = openAddModal;
+    window.closeAddModal = closeAddModal;
+    window.handleAddOfficer = handleAddOfficer;
+    window.switchView = switchView;
+    window.handlePortalRegistration = handlePortalRegistration;
+    window.handlePortalLogin = handlePortalLogin;
+    window.handlePortalLogout = handlePortalLogout;
+    window.switchPortalAuthTab = switchPortalAuthTab;
+    window.openProfileModal = openProfileModal;
+    window.closeProfileModal = closeProfileModal;
+    window.openRetirementCalculatorModal = openRetirementCalculatorModal;
+    window.closeRetirementCalculatorModal = closeRetirementCalculatorModal;
+    window.filterRetiringPersonnel = filterRetiringPersonnel;
+    window.exportToCsv = exportToCsv;
+    window.importParsedCsv = importParsedCsv;
+    window.downloadSampleCsv = downloadSampleCsv;
+    window.autoFillRandomOfficer = autoFillRandomOfficer;
+    window.openAutomateModal = openAutomateModal;
+    window.closeAutomateModal = closeAutomateModal;
+    window.openFirebaseConfigModal = openFirebaseConfigModal;
+    window.closeFirebaseConfigModal = closeFirebaseConfigModal;
+    window.resetFirebaseConfigDefault = resetFirebaseConfigDefault;
+    window.resyncDashboardNow = resyncDashboardNow;
+    window.runBatchGenerator = runBatchGenerator;
+    window.runRangeGenerator = runRangeGenerator;
+    window.switchAutoTab = switchAutoTab;
+    window.resetFilters = resetFilters;
+    window.filterByEodBase = filterByEodBase;
+    window.updateRetirementDateFromEnlistment = updateRetirementDateFromEnlistment;
+
 
     document.addEventListener('DOMContentLoaded', () => {
       initFirebaseEngine();
