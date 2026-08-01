@@ -998,7 +998,7 @@
     }
   
 
-    let currentRole = 'OFFICER';
+    let currentRole = 'GLOBAL_ADMIN';
 
     // OFFICIAL 38 EOD BASES OF NIGERIA POLICE FORCE EOD-CBRN COMMAND
     const EOD_BASES = Array.from({ length: 38 }, (_, i) => {
@@ -1495,7 +1495,7 @@
       }
     }
 
-            function loadSavedState() {
+                function loadSavedState() {
       try {
         const keysToPurge = [
           'eod_db_personnel',
@@ -1508,11 +1508,13 @@
           'eod_db_personnel_apapa_v7',
           'eod_db_apapa_master_v100',
           'eod_db_apapa_master_v300',
-          'eod_db_apapa_master_v500'
+          'eod_db_apapa_master_v500',
+          'eod_db_apapa_master_v600',
+          'eod_db_apapa_master_v700'
         ];
         keysToPurge.forEach(k => localStorage.removeItem(k));
 
-        const STORAGE_KEY = 'eod_db_apapa_master_v700';
+        const STORAGE_KEY = 'eod_db_apapa_master_v900';
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           const parsed = JSON.parse(saved);
@@ -1531,7 +1533,7 @@
 
     function saveState() {
       try {
-        localStorage.setItem('eod_db_apapa_master_v700', JSON.stringify(dbPersonnel));
+        localStorage.setItem('eod_db_apapa_master_v900', JSON.stringify(dbPersonnel));
       } catch (e) {
         console.error("saveState error:", e);
       }
