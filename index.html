@@ -2558,19 +2558,29 @@
       }
     }
 
+        function syncApapaRollToFirebase() {
+      if (!isFirebaseActive || !firebaseDb) return;
+      dbPersonnel.forEach(officer => {
+        saveOfficerToFirebase(officer);
+      });
+    }
+
     function subscribeToFirebaseFirestore() {
       if (!isFirebaseActive || !firebaseDb) return;
+
+      // Sync local Apapa personnel to Cloud Firestore first
+      syncApapaRollToFirebase();
 
       firebaseDb.collection('eod_personnel').onSnapshot(snapshot => {
         if (snapshot && !snapshot.empty) {
           snapshot.forEach(doc => {
             const cp = doc.data();
-            if (cp && cp.serviceNo) {
+            if (cp && cp.serviceNo && cp.sNo) {
               const idx = dbPersonnel.findIndex(p => p.id === cp.id || p.serviceNo === cp.serviceNo);
               if (idx >= 0) {
                 dbPersonnel[idx] = cp;
-              } else {
-                dbPersonnel.unshift(cp);
+              } else if (cp.sNo && parseInt(cp.sNo, 10) <= 24) {
+                dbPersonnel.push(cp);
               }
             }
           });
