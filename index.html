@@ -110,7 +110,11 @@
         </button>
 
         <!-- 4. ADD OFFICER -->
-        <button onclick="openAddModal()" id="btn-add-officer" class="bg-emerald-600 hover:bg-emerald-500 text-black font-black px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-lg cursor-pointer">
+        <button onclick="openAddCommanderModal()" class="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-black font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.3)] transition transform active:scale-95 border border-amber-300 cursor-pointer">
+              <i data-lucide="crown" class="w-4 h-4 text-black"></i>
+              <span>+ ADD COMMANDER MODE</span>
+            </button>
+            <button onclick="openAddModal()" id="btn-add-officer" class="bg-emerald-600 hover:bg-emerald-500 text-black font-black px-3.5 py-1.5 rounded-xl transition flex items-center gap-1.5 shadow-lg cursor-pointer">
           <i data-lucide="user-plus" class="w-4 h-4"></i>
           <span>ADD OFFICER</span>
         </button>
@@ -781,189 +785,346 @@
   </div>
 
       <!-- MODAL: ADD OFFICER -->
-  <!-- MODAL: ADD OFFICER (WITH ALL 26 HEADINGS FROM GEN. NOMINAL ROLL EOD APAPA) -->
-  <div id="add-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full p-6 space-y-6 my-8 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-      <div class="flex justify-between items-center border-b border-slate-800 pb-4 bg-slate-950 p-4 -m-6 mb-2">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400 font-black">
-            <i data-lucide="user-plus" class="w-6 h-6"></i>
-          </div>
-          <div>
-            <h3 class="text-base font-black uppercase text-white tracking-wider flex items-center gap-2">
-              <span>ADD OFFICER TO DATABASE (GEN. NOMINAL ROLL EOD APAPA)</span>
-            </h3>
-            <p class="text-xs text-slate-400 font-mono">Fill in all 26 official headings matching the master nominal roll register.</p>
-          </div>
-        </div>
-        <button onclick="closeAddModal()" class="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-xl transition cursor-pointer">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+  <div id="add-modal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 my-8 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-extrabold uppercase text-white flex items-center gap-2">
+          <i data-lucide="user-plus" class="w-4 h-4 text-emerald-400"></i>
+          <span>ADD OFFICER TO DATABASE</span>
+        </h3>
+        <button onclick="closeAddModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <form id="add-officer-form" onsubmit="handleAddOfficer(event)" class="space-y-6 overflow-y-auto pr-2 font-mono text-xs text-slate-200">
-        
-        <!-- SECTION 1: PERSONAL & BIOGRAPHIC HEADINGS -->
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
-          <h4 class="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
-            <i data-lucide="user" class="w-4 h-4"></i>
-            <span>1. PERSONAL & BIOGRAPHIC HEADINGS</span>
-          </h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      <!-- TOP ⚡ AUTO-FILL REALISTIC PERSONNEL DETAILS (1-CLICK) BANNER -->
+      <div class="bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-amber-500/20 border border-amber-500/50 rounded-xl p-3 text-center space-y-2">
+        <button type="button" onclick="autoFillRandomOfficer()" class="w-full bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-black font-black py-2.5 px-4 rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.35)] flex items-center justify-center gap-2 cursor-pointer transition transform active:scale-95 border border-amber-300">
+          <i data-lucide="zap" class="w-4 h-4 text-black fill-black"></i>
+          <span class="tracking-wide text-xs">⚡ AUTO-FILL REALISTIC PERSONNEL DETAILS (1-CLICK)</span>
+        </button>
+        <p class="text-[10px] text-amber-300 font-mono">Instantly populates authentic AP/F service number, Nigerian names, rank, command, specialisation, contact, next-of-kin & key service dates!</p>
+      </div>
+
+      <form id="add-officer-form" onsubmit="handleAddOfficer(event)" class="space-y-3 text-xs max-h-[70vh] overflow-y-auto pr-1">
+        <!-- 1. CORE CREDENTIALS -->
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+          <span class="text-[10px] font-black text-emerald-400 uppercase font-mono block border-b border-slate-800 pb-1">1. OFFICIAL SERVICE CREDENTIALS</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
-              <label class="text-amber-400 block font-bold mb-1">1. S/NO (SERIAL NO):</label>
-              <input type="text" id="add-sNo" placeholder="e.g. 25" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
+              <label class="text-slate-400 block font-bold mb-1 text-[10px]">SERVICE NUMBER (AP or F NUMBER):</label>
+              <input type="text" id="add-serviceno" required placeholder="e.g. AP/784120 or F/410982" class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-white font-mono text-xs focus:border-emerald-500 focus:outline-none">
             </div>
             <div>
-              <label class="text-emerald-400 block font-bold mb-1">2. AP/F/NO (SERVICE NO): *</label>
-              <input type="text" id="add-serviceno" required placeholder="e.g. AP/117369 or F/274630" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs font-bold focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-amber-300 block font-bold mb-1">3. RANK: *</label>
-              <select id="add-rank" required class="w-full bg-slate-900 border border-slate-800 text-amber-300 font-bold rounded-xl px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none">
+              <label class="text-slate-400 block font-bold mb-1 text-[10px]">RANK (CATEGORY TIER):</label>
+              <select id="add-rank" required class="w-full bg-slate-900 border border-slate-800 text-white rounded px-2.5 py-1.5 font-mono text-xs focus:border-emerald-500 focus:outline-none">
+                <option value="CP">CP - Commissioner of Police</option>
+                <option value="DCP">DCP - Deputy Commissioner</option>
+                <option value="ACP">ACP - Assistant Commissioner</option>
                 <option value="CSP">CSP - Chief Superintendent</option>
                 <option value="SP">SP - Superintendent</option>
                 <option value="DSP">DSP - Deputy Superintendent</option>
-                <option value="ASP">ASP - Assistant Superintendent</option>
+                <option value="ASP_I">ASP I - Assistant Superintendent I</option>
+                <option value="ASP_II">ASP II - Assistant Superintendent II</option>
                 <option value="INSPR">INSPR - Inspector of Police</option>
                 <option value="SGT">SGT - Sergeant</option>
                 <option value="CPL">CPL - Corporal</option>
                 <option value="PC">PC - Police Constable</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label class="text-slate-400 block font-bold mb-1 text-[10px]">OFFICER FULL NAME:</label>
+            <input type="text" id="add-name" required placeholder="e.g. Babatunde Desmond Agbala" class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-white text-xs focus:border-emerald-500 focus:outline-none">
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
-              <label class="text-white block font-bold mb-1">4. NAME (FULL NAME): *</label>
-              <input type="text" id="add-name" required placeholder="e.g. CSP DESMOND AGBALA" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs font-bold focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-slate-300 block font-bold mb-1">5. EDU. QUALIFICATION:</label>
-              <input type="text" id="add-eduQual" placeholder="e.g. SSCE, BSC, HND, NCE" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-slate-300 block font-bold mb-1">6. STATE OF ORIGIN:</label>
-              <input type="text" id="add-stateOfOrigin" placeholder="e.g. EDO, LAGOS, KADUNA" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-emerald-400 block font-bold mb-1">7. PHONE NUMBER:</label>
-              <input type="text" id="add-phone" placeholder="e.g. 08034268620" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-slate-300 block font-bold mb-1">8. TRIBE:</label>
-              <input type="text" id="add-tribe" placeholder="e.g. YORUBA, HAUSA, IGBO" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-slate-300 block font-bold mb-1">9. DATE OF BIRTH:</label>
-              <input type="date" id="add-dob" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-slate-300 block font-bold mb-1">10. GEO POL ZONE:</label>
-              <select id="add-geoPolZone" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-                <option value="SOUTH WEST">SOUTH WEST</option>
-                <option value="SOUTH SOUTH">SOUTH SOUTH</option>
-                <option value="SOUTH EAST">SOUTH EAST</option>
-                <option value="NORTH CENTRAL">NORTH CENTRAL</option>
-                <option value="NORTH EAST">NORTH EAST</option>
-                <option value="NORTH WEST">NORTH WEST</option>
+              <label class="text-amber-400 block font-bold mb-1 text-[10px]">ASSIGNED EOD BASE (BASE 1 - BASE 38):</label>
+              <select id="add-base" required class="w-full bg-slate-900 border border-slate-800 text-amber-300 rounded px-2.5 py-1.5 font-mono text-xs font-bold focus:border-emerald-500 focus:outline-none">
+                <option value="">-- SELECT EOD BASE (1-38) --</option>
+                <option value="Base 1">Base 1 - Force HQ EOD Command, Abuja (FCT)</option>
+                <option value="Base 2">Base 2 - Lagos State Command EOD Base, Ikeja</option>
+                <option value="Base 3">Base 3 - Kano State Command EOD Base</option>
+                <option value="Base 4">Base 4 - Rivers State Command EOD Base, Port Harcourt</option>
+                <option value="Base 5">Base 5 - Oyo State Command EOD Base, Ibadan</option>
+                <option value="Base 6">Base 6 - Kaduna State Command EOD Base</option>
+                <option value="Base 7">Base 7 - Edo State Command EOD Base, Benin</option>
+                <option value="Base 8">Base 8 - Enugu State Command EOD Base</option>
+                <option value="Base 9">Base 9 - Borno State Counter-IED Base, Maiduguri</option>
+                <option value="Base 10">Base 10 - Delta State Command EOD Base, Asaba</option>
+                <option value="Base 11">Base 11 - Anambra State Command EOD Base, Awka</option>
+                <option value="Base 12">Base 12 - Abia State Command EOD Base, Umuahia</option>
+                <option value="Base 13">Base 13 - Akwa Ibom State Command EOD Base, Uyo</option>
+                <option value="Base 14">Base 14 - Bauchi State Command EOD Base</option>
+                <option value="Base 15">Base 15 - Bayelsa State Command EOD Base, Yenagoa</option>
+                <option value="Base 16">Base 16 - Benue State Command EOD Base, Makurdi</option>
+                <option value="Base 17">Base 17 - Cross River State Command EOD Base, Calabar</option>
+                <option value="Base 18">Base 18 - Ebonyi State Command EOD Base, Abakaliki</option>
+                <option value="Base 19">Base 19 - Ekiti State Command EOD Base, Ado-Ekiti</option>
+                <option value="Base 20">Base 20 - Gombe State Command EOD Base</option>
+                <option value="Base 21">Base 21 - Imo State Command EOD Base, Owerri</option>
+                <option value="Base 22">Base 22 - Jigawa State Command EOD Base, Dutse</option>
+                <option value="Base 23">Base 23 - Katsina State Command EOD Base</option>
+                <option value="Base 24">Base 24 - Kebbi State Command EOD Base, Birnin Kebbi</option>
+                <option value="Base 25">Base 25 - Kogi State Command EOD Base, Lokoja</option>
+                <option value="Base 26">Base 26 - Kwara State Command EOD Base, Ilorin</option>
+                <option value="Base 27">Base 27 - Nasarawa State Command EOD Base, Lafia</option>
+                <option value="Base 28">Base 28 - Niger State Command EOD Base, Minna</option>
+                <option value="Base 29">Base 29 - Ogun State Command EOD Base, Abeokuta</option>
+                <option value="Base 30">Base 30 - Ondo State Command EOD Base, Akure</option>
+                <option value="Base 31">Base 31 - Osun State Command EOD Base, Osogbo</option>
+                <option value="Base 32">Base 32 - Plateau State Command EOD Base, Jos</option>
+                <option value="Base 33">Base 33 - Sokoto State Command EOD Base</option>
+                <option value="Base 34">Base 34 - Taraba State Command EOD Base, Jalingo</option>
+                <option value="Base 35">Base 35 - Yobe State Command EOD Base, Damaturu</option>
+                <option value="Base 36">Base 36 - Zamfara State Command EOD Base, Gusau</option>
+                
               </select>
             </div>
-            <div class="sm:col-span-2">
-              <label class="text-cyan-400 block font-bold mb-1">18. E-MAIL ADDRESS:</label>
-              <input type="email" id="add-email" placeholder="e.g. officer@npf.gov.ng" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
+            <div>
+              <label class="text-emerald-400 block font-bold mb-1 text-[10px]">ASSIGNED TACTICAL UNIT:</label>
+              <select id="add-unit" required class="w-full bg-slate-900 border border-slate-800 text-emerald-300 rounded px-2.5 py-1.5 font-mono text-xs font-bold focus:border-emerald-500 focus:outline-none">
+                <optgroup label="⚓ SEAPORT MARITIME EOD UNITS (SPECIALIZED UNITS)">
+                          <option value="Apapa Sea Port EOD Unit (Lagos)">Apapa Sea Port EOD Unit (Lagos)</option>
+                          <option value="Tin Can Island Port EOD Unit (Lagos)">Tin Can Island Port EOD Unit (Lagos)</option>
+                          <option value="Onne Sea Port EOD Unit (Rivers)">Onne Sea Port EOD Unit (Rivers)</option>
+                          <option value="Calabar Deep Sea Port EOD Unit (Cross River)">Calabar Deep Sea Port EOD Unit (Cross River)</option>
+                          <option value="Delta Warri Sea Port EOD Unit (Delta)">Delta Warri Sea Port EOD Unit (Delta)</option>
+                        </optgroup>
+
+                        <optgroup label="✈️ AIRPORT AVIATION EOD UNITS (SPECIALIZED UNITS)">
+                          <option value="Murtala Muhammed International Airport (MMIA) EOD Unit (Lagos)">Murtala Muhammed International Airport (MMIA) EOD Unit (Lagos)</option>
+                          <option value="Nnamdi Azikiwe International Airport EOD Unit (Abuja)">Nnamdi Azikiwe International Airport EOD Unit (Abuja)</option>
+                          <option value="Mallam Aminu Kano International Airport EOD Unit (Kano)">Mallam Aminu Kano International Airport EOD Unit (Kano)</option>
+                          <option value="Port Harcourt International Airport EOD Unit (Rivers)">Port Harcourt International Airport EOD Unit (Rivers)</option>
+                          <option value="Akanu Ibiam International Airport EOD Unit (Enugu)">Akanu Ibiam International Airport EOD Unit (Enugu)</option>
+                        </optgroup>
+
+                        <optgroup label="🛡️ TACTICAL & FRONTLINE OPERATIONAL UNITS">
+                          <option value="Counter-IED Operations Unit">Counter-IED Operations Unit</option>
+                          <option value="CBRN Response & Decontamination Unit">CBRN Response & Decontamination Unit</option>
+                          <option value="Bomb Detection & K9 Canine Unit">Bomb Detection & K9 Canine Unit</option>
+                          <option value="Magazine Armory & Demolition Unit">Magazine Armory & Demolition Unit</option>
+                          <option value="Post-Blast Investigation & Forensics Unit">Post-Blast Investigation & Forensics Unit</option>
+                          <option value="Maiduguri Counter-IED Frontline Command Unit">Maiduguri Counter-IED Frontline Command Unit</option>
+                        </optgroup>
+                      </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="text-slate-400 block font-bold mb-1 text-[10px]">ASSIGNED COMMAND / POSTING:</label>
+            <select id="add-command" required class="w-full bg-slate-900 border border-slate-800 text-white rounded px-2.5 py-1.5 text-xs focus:border-emerald-500 focus:outline-none">
+              <option value="">-- SELECT EOD BASE & COMMAND (BASE 1 - 38) --</option>
+              <option value="Base 1 - Force HQ EOD Command, Abuja|FCT Abuja|Zone 7 Abuja|North Central|Force Headquarters|Louis Edet House">Base 1 - Force HQ EOD Command, Abuja (FCT)</option>
+              <option value="Base 2 - Lagos State Command EOD Base, Ikeja|Lagos|Zone 2 Lagos|South West|State Base|Ikeja Cantonment">Base 2 - Lagos State Command EOD Base, Ikeja</option>
+              <option value="Base 3 - Kano State Command EOD Base|Kano|Zone 1 Kano|North West|State Base|Bumpha HQ, Kano">Base 3 - Kano State Command EOD Base</option>
+              <option value="Base 4 - Rivers State Command EOD Base, Port Harcourt|Rivers|Zone 16 Yenagoa|South South|State Base|Port Harcourt Complex">Base 4 - Rivers State Command EOD Base, Port Harcourt</option>
+              <option value="Base 5 - Oyo State Command EOD Base, Ibadan|Oyo|Zone 11 Osogbo|South West|State Base|Eleyele, Ibadan">Base 5 - Oyo State Command EOD Base, Ibadan</option>
+              <option value="Base 6 - Kaduna State Command EOD Base|Kaduna|Zone 14 Kaduna|North West|State Base|Kaduna HQ">Base 6 - Kaduna State Command EOD Base</option>
+              <option value="Base 7 - Edo State Command EOD Base, Benin|Edo|Zone 5 Benin|South South|State Base|Benin City">Base 7 - Edo State Command EOD Base, Benin</option>
+              <option value="Base 8 - Enugu State Command EOD Base|Enugu|Zone 13 Awka|South East|State Base|Independence Layout, Enugu">Base 8 - Enugu State Command EOD Base</option>
+              <option value="Base 9 - Borno State Counter-IED Base, Maiduguri|Borno|Zone 15 Maiduguri|North East|Tactical Frontline|Maiduguri Garrison">Base 9 - Borno State Counter-IED Base, Maiduguri</option>
+              <option value="Base 10 - Delta State Command EOD Base, Asaba|Delta|Zone 5 Benin|South South|State Base|Asaba HQ">Base 10 - Delta State Command EOD Base, Asaba</option>
+              <option value="Base 11 - Anambra State Command EOD Base, Awka|Anambra|Zone 13 Awka|South East|State Base|Ukpo / Awka">Base 11 - Anambra State Command EOD Base, Awka</option>
+              <option value="Base 12 - Abia State Command EOD Base, Umuahia|Abia|Zone 9 Umuahia|South East|State Base|Umuahia HQ">Base 12 - Abia State Command EOD Base, Umuahia</option>
+              <option value="Base 13 - Akwa Ibom State Command EOD Base, Uyo|Akwa Ibom|Zone 6 Calabar|South South|State Base|Uyo HQ">Base 13 - Akwa Ibom State Command EOD Base, Uyo</option>
+              <option value="Base 14 - Bauchi State Command EOD Base|Bauchi|Zone 12 Bauchi|North East|State Base|Bauchi HQ">Base 14 - Bauchi State Command EOD Base</option>
+              <option value="Base 15 - Bayelsa State Command EOD Base, Yenagoa|Bayelsa|Zone 16 Yenagoa|South South|State Base|Yenagoa HQ">Base 15 - Bayelsa State Command EOD Base, Yenagoa</option>
+              <option value="Base 16 - Benue State Command EOD Base, Makurdi|Benue|Zone 7 Abuja|North Central|State Base|Makurdi HQ">Base 16 - Benue State Command EOD Base, Makurdi</option>
+              <option value="Base 17 - Cross River State Command EOD Base, Calabar|Cross River|Zone 6 Calabar|South South|State Base|Calabar HQ">Base 17 - Cross River State Command EOD Base, Calabar</option>
+              <option value="Base 18 - Ebonyi State Command EOD Base, Abakaliki|Ebonyi|Zone 9 Umuahia|South East|State Base|Abakaliki HQ">Base 18 - Ebonyi State Command EOD Base, Abakaliki</option>
+              <option value="Base 19 - Ekiti State Command EOD Base, Ado-Ekiti|Ekiti|Zone 17 Akure|South West|State Base|Ado-Ekiti HQ">Base 19 - Ekiti State Command EOD Base, Ado-Ekiti</option>
+              <option value="Base 20 - Gombe State Command EOD Base|Gombe|Zone 12 Bauchi|North East|State Base|Gombe HQ">Base 20 - Gombe State Command EOD Base</option>
+              <option value="Base 21 - Imo State Command EOD Base, Owerri|Imo|Zone 9 Umuahia|South East|State Base|Owerri HQ">Base 21 - Imo State Command EOD Base, Owerri</option>
+              <option value="Base 22 - Jigawa State Command EOD Base, Dutse|Jigawa|Zone 1 Kano|North West|State Base|Dutse HQ">Base 22 - Jigawa State Command EOD Base, Dutse</option>
+              <option value="Base 23 - Katsina State Command EOD Base|Katsina|Zone 1 Kano|North West|State Base|Katsina HQ">Base 23 - Katsina State Command EOD Base</option>
+              <option value="Base 24 - Kebbi State Command EOD Base, Birnin Kebbi|Kebbi|Zone 10 Sokoto|North West|State Base|Birnin Kebbi">Base 24 - Kebbi State Command EOD Base, Birnin Kebbi</option>
+              <option value="Base 25 - Kogi State Command EOD Base, Lokoja|Kogi|Zone 8 Lokoja|North Central|State Base|Lokoja HQ">Base 25 - Kogi State Command EOD Base, Lokoja</option>
+              <option value="Base 26 - Kwara State Command EOD Base, Ilorin|Kwara|Zone 8 Lokoja|North Central|State Base|Ilorin HQ">Base 26 - Kwara State Command EOD Base, Ilorin</option>
+              <option value="Base 27 - Nasarawa State Command EOD Base, Lafia|Nasarawa|Zone 7 Abuja|North Central|State Base|Lafia HQ">Base 27 - Nasarawa State Command EOD Base, Lafia</option>
+              <option value="Base 28 - Niger State Command EOD Base, Minna|Niger|Zone 7 Abuja|North Central|State Base|Minna HQ">Base 28 - Niger State Command EOD Base, Minna</option>
+              <option value="Base 29 - Ogun State Command EOD Base, Abeokuta|Ogun|Zone 2 Lagos|South West|State Base|Eleweran, Abeokuta">Base 29 - Ogun State Command EOD Base, Abeokuta</option>
+              <option value="Base 30 - Ondo State Command EOD Base, Akure|Ondo|Zone 17 Akure|South West|State Base|Akure HQ">Base 30 - Ondo State Command EOD Base, Akure</option>
+              <option value="Base 31 - Osun State Command EOD Base, Osogbo|Osun|Zone 11 Osogbo|South West|State Base|Osogbo HQ">Base 31 - Osun State Command EOD Base, Osogbo</option>
+              <option value="Base 32 - Plateau State Command EOD Base, Jos|Plateau|Zone 4 Makurdi|North Central|State Base|Jos HQ">Base 32 - Plateau State Command EOD Base, Jos</option>
+              <option value="Base 33 - Sokoto State Command EOD Base|Sokoto|Zone 10 Sokoto|North West|State Base|Sokoto HQ">Base 33 - Sokoto State Command EOD Base</option>
+              <option value="Base 34 - Taraba State Command EOD Base, Jalingo|Taraba|Zone 3 Yola|North East|State Base|Jalingo HQ">Base 34 - Taraba State Command EOD Base, Jalingo</option>
+              <option value="Base 35 - Yobe State Command EOD Base, Damaturu|Yobe|Zone 15 Maiduguri|North East|State Base|Damaturu HQ">Base 35 - Yobe State Command EOD Base, Damaturu</option>
+              <option value="Base 36 - Zamfara State Command EOD Base, Gusau|Zamfara|Zone 10 Sokoto|North West|State Base|Gusau HQ">Base 36 - Zamfara State Command EOD Base, Gusau</option>
+              <option value="Base 37 - Apapa & Tin Can Sea Ports EOD Base, Lagos|Lagos|Zone 2 Lagos|South West|Seaport Formation|Apapa Port Complex">Base 37 - Apapa & Tin Can Sea Ports EOD Base, Lagos</option>
+              <option value="Base 38 - Murtala Muhammed International Airport EOD Base, Lagos|Lagos|Zone 2 Lagos|South West|Aviation Unit|MMIA Ikeja">Base 38 - Murtala Muhammed International Airport (MMIA) EOD Base, Lagos</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-slate-400 block font-bold mb-1 text-[10px]">TACTICAL SPECIALISATION:</label>
+            <input type="text" id="add-specialisation" required placeholder="e.g. Maritime Explosives, Post-Blast Forensics" class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-white text-xs focus:border-emerald-500 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- 2. CAREER & SERVICE DATES -->
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+          <div class="flex items-center gap-1.5 border-b border-slate-800 pb-1">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span class="text-[10px] font-black text-amber-400 uppercase font-mono">2. CAREER & SERVICE DATES</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div>
+              <label class="text-slate-400 block font-bold mb-1 text-[10px]">DATE OF ENLISTMENT:</label>
+              <input type="date" id="add-appointment-date" required onchange="updateRetirementDateFromEnlistment()" class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5 text-white font-mono text-xs focus:border-emerald-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="text-slate-400 block font-bold mb-1 text-[10px]">DATE OF PROMOTION:</label>
+              <input type="date" id="add-promotion-date" required class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5 text-white font-mono text-xs focus:border-emerald-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="text-slate-400 block font-bold mb-1 text-[10px]">DATE OF RETIREMENT:</label>
+              <input type="date" id="add-retirement-date" required class="w-full bg-slate-900 border border-slate-800 rounded px-2 py-1.5 text-amber-400 font-mono text-xs focus:border-emerald-500 focus:outline-none">
             </div>
           </div>
         </div>
 
-        <!-- SECTION 2: CAREER, DEPLOYMENT & RETIREMENT HEADINGS -->
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
-          <h4 class="text-xs font-black text-amber-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
-            <i data-lucide="award" class="w-4 h-4"></i>
-            <span>2. CAREER, DEPLOYMENT & RETIREMENT HEADINGS</span>
-          </h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <!-- 3. PERSONAL CONTACT & BIODATA -->
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+          <span class="text-[10px] font-black text-sky-400 uppercase font-mono block border-b border-slate-800 pb-1">3. CONTACT & RESIDENTIAL BIODATA</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <div>
-              <label class="text-slate-300 block font-bold mb-1">17. DATE OF ENLIST:</label>
-              <input type="date" id="add-enlistDate" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
+              <label class="text-slate-400 block font-bold mb-1 text-[10px]">OFFICIAL PHONE NUMBER:</label>
+              <input type="text" id="add-phone" required placeholder="e.g. +234 803 123 4567" class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-sky-400 font-mono text-xs focus:border-emerald-500 focus:outline-none">
             </div>
             <div>
-              <label class="text-slate-300 block font-bold mb-1">11. DATE OF LAST PROM.:</label>
-              <input type="date" id="add-lastPromDate" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
+              <label class="text-slate-400 block font-bold mb-1 text-[10px]">OFFICIAL EMAIL ADDRESS:</label>
+              <input type="email" id="add-email" required placeholder="e.g. officer@npf.gov.ng" class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-sky-400 font-mono text-xs focus:border-emerald-500 focus:outline-none">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-slate-400 block font-bold mb-1 text-[10px]">RESIDENTIAL / BARRACKS ADDRESS:</label>
+            <input type="text" id="add-address" required placeholder="e.g. 25 Marine Road, Apapa, Lagos" class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-white font-mono text-xs focus:border-emerald-500 focus:outline-none">
+          </div>
+
+          <div>
+            <label class="text-slate-400 block font-bold mb-1 text-[10px]">PROFILE PHOTO URL:</label>
+            <input type="text" id="add-photo" required placeholder="https://..." class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-white font-mono text-xs focus:border-emerald-500 focus:outline-none">
+          </div>
+        </div>
+
+        <!-- 4. NEXT OF KIN, MEDICAL & QUALIFICATIONS -->
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+          <span class="text-[10px] font-black text-rose-400 uppercase font-mono block border-b border-slate-800 pb-1">4. NEXT-OF-KIN, MEDICAL & QUALIFICATIONS</span>
+          <div>
+            <label class="text-slate-400 block font-bold mb-1 text-[10px]">NEXT-OF-KIN NAME & PHONE:</label>
+            <input type="text" id="add-nextofkin" required placeholder="e.g. Mrs. Folashade Adeyemi (+234 803 111 2222)" class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-amber-300 font-mono text-xs focus:border-emerald-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-slate-400 block font-bold mb-1 text-[10px]">MEDICAL INFO & BLOOD GROUP:</label>
+            <input type="text" id="add-medical" required placeholder="e.g. Blood Group O+ | Genotype AA" class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-rose-300 font-mono text-xs focus:border-emerald-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-slate-400 block font-bold mb-1 text-[10px]">QUALIFICATIONS (COMMA SEPARATED):</label>
+            <input type="text" id="add-qualifications" required placeholder="e.g. B.Sc Criminology, NATO Master EOD Cert" class="w-full bg-slate-900 border border-slate-800 rounded px-2.5 py-1.5 text-emerald-300 font-mono text-xs focus:border-emerald-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeAddModal()" class="w-1/2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl transition">CANCEL</button>
+          <button type="submit" class="w-1/2 bg-emerald-600 hover:bg-emerald-500 text-black font-extrabold py-2 rounded-xl transition shadow-lg">SAVE OFFICER</button>
+        </div>
+      </form>
+    </div>
+  </di
+
+  <!-- MODAL: ADD BASE & UNIT COMMANDER MODE -->
+  <div id="add-commander-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md">
+    <div class="bg-slate-900 border border-amber-500/50 rounded-2xl max-w-3xl w-full p-6 space-y-6 my-8 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-4 bg-slate-950 p-4 -m-6 mb-2">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 font-black">
+            <i data-lucide="crown" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-black uppercase text-white tracking-wider flex items-center gap-2">
+              <span>ADD BASE & UNIT COMMANDER MODE</span>
+            </h3>
+            <p class="text-xs text-slate-400 font-mono">Appoint and assign Command Officers (Base Commanders & Unit Commanders).</p>
+          </div>
+        </div>
+        <button onclick="closeAddCommanderModal()" class="text-slate-400 hover:text-white p-2 bg-slate-800 rounded-xl transition cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="add-commander-form" onsubmit="handleAddCommander(event)" class="space-y-4 overflow-y-auto pr-2 font-mono text-xs text-slate-200">
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+          <span class="text-xs font-black text-amber-400 uppercase tracking-wider block border-b border-slate-800 pb-2">1. COMMANDER APPOINTMENT DETAILS</span>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-amber-300 block font-bold mb-1">COMMANDER ROLE TYPE: *</label>
+              <select id="cmd-role-type" required class="w-full bg-slate-900 border border-slate-800 text-amber-300 font-bold rounded-xl px-3 py-2 text-xs focus:border-amber-500 focus:outline-none">
+                <option value="BASE_COMMANDER">BASE COMMANDER (Tactical EOD Base)</option>
+                <option value="UNIT_COMMANDER">UNIT COMMANDER (EOD Sea Port / Airport / Special Unit)</option>
+                <option value="SQUADRON_COMMANDER">SQUADRON COMMANDER</option>
+              </select>
             </div>
             <div>
-              <label class="text-amber-400 block font-bold mb-1">12. DATE OF RETIREMENT:</label>
-              <input type="date" id="add-retireDate" class="w-full bg-slate-900 border border-slate-800 text-amber-300 font-bold rounded-xl px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none">
+              <label class="text-emerald-400 block font-bold mb-1">AP / FORCE NUMBER: *</label>
+              <input type="text" id="cmd-serviceno" required placeholder="e.g. AP/117369" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs font-bold focus:border-emerald-500 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-amber-400 block font-bold mb-1">RANK: *</label>
+              <select id="cmd-rank" required class="w-full bg-slate-900 border border-slate-800 text-amber-300 font-bold rounded-xl px-3 py-2 text-xs focus:border-amber-500 focus:outline-none">
+                <option value="CP">CP - Commissioner of Police</option>
+                <option value="DCP">DCP - Deputy Commissioner</option>
+                <option value="ACP">ACP - Assistant Commissioner</option>
+                <option value="CSP">CSP - Chief Superintendent</option>
+                <option value="SP">SP - Superintendent</option>
+                <option value="DSP">DSP - Deputy Superintendent</option>
+              </select>
             </div>
             <div>
-              <label class="text-slate-300 block font-bold mb-1">13. COMMAND SERVED LAST:</label>
-              <input type="text" id="add-commandServedLast" placeholder="e.g. APAPA SEAPORT COMMAND" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
+              <label class="text-white block font-bold mb-1">COMMANDER FULL NAME: *</label>
+              <input type="text" id="cmd-name" required placeholder="e.g. CSP DESMOND AGBALA" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs font-bold focus:border-amber-500 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-slate-300 block font-bold mb-1">ASSIGNED BASE / UNIT NAME: *</label>
+              <input type="text" id="cmd-unitname" required placeholder="e.g. Apapa Sea Port EOD Unit or Base 2 Ikeja" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-amber-500 focus:outline-none">
             </div>
             <div>
-              <label class="text-slate-300 block font-bold mb-1">14. DUTY POST:</label>
-              <input type="text" id="add-dutyPost" placeholder="e.g. COMMANDER, APAPA UNIT" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
+              <label class="text-slate-300 block font-bold mb-1">DUTY POST TITLE:</label>
+              <input type="text" id="cmd-dutypost" placeholder="e.g. COMMANDER, APAPA EOD UNIT" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-amber-500 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="text-emerald-400 block font-bold mb-1">OFFICIAL PHONE NUMBER:</label>
+              <input type="text" id="cmd-phone" placeholder="e.g. 08034268620" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-amber-500 focus:outline-none">
             </div>
             <div>
-              <label class="text-slate-300 block font-bold mb-1">15. DATE TRANSFERRED TO COMMAND:</label>
-              <input type="date" id="add-transferredDate" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-slate-300 block font-bold mb-1">16. GD/SP (SPECIALISATION):</label>
-              <input type="text" id="add-gdSp" placeholder="e.g. EOD TECH / COMMANDER" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div class="sm:col-span-2">
-              <label class="text-slate-300 block font-bold mb-1">26. MSS (UNIT / TACTICAL BASE):</label>
-              <input type="text" id="add-mss" placeholder="e.g. APAPA BASE / BENIN CITY" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
+              <label class="text-cyan-400 block font-bold mb-1">OFFICIAL E-MAIL:</label>
+              <input type="email" id="cmd-email" placeholder="e.g. desmond.agbala@npf.gov.ng" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-amber-500 focus:outline-none">
             </div>
           </div>
         </div>
 
-        <!-- SECTION 3: FINANCIAL, PAYROLL & PENSION HEADINGS -->
-        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
-          <h4 class="text-xs font-black text-cyan-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
-            <i data-lucide="credit-card" class="w-4 h-4"></i>
-            <span>3. FINANCIAL, PAYROLL & PENSION HEADINGS</span>
-          </h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            <div>
-              <label class="text-slate-300 block font-bold mb-1">19. G/L (GRADE LEVEL):</label>
-              <input type="text" id="add-gl" placeholder="e.g. 10" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-slate-300 block font-bold mb-1">20. BANK NAME:</label>
-              <input type="text" id="add-bankName" placeholder="e.g. POLICE MORTGAGE BANK" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-slate-300 block font-bold mb-1">21. EMPLOYEE CODE:</label>
-              <input type="text" id="add-employeeCode" placeholder="e.g. PF012964" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-emerald-400 block font-bold mb-1">22. IPPIS NUMBER:</label>
-              <input type="text" id="add-ippisNo" placeholder="e.g. 100060086275" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs font-bold focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-slate-300 block font-bold mb-1">23. PFA (PENSION ADMIN):</label>
-              <input type="text" id="add-pfa" placeholder="e.g. NPF PENSION" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-slate-300 block font-bold mb-1">24. PEN PIN:</label>
-              <input type="text" id="add-penPin" placeholder="e.g. 131696142-8" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-            <div>
-              <label class="text-slate-300 block font-bold mb-1">25. NHF NUMBER:</label>
-              <input type="text" id="add-nhfNo" placeholder="e.g. NHF-117369" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-emerald-500 focus:outline-none">
-            </div>
-          </div>
-        </div>
-
-        <!-- ACTION BUTTONS -->
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
-          <button type="button" onclick="closeAddModal()" class="px-5 py-2.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 hover:text-white font-bold transition cursor-pointer">CANCEL</button>
-          <button type="submit" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-black font-black transition flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer">
-            <i data-lucide="check-circle" class="w-4 h-4"></i>
-            <span>REGISTER OFFICER TO MASTER ROLL</span>
+          <button type="button" onclick="closeAddCommanderModal()" class="px-5 py-2.5 rounded-xl border border-slate-700 bg-slate-800 text-slate-300 hover:text-white font-bold transition cursor-pointer">CANCEL</button>
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-black transition flex items-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.3)] cursor-pointer uppercase tracking-wider">
+            <i data-lucide="crown" class="w-4 h-4"></i>
+            <span>APPOINT & REGISTER COMMANDER</span>
           </button>
         </div>
       </form>
     </div>
-  </div>
+  </div>v>
 
   <script>
     // TOP LEVEL STATE DECLARATIONS & INITIAL APAPA ROLL (24 OFFICERS WITH ALL 26 HEADINGS)
@@ -1003,7 +1164,9 @@
     "command": "Apapa Sea Port EOD Unit",
     "unit": "Apapa Sea Port EOD Unit",
     "status": "ACTIVE_READY",
-    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
+    "isCommander": true,
+    "commanderRole": "UNIT_COMMANDER"
   },
   {
     "id": "POL-APAPA-2",
@@ -1040,7 +1203,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "12",
     "retirementDate": "2/IC",
-    "lastPromotionDate": "18/07/1985"
+    "lastPromotionDate": "18/07/1985",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-3",
@@ -1077,7 +1241,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "11",
     "retirementDate": "PAP COMMAND",
-    "lastPromotionDate": "09/01/2012"
+    "lastPromotionDate": "09/01/2012",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-4",
@@ -1114,7 +1279,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "10",
     "retirementDate": "2026-07-01",
-    "lastPromotionDate": "2020-12-18"
+    "lastPromotionDate": "2020-12-18",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-5",
@@ -1151,7 +1317,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "10",
     "retirementDate": "2034-01-12",
-    "lastPromotionDate": "2022-03-28"
+    "lastPromotionDate": "2022-03-28",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-6",
@@ -1188,7 +1355,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "10",
     "retirementDate": "2035-07-01",
-    "lastPromotionDate": "2023-06-06"
+    "lastPromotionDate": "2023-06-06",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-7",
@@ -1225,7 +1393,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "10",
     "retirementDate": "SEME UNIT",
-    "lastPromotionDate": "2024-07-15"
+    "lastPromotionDate": "2024-07-15",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-8",
@@ -1262,7 +1431,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "10",
     "retirementDate": "01/11/2000",
-    "lastPromotionDate": "2023-01-06"
+    "lastPromotionDate": "2023-01-06",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-9",
@@ -1299,7 +1469,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "9",
     "retirementDate": "2035-09-30",
-    "lastPromotionDate": "2023-06-03"
+    "lastPromotionDate": "2023-06-03",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-10",
@@ -1336,7 +1507,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "9",
     "retirementDate": "2036-01-01",
-    "lastPromotionDate": "femdon7@gmail.com"
+    "lastPromotionDate": "femdon7@gmail.com",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-11",
@@ -1373,7 +1545,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "9",
     "retirementDate": "2036-01-07",
-    "lastPromotionDate": "femdon7@gmail.com"
+    "lastPromotionDate": "femdon7@gmail.com",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-12",
@@ -1410,7 +1583,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "9",
     "retirementDate": "AFEMAI",
-    "lastPromotionDate": "2026-01-15"
+    "lastPromotionDate": "2026-01-15",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-13",
@@ -1447,7 +1621,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "8",
     "retirementDate": "2039-01-01",
-    "lastPromotionDate": "2019-10-24"
+    "lastPromotionDate": "2019-10-24",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-14",
@@ -1484,7 +1659,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "8",
     "retirementDate": "2038-03-01",
-    "lastPromotionDate": "2020-11-18"
+    "lastPromotionDate": "2020-11-18",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-15",
@@ -1521,7 +1697,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "8",
     "retirementDate": "2038-01-06",
-    "lastPromotionDate": "2020-11-18"
+    "lastPromotionDate": "2020-11-18",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-16",
@@ -1558,7 +1735,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "8",
     "retirementDate": "2038-01-09",
-    "lastPromotionDate": "2020-11-18"
+    "lastPromotionDate": "2020-11-18",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-17",
@@ -1595,7 +1773,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "8",
     "retirementDate": "2038-01-09",
-    "lastPromotionDate": "2020-11-18"
+    "lastPromotionDate": "2020-11-18",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-18",
@@ -1632,7 +1811,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "8",
     "retirementDate": "2038-01-10",
-    "lastPromotionDate": "2020-11-18"
+    "lastPromotionDate": "2020-11-18",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-19",
@@ -1669,7 +1849,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "8",
     "retirementDate": "2038-01-09",
-    "lastPromotionDate": "2020-11-18"
+    "lastPromotionDate": "2020-11-18",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-20",
@@ -1706,7 +1887,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "8",
     "retirementDate": "2038-01-12",
-    "lastPromotionDate": "2020-11-18"
+    "lastPromotionDate": "2020-11-18",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-21",
@@ -1743,7 +1925,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "8",
     "retirementDate": "2039-01-03",
-    "lastPromotionDate": "2020-11-18"
+    "lastPromotionDate": "2020-11-18",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-22",
@@ -1780,7 +1963,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "8",
     "retirementDate": "2040-01-08",
-    "lastPromotionDate": "2020-11-18"
+    "lastPromotionDate": "2020-11-18",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-23",
@@ -1817,7 +2001,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "8",
     "retirementDate": "2041-06-01",
-    "lastPromotionDate": "2021-09-10"
+    "lastPromotionDate": "2021-09-10",
+    "isCommander": false
   },
   {
     "id": "POL-APAPA-24",
@@ -1854,7 +2039,8 @@
     "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
     "appointmentDate": "6",
     "retirementDate": "2051-12-31",
-    "lastPromotionDate": "2020-11-18"
+    "lastPromotionDate": "2020-11-18",
+    "isCommander": false
   }
 ];
     var dbPersonnel = JSON.parse(JSON.stringify(INITIAL_APAPA_PERSONNEL));
@@ -2241,78 +2427,79 @@
       renderModule();
     }
 
-            function handlePortalRegistration(e) {
+        function handlePortalRegistration(e) {
       e.preventDefault();
-      const serviceNo = document.getElementById('reg-serviceno').value.trim();
-      const name = document.getElementById('reg-fullname').value.trim();
-      const pass = document.getElementById('reg-password').value;
-      const rank = document.getElementById('reg-rank')?.value.trim() || 'ASP';
-      const phone = document.getElementById('reg-phone')?.value.trim() || '08030000000';
+      const serviceNoInput = document.getElementById('reg-serviceno').value.trim();
+      const nameInput = document.getElementById('reg-name').value.trim();
+      const passInput = document.getElementById('reg-password').value;
+      const passConfirmInput = document.getElementById('reg-password-confirm').value;
 
-      if (!serviceNo || !name || !pass) {
-        alert("Please fill in AP / Force Number, Full Name, and Password.");
+      if (passInput !== passConfirmInput) {
+        alert('❌ REGISTRATION ERROR: Passwords do not match. Please re-enter your password.');
         return;
       }
 
-      let officer = dbPersonnel.find(p => (p.serviceNo || p.apNo || '').toUpperCase().replace(/[^A-Z0-9]/g, '') === serviceNo.toUpperCase().replace(/[^A-Z0-9]/g, ''));
-      
-      if (!officer) {
-        officer = {
-          id: 'POL-APAPA-' + Date.now(),
-          sNo: (dbPersonnel.length + 1).toString(),
-          apNo: serviceNo,
-          serviceNo: serviceNo,
-          rank: rank,
-          name: name,
-          eduQual: 'SSCE',
-          stateOfOrigin: 'LAGOS',
-          phone: phone,
-          tribe: 'YORUBA',
-          dob: '1988-05-12',
-          geoPolZone: 'SOUTH WEST',
-          email: `${name.toLowerCase().replace(/\s+/g, '.')}@npf.gov.ng`,
-          enlistDate: '2015-01-10',
-          appointmentDate: '2015-01-10',
-          lastPromDate: '2021-06-01',
-          lastPromotionDate: '2021-06-01',
-          retireDate: '2050-01-10',
-          retirementDate: '2050-01-10',
-          commandServedLast: 'APAPA SEAPORT COMMAND',
-          dutyPost: 'EOD TECH OFFICER',
-          transferredDate: '2023-01-15',
-          gdSp: 'EOD TECH',
-          mss: 'APAPA BASE',
-          gl: '10',
-          bankName: 'POLICE MORTGAGE BANK',
-          employeeCode: `PF00${serviceNo}`,
-          ippisNo: `1000${serviceNo}`,
-          pfa: 'NPF PENSION',
-          penPin: `1319000${serviceNo}`,
-          nhfNo: `NHF-${serviceNo}`,
-          command: 'Apapa Sea Port EOD Unit',
-          unit: 'Apapa Sea Port EOD Unit',
-          status: 'ACTIVE_READY',
-          photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'
-        };
-        dbPersonnel.unshift(officer);
+      if (passInput.length < 4) {
+        alert('❌ REGISTRATION ERROR: Password must be at least 4 characters long.');
+        return;
       }
 
-      officer.registeredPassword = pass;
-      const map = getRegisteredAccounts();
-      map[normalizeServiceNo(serviceNo)] = { password: pass, name: name };
-      saveRegisteredAccounts(map);
+      // STEP 1: VERIFY RECORD IN MASTER ROLL DATABASE
+      const officer = findOfficerByServiceNo(serviceNoInput);
+      if (!officer) {
+        alert(`🚫 REGISTRATION REJECTED: PERSONNEL RECORD NOT IN MASTER ROLL!\n\nNo police personnel record was found matching Force/AP Number "${serviceNoInput}" in the Master Nominal Roll.\n\nPOLICY ENFORCEMENT:\nYou cannot register or access the portal unless your record is first added to the Master Roll by a Personnel Administrator.\n\nNO ACCESS IS GRANTED.`);
+        return;
+      }
 
-      sessionPortalOfficerId = officer.id || officer.serviceNo;
-      localStorage.setItem('nfp_portal_session_id', sessionPortalOfficerId);
-      saveState();
+      // STEP 2: VERIFY REGISTERED NAME MATCHES MASTER ROLL
+      const officerNameLower = officer.name.toLowerCase();
+      const inputNameLower = nameInput.toLowerCase();
 
-      alert(`Account registered successfully for ${officer.rank} ${officer.name} (${serviceNo})!
+      const nameTokens = inputNameLower.split(/\s+/).filter(t => t.length > 2);
+      const isNameMatch = nameTokens.some(token => officerNameLower.includes(token)) || officerNameLower.includes(inputNameLower);
 
-You are now signed into your Individual Officer Portal.`);
+      if (!isNameMatch) {
+        alert(`🚫 REGISTRATION REJECTED: NAME MISMATCH WITH MASTER ROLL!\n\nThe entered name "${nameInput}" does not match the official Master Roll record for Service Number "${officer.serviceNo}" (${officer.rank} ${officer.name}).\n\nPOLICY ENFORCEMENT:\nBoth your Force/AP Number and Name must match your official Master Roll record exactly.\n\nNO ACCESS IS GRANTED.`);
+        return;
+      }
+
+      // STEP 3: REGISTER ACCOUNT SECURELY
+      const accounts = getRegisteredAccounts();
+      const normKey = normalizeServiceNo(officer.serviceNo);
+      accounts[normKey] = {
+        password: passInput,
+        registeredAt: new Date().toISOString(),
+        serviceNo: officer.serviceNo,
+        name: officer.name,
+        officerId: officer.id
+      };
+      saveRegisteredAccounts(accounts);
+
+      officer.isRegistered = true;
+      officer.registeredPassword = passInput;
+
+      saveAuditLogToFirebase({ timestamp: new Date().toLocaleString(), action: 'LOG' }); auditLogs.unshift({
+        timestamp: new Date().toLocaleString(),
+        admin: `${officer.name} (${officer.serviceNo})`,
+        action: 'PORTAL_REGISTRATION',
+        officer: `${officer.name} (${officer.serviceNo})`,
+        prevValue: 'Unregistered',
+        newValue: 'Registered Master Roll Account',
+        reason: 'Officer Master Roll Self-Service Registration'
+      });
+
+      alert(`🎉 MASTER ROLL VERIFICATION PASSED & REGISTRATION SUCCESSFUL!\n\nPersonnel ${officer.rank} ${officer.name} (${officer.serviceNo}) verified in Master Roll.\n\nYour portal account is now active. Log in with your Force/AP Number and Password.`);
+
+      portalAuthTab = 'LOGIN';
       renderModule();
+
+      setTimeout(() => {
+        const loginServiceEl = document.getElementById('login-serviceno');
+        if (loginServiceEl) loginServiceEl.value = officer.serviceNo;
+      }, 100);
     }
 
-    function handlePortalLogin(e) {
+        function handlePortalLogin(e) {
       e.preventDefault();
       const serviceNoInput = document.getElementById('login-serviceno').value.trim();
       const passInput = document.getElementById('login-password').value;
@@ -2409,20 +2596,26 @@ You are now signed into your Individual Officer Portal.`);
           'eod_db_apapa_master_v1000',
           'eod_db_apapa_master_v2000',
           'eod_db_apapa_master_v5000',
-          'eod_db_apapa_master_v5000'
+          'eod_db_apapa_master_v5000',
+          'eod_db_apapa_master_v9000'
         ];
         keysToPurge.forEach(k => localStorage.removeItem(k));
 
-        const STORAGE_KEY = 'eod_db_apapa_master_v9000';
+        const STORAGE_KEY = 'eod_db_apapa_master_v9999';
         const saved = localStorage.getItem(STORAGE_KEY);
+        let userAdditions = [];
         if (saved) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed) && parsed.length >= 20 && parsed.some(p => p.name === 'CSP DESMOND AGBALA' || p.serviceNo === 'AP/117369')) {
-            dbPersonnel = parsed;
-            return;
-          }
+          try {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed)) {
+              // Find any extra personnel created by user not in INITIAL_APAPA_PERSONNEL
+              userAdditions = parsed.filter(p => !INITIAL_APAPA_PERSONNEL.some(initP => (initP.serviceNo || initP.apNo) === (p.serviceNo || p.apNo)));
+            }
+          } catch(e) {}
         }
-        dbPersonnel = JSON.parse(JSON.stringify(INITIAL_APAPA_PERSONNEL));
+        
+        // ALWAYS START WITH ALL 24 APAPA OFFICERS + ANY NEWLY CREATED OFFICERS
+        dbPersonnel = [...JSON.parse(JSON.stringify(INITIAL_APAPA_PERSONNEL)), ...userAdditions];
         localStorage.setItem(STORAGE_KEY, JSON.stringify(dbPersonnel));
       } catch (e) {
         console.error("Storage loading error:", e);
@@ -2432,7 +2625,7 @@ You are now signed into your Individual Officer Portal.`);
 
     function saveState() {
       try {
-        localStorage.setItem('eod_db_apapa_master_v9000', JSON.stringify(dbPersonnel));
+        localStorage.setItem('eod_db_apapa_master_v9999', JSON.stringify(dbPersonnel));
       } catch (e) {
         console.error("saveState error:", e);
       }
@@ -2609,6 +2802,95 @@ You are now signed into your Individual Officer Portal.`);
       alert("Reset to Default Firebase Cloud Settings.");
       initFirebaseEngine();
     }
+
+        // =========================================================================
+    // COMMANDER MODE HANDLERS
+    // =========================================================================
+    function openAddCommanderModal() {
+      const modal = document.getElementById('add-commander-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeAddCommanderModal() {
+      const modal = document.getElementById('add-commander-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function handleAddCommander(e) {
+      e.preventDefault();
+      const roleType = document.getElementById('cmd-role-type').value;
+      const serviceNo = document.getElementById('cmd-serviceno').value.trim();
+      const rank = document.getElementById('cmd-rank').value;
+      const name = document.getElementById('cmd-name').value.trim();
+      const unitName = document.getElementById('cmd-unitname').value.trim();
+      const dutyPost = document.getElementById('cmd-dutypost')?.value.trim() || `COMMANDER, ${unitName.toUpperCase()}`;
+      const phone = document.getElementById('cmd-phone')?.value.trim() || '08034268620';
+      const email = document.getElementById('cmd-email')?.value.trim() || `${name.toLowerCase().replace(/\s+/g, '.')}@npf.gov.ng`;
+
+      let existing = dbPersonnel.find(p => (p.serviceNo || p.apNo || '').toUpperCase().replace(/[^A-Z0-9]/g, '') === serviceNo.toUpperCase().replace(/[^A-Z0-9]/g, ''));
+      
+      if (existing) {
+        existing.rank = rank;
+        existing.name = name;
+        existing.dutyPost = dutyPost;
+        existing.phone = phone;
+        existing.email = email;
+        existing.commandServedLast = unitName;
+        existing.isCommander = true;
+        existing.commanderRole = roleType;
+      } else {
+        const newCmd = {
+          id: 'POL-APAPA-' + Date.now(),
+          sNo: (dbPersonnel.length + 1).toString(),
+          apNo: serviceNo,
+          serviceNo: serviceNo,
+          rank: rank,
+          name: name,
+          eduQual: 'BSC / SSCE',
+          stateOfOrigin: 'LAGOS',
+          phone: phone,
+          tribe: 'YORUBA',
+          dob: '1978-08-14',
+          geoPolZone: 'SOUTH WEST',
+          email: email,
+          enlistDate: '2000-01-10',
+          appointmentDate: '2000-01-10',
+          lastPromDate: '2023-01-01',
+          lastPromotionDate: '2023-01-01',
+          retireDate: '2035-01-10',
+          retirementDate: '2035-01-10',
+          commandServedLast: unitName,
+          dutyPost: dutyPost,
+          transferredDate: '2023-09-12',
+          gdSp: 'EOD TECH / COMMANDER',
+          mss: unitName,
+          gl: '13',
+          bankName: 'POLICE MORTGAGE BANK',
+          employeeCode: `NP012964/${serviceNo}`,
+          ippisNo: `1000${serviceNo}`,
+          pfa: 'NPF PENSION',
+          penPin: `131696142-8`,
+          nhfNo: `NHF-${serviceNo}`,
+          command: unitName,
+          unit: unitName,
+          status: 'ACTIVE_READY',
+          photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+          isCommander: true,
+          commanderRole: roleType
+        };
+        dbPersonnel.unshift(newCmd);
+      }
+
+      saveState();
+      alert(`Commander ${rank} ${name} (${serviceNo}) appointed and registered as ${roleType} for ${unitName}!`);
+      closeAddCommanderModal();
+      switchView('COMMANDERS');
+      renderModule();
+    }
+
+    window.openAddCommanderModal = openAddCommanderModal;
+    window.closeAddCommanderModal = closeAddCommanderModal;
+    window.handleAddCommander = handleAddCommander;
 
     
     // =========================================================================
