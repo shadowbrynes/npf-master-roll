@@ -1554,7 +1554,7 @@
     
     function saveState() {
       try {
-        localStorage.setItem('eod_db_personnel', JSON.stringify(dbPersonnel));
+        localStorage.setItem('eod_db_personnel_apapa_v2', JSON.stringify(dbPersonnel));
         localStorage.setItem('eod_audit_logs', JSON.stringify(auditLogs));
       } catch (e) {
         console.error('Error saving state to localStorage', e);
@@ -1563,10 +1563,13 @@
 
     function loadSavedState() {
       try {
-        const savedDb = localStorage.getItem('eod_db_personnel');
+        const savedDb = localStorage.getItem('eod_db_personnel_apapa_v2');
         if (savedDb) {
           const parsed = JSON.parse(savedDb);
           if (Array.isArray(parsed) && parsed.length > 0) dbPersonnel = parsed;
+        } else {
+          // Default to GEN. NOMONAL ROLL EOD APAPA
+          localStorage.setItem('eod_db_personnel_apapa_v2', JSON.stringify(dbPersonnel));
         }
         const savedLogs = localStorage.getItem('eod_audit_logs');
         if (savedLogs) {
@@ -1579,305 +1582,789 @@
     }
 
     let dbPersonnel = [
-      {
-        id: 'POL-001',
-        base: 'Base 1',
-        serviceNo: 'AP/45120',
-        name: 'CP Babatunde Olarinde',
-        rank: 'CP',
-        role: 'Commissioner of Police, EOD-CBRN Command',
-        command: 'Force HQ EOD-CBRN Command',
-        state: 'FCT Abuja',
-        zone: 'Zone 7 Abuja',
-        formation: 'Force Headquarters',
-        unit: 'Command HQ',
-        location: 'Louis Edet House, Abuja',
-        specialisation: 'National Strategic EOD Command & Arms Control',
-        status: 'ACTIVE_READY',
-        appointmentDate: '1991-09-15', retirementDate: '2026-09-15',
-        lastPromotionDate: '2024-01-10',
-        phone: '+234 803 000 1122',
-        email: 'babatunde.olarinde@npf.gov.ng',
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-        address: 'Plot 14 Force HQ Quarters, Maitama, Abuja',
-        nextOfKin: 'Mrs. Folashade Olarinde (+234 803 111 0000)',
-        medicalInfo: 'Blood Group O+ | No Known Allergies',
-        promotions: [
-          { date: '2024-01-10', fromRank: 'DCP', toRank: 'CP', gazette: 'PSC/SP/2024/01' },
-          { date: '2019-06-20', fromRank: 'ACP', toRank: 'DCP', gazette: 'PSC/SP/2019/04' }
-        ],
-        postings: [{ date: '2024-01-15', command: 'Force HQ EOD Command', location: 'Abuja' }],
-        qualifications: ['M.Sc Security Studies', 'NATO Master EOD Certificate', 'Interpol Counter-Terrorism Diploma']
-      },
-      {
-        id: 'POL-002',
-        base: 'Base 1',
-        serviceNo: 'AP/52918',
-        name: 'DCP Amina Bello',
-        rank: 'DCP',
-        role: 'Director, National CBRN Emergency Centre',
-        command: 'National CBRN Emergency Response Centre',
-        state: 'FCT Abuja',
-        zone: 'Zone 7 Abuja',
-        formation: 'CBRN Centre of Excellence',
-        unit: 'Bio-Hazard Response',
-        location: 'Guzape Complex, Abuja',
-        specialisation: 'Bio-Chemical Mitigation & Radiological Safety',
-        status: 'ACTIVE_READY',
-        appointmentDate: '1991-09-01', retirementDate: '2026-09-01',
-        lastPromotionDate: '2023-11-15',
-        phone: '+234 802 111 2233',
-        email: 'amina.bello@npf.gov.ng',
-        photo: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
-        address: 'No 8 CBRN Staff Estate, Guzape, Abuja',
-        nextOfKin: 'Alhaji Usman Bello (+234 802 222 3344)',
-        medicalInfo: 'Blood Group A+ | Asthmatic Mild',
-        promotions: [{ date: '2023-11-15', fromRank: 'ACP', toRank: 'DCP', gazette: 'PSC/SP/2023/88' }],
-        postings: [{ date: '2023-11-20', command: 'National CBRN Centre', location: 'Abuja' }],
-        qualifications: ['B.Sc Chemistry (Unilag)', 'IAEA Nuclear Safety Cert']
-      },
-      {
-        id: 'POL-003',
-        base: 'Base 13',
-        serviceNo: 'AP/61029',
-        name: 'ACP Kemi Adebayo',
-        rank: 'ACP',
-        role: 'Commander, Aviation Security EOD Unit',
-        command: 'Murtala Muhammed Airport EOD Unit',
-        state: 'Lagos',
-        zone: 'Zone 2 Lagos',
-        formation: 'Aviation Police Command',
-        unit: 'Airport EOD Detachment',
-        location: 'MMIA Ikeja, Lagos',
-        specialisation: 'Aviation Cargo Diagnostics & Aircraft EOD',
-        status: 'ACTIVE_READY',
-        appointmentDate: '2005-04-12',
-        lastPromotionDate: '2022-08-01',
-        phone: '+234 802 333 4455',
-        email: 'kemi.adebayo@npf.gov.ng',
-        photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-        address: 'Block B4 GRA Ikeja, Lagos State',
-        nextOfKin: 'Engr. Taiwo Adebayo (+234 802 444 5566)',
-        medicalInfo: 'Blood Group B+ | No Allergies',
-        promotions: [{ date: '2022-08-01', fromRank: 'CSP', toRank: 'ACP', gazette: 'PSC/SP/2022/14' }],
-        postings: [{ date: '2022-08-10', command: 'MMIA Airport EOD Unit', location: 'Lagos' }],
-        qualifications: ['ICAO Aviation Security Master', 'EOD Level 3 Tech']
-      },
-      {
-        id: 'POL-006',
-        base: 'Base 2', unit: 'Murtala Muhammed International Airport (MMIA) EOD Unit (Lagos)',
-        serviceNo: 'AP/78412',
-        name: 'CSP Desmond Agbala',
-        rank: 'CSP',
-        role: 'Commander, Apapa Sea Port EOD Unit',
-        command: 'Apapa Sea Port EOD Unit',
-        state: 'Lagos',
-        zone: 'Zone 2 Lagos',
-        formation: 'Seaport Police Command',
-        unit: 'EOD Maritime Detachment',
-        location: 'Apapa Port Complex, Lagos',
-        specialisation: 'Commercial Explosives Escort, Maritime EOD & Post-Blast Forensics',
-        status: 'ACTIVE_READY',
-        appointmentDate: '2006-02-18',
-        lastPromotionDate: '2023-04-10',
-        phone: '+234 803 456 7890',
-        email: 'desmond.agbala@npf.gov.ng',
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-        address: '25 Marine Road, Apapa, Lagos State',
-        nextOfKin: 'Dr. (Mrs) Blessing Agbala (+234 803 777 9900)',
-        medicalInfo: 'Blood Group O+ | Genotype AA | No Known Allergies',
-        promotions: [
-          { date: '2023-04-10', fromRank: 'SP', toRank: 'CSP', gazette: 'PSC/SP/2023/12' },
-          { date: '2018-03-01', fromRank: 'DSP', toRank: 'SP', gazette: 'PSC/SP/2018/09' }
-        ],
-        postings: [{ date: '2021-01-10', command: 'Apapa Sea Port EOD Unit', location: 'Lagos' }],
-        qualifications: ['B.Sc Criminology', 'UK Defence EOD Master Tech', 'Post-Blast Investigator']
-      },
-      {
-        id: 'POL-007',
-        base: 'Base 6',
-        serviceNo: 'AP/79104',
-        name: 'CSP Chukwudi Nnamdi',
-        rank: 'CSP',
-        role: 'Base Commander, Zone 13 Command',
-        command: 'Zone 13 Command EOD Base',
-        state: 'Anambra',
-        zone: 'Zone 13 Awka',
-        formation: 'Zonal Command HQ',
-        unit: 'Counter-IED Squad',
-        location: 'Ukpo / Awka, Anambra',
-        specialisation: 'Field Demolition & High-Threat IED Clearance',
-        status: 'ACTIVE_READY',
-        appointmentDate: '2007-06-20',
-        lastPromotionDate: '2024-02-01',
-        phone: '+234 803 222 1100',
-        email: 'chukwudi.nnamdi@npf.gov.ng',
-        photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-        address: 'No 5 Zonal Quarters, Ukpo Awka, Anambra',
-        nextOfKin: 'Mrs. Ngozi Nnamdi (+234 803 333 4411)',
-        medicalInfo: 'Blood Group O+ | Genotype AA',
-        promotions: [{ date: '2024-02-01', fromRank: 'SP', toRank: 'CSP', gazette: 'PSC/SP/2024/05' }],
-        postings: [{ date: '2024-02-05', command: 'Zone 13 EOD Base', location: 'Anambra' }],
-        qualifications: ['B.Eng Electrical', 'IEDD Threat Master']
-      },
-      {
-        id: 'POL-008',
-        base: 'Base 4',
-        serviceNo: 'AP/90214',
-        name: 'SP Michael Oladipo',
-        rank: 'SP',
-        role: 'Commander, Tin Can Island Port Unit',
-        command: 'Tin Can Island Port EOD Unit',
-        state: 'Lagos',
-        zone: 'Zone 2 Lagos',
-        formation: 'Seaport Police Command',
-        unit: 'Container Diagnostics',
-        location: 'Tin Can Port, Lagos',
-        specialisation: 'Port Container Scanning & Explosives Escort',
-        status: 'ACTIVE_READY',
-        appointmentDate: '2009-10-10',
-        lastPromotionDate: '2022-12-15',
-        phone: '+234 803 999 8877',
-        email: 'michael.oladipo@npf.gov.ng',
-        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-        address: '14 Festac Access Road, Lagos',
-        nextOfKin: 'Mrs. Funke Oladipo (+234 803 888 7766)',
-        medicalInfo: 'Blood Group AB+ | Penicillin Sensitive',
-        promotions: [{ date: '2022-12-15', fromRank: 'DSP', toRank: 'SP', gazette: 'PSC/SP/2022/99' }],
-        postings: [{ date: '2022-12-20', command: 'Tin Can Port Unit', location: 'Lagos' }],
-        qualifications: ['Port Cargo Security Specialist']
-      },
-      {
-        id: 'POL-012',
-        serviceNo: 'AP/110293',
-        name: 'ASP I Adebayo Williams',
-        rank: 'ASP_I',
-        role: 'Commercial Escort Officer',
-        command: 'Apapa Sea Port EOD Unit',
-        state: 'Lagos',
-        zone: 'Zone 2 Lagos',
-        formation: 'Seaport Police Command',
-        unit: 'Explosives Transit Escort',
-        location: 'Apapa Port Complex, Lagos',
-        specialisation: 'High-Risk Explosives Transit Escort',
-        status: 'ON_ESCORT',
-        appointmentDate: '2014-05-01',
-        lastPromotionDate: '2023-01-10',
-        phone: '+234 805 123 9988',
-        email: 'adebayo.williams@npf.gov.ng',
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-        address: 'Block A, Police Barracks, Orile Lagos',
-        nextOfKin: 'Mr. Kehinde Williams (+234 805 222 3311)',
-        medicalInfo: 'Blood Group O+',
-        promotions: [],
-        postings: [{ date: '2023-01-15', command: 'Apapa Sea Port EOD Unit', location: 'Lagos' }],
-        qualifications: ['UGV Robotics Level 2']
-      },
-      {
-        id: 'POL-018',
-        serviceNo: 'F/410982',
-        name: 'Inspr Chidi Okonkwo',
-        rank: 'INSPR',
-        role: 'Explosives Escort Inspector',
-        command: 'Apapa Sea Port EOD Unit',
-        state: 'Lagos',
-        zone: 'Zone 2 Lagos',
-        formation: 'Seaport Police Command',
-        unit: 'Highway Security',
-        location: 'Apapa Port Complex, Lagos',
-        specialisation: 'Commercial Explosives Escort & Magazine Audit',
-        status: 'ON_ESCORT',
-        appointmentDate: '2015-08-14',
-        lastPromotionDate: '2021-06-01',
-        phone: '+234 805 999 1122',
-        email: 'chidi.okonkwo@npf.gov.ng',
-        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-        address: 'No 12 Police Line, Surulere Lagos',
-        nextOfKin: 'Mrs. Mary Okonkwo (+234 805 111 2244)',
-        medicalInfo: 'Blood Group A+',
-        promotions: [],
-        postings: [{ date: '2021-06-10', command: 'Apapa Sea Port Unit', location: 'Lagos' }],
-        qualifications: ['Explosives Vault Custodian']
-      },
-      {
-        id: 'POL-024',
-        serviceNo: 'F/458901',
-        name: 'Sgt Haruna Garba',
-        rank: 'SGT',
-        role: 'UGV Robotics Operator',
-        command: 'Maiduguri Counter-IED Theatre',
-        state: 'Borno',
-        zone: 'Zone 15 Maiduguri',
-        formation: 'Tactical Counter-IED Command',
-        unit: 'Bomb Robotics Squad',
-        location: 'Maiduguri HQ, Borno',
-        specialisation: 'Remote UGV Robot Manipulation & Cannon Firing',
-        status: 'FIELD_DEPLOYED',
-        appointmentDate: '2018-02-10',
-        lastPromotionDate: '2022-04-15',
-        phone: '+234 806 111 2233',
-        email: 'haruna.garba@npf.gov.ng',
-        photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-        address: 'Borno State Command Barracks, Maiduguri',
-        nextOfKin: 'Malama Fatima Garba (+234 806 222 4455)',
-        medicalInfo: 'Blood Group B+',
-        promotions: [],
-        postings: [{ date: '2022-04-20', command: 'Maiduguri Counter-IED Theatre', location: 'Borno' }],
-        qualifications: ['UGV Operator Cert']
-      },
-      {
-        id: 'POL-025',
-        serviceNo: 'F/478902',
-        name: 'Cpl Emeka Nwosu',
-        rank: 'CPL',
-        role: 'EOD Bomb Suit Technician',
-        command: 'Force HQ EOD Command',
-        state: 'FCT Abuja',
-        zone: 'Zone 7 Abuja',
-        formation: 'Force Headquarters',
-        unit: 'EOD Response Unit',
-        location: 'Louis Edet House, Abuja',
-        specialisation: 'Manual Bomb Suit Approach & Recon',
-        status: 'ACTIVE_READY',
-        appointmentDate: '2020-01-15',
-        lastPromotionDate: '2023-09-01',
-        phone: '+234 803 777 5544',
-        email: 'emeka.nwosu@npf.gov.ng',
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-        address: 'Dei Dei Police Quarters, Abuja',
-        nextOfKin: 'Mr. Jude Nwosu (+234 803 888 1122)',
-        medicalInfo: 'Blood Group O+',
-        promotions: [],
-        postings: [{ date: '2023-09-05', command: 'Force HQ EOD Command', location: 'Abuja' }],
-        qualifications: ['Bomb Suit Cert']
-      },
-      {
-        id: 'POL-026',
-        serviceNo: 'F/510293',
-        name: 'PC Musa Ibrahim',
-        rank: 'PC',
-        role: 'Perimeter Security Constable',
-        command: 'Apapa Sea Port EOD Unit',
-        state: 'Lagos',
-        zone: 'Zone 2 Lagos',
-        formation: 'Seaport Police Command',
-        unit: 'Port Gate Patrol',
-        location: 'Apapa Port Complex, Lagos',
-        specialisation: 'Port Gate Access Control & Explosives Sniffing K9 Lead',
-        status: 'ACTIVE_READY',
-        appointmentDate: '2023-03-01',
-        lastPromotionDate: '2023-03-01',
-        phone: '+234 809 111 8899',
-        email: 'musa.ibrahim@npf.gov.ng',
-        photo: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-        address: 'Apapa Police Quarters, Lagos',
-        nextOfKin: 'Mallam Ibrahim Musa (+234 809 222 3344)',
-        medicalInfo: 'Blood Group A+',
-        promotions: [],
-        postings: [{ date: '2023-03-05', command: 'Apapa Sea Port EOD Unit', location: 'Lagos' }],
-        qualifications: ['K9 Handler Cert']
-      }
-    ];
+  {
+    "id": "POL-APAPA-1",
+    "sNo": "1",
+    "apNo": "AP/117369",
+    "serviceNo": "AP/117369",
+    "rank": "CSP",
+    "name": "CSP DESMOND AGBALA",
+    "eduQual": "SSCE / NCE",
+    "stateOfOrigin": "FCT ABUJA",
+    "phone": "08034268620",
+    "tribe": "OMAH",
+    "dob": "1976-12-14",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2024-07-21",
+    "retireDate": "2034-11-08",
+    "commandServedLast": "ASABA INTER. AIRPORT",
+    "dutyPost": "COMMANDER, APAPA UNIT",
+    "transferredDate": "2023-09-12",
+    "gdSp": "EOD TECH / COMMANDER",
+    "enlistDate": "1999-12-01",
+    "email": "desmond.agbala@npf.gov.ng",
+    "gl": "13",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "NP012964/LA/429753",
+    "ippisNo": "100060086275",
+    "pfa": "NPF PENSION",
+    "penPin": "131696142-8",
+    "nhfNo": "NHF-117369",
+    "mss": "BENIN CITY",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-2",
+    "sNo": "2",
+    "apNo": "AP/140269",
+    "serviceNo": "AP/140269",
+    "rank": "SP",
+    "name": "AIZENABOR ANASTASIA EMMY",
+    "eduQual": "SSCE / WASC",
+    "stateOfOrigin": "EDO",
+    "phone": "08033752122",
+    "tribe": "31601",
+    "dob": "1986-07-08",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "09/01/2012",
+    "retireDate": "PAP COMMAND",
+    "commandServedLast": "31/12/2019",
+    "dutyPost": "45360",
+    "transferredDate": "09/01/2047",
+    "gdSp": "EOD TECH",
+    "enlistDate": "11",
+    "email": "millidacy@gmail.com",
+    "gl": "11",
+    "bankName": "UBA",
+    "employeeCode": "NP316462/PSC/190509",
+    "ippisNo": "200590021718",
+    "pfa": "SOUTH SOUTH",
+    "penPin": "1320057-9",
+    "nhfNo": "NHF-140269",
+    "mss": "POLAC",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-3",
+    "sNo": "3",
+    "apNo": "AP/150479",
+    "serviceNo": "AP/150479",
+    "rank": "SP",
+    "name": "SAMUEL IKPELE",
+    "eduQual": "ND",
+    "stateOfOrigin": "EOD STATE",
+    "phone": "08061255183",
+    "tribe": "25364",
+    "dob": "1969-06-10",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2020-12-18",
+    "retireDate": "2026-07-01",
+    "commandServedLast": "A/OII",
+    "dutyPost": "45316",
+    "transferredDate": "ND",
+    "gdSp": "EOD TECH",
+    "enlistDate": "10",
+    "email": "millidacy@gmail.com",
+    "gl": "10",
+    "bankName": "FIRST BANK",
+    "employeeCode": "ayodcaptain070@gmail.com",
+    "ippisNo": "100128082425",
+    "pfa": "NP03280/EK/164330",
+    "penPin": "131648843-0",
+    "nhfNo": "NHF-150479",
+    "mss": "IKEJA",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-4",
+    "sNo": "4",
+    "apNo": "AP/164330",
+    "serviceNo": "AP/164330",
+    "rank": "SP",
+    "name": "ADAMAWA",
+    "eduQual": "WASC",
+    "stateOfOrigin": "ASKIRA/UBA",
+    "phone": "08100238775",
+    "tribe": "27760",
+    "dob": "1976-01-01",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2022-03-28",
+    "retireDate": "2034-01-12",
+    "commandServedLast": "BASE 1 IKEJA",
+    "dutyPost": "45327",
+    "transferredDate": "WASC",
+    "gdSp": "EOD TECH",
+    "enlistDate": "10",
+    "email": "adamawa@npf.gov.ng",
+    "gl": "10",
+    "bankName": "0020577243",
+    "employeeCode": "GOMBE",
+    "ippisNo": "100196694578",
+    "pfa": "25/08/1975",
+    "penPin": "13190003",
+    "nhfNo": "NHF-164330",
+    "mss": "131688746-3",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-5",
+    "sNo": "5",
+    "apNo": "AP/166464",
+    "serviceNo": "AP/166464",
+    "rank": "SP",
+    "name": "HARRY JEMERIGBE",
+    "eduQual": "WASC",
+    "stateOfOrigin": "DTS",
+    "phone": "08030000000",
+    "tribe": "28866",
+    "dob": "1979-01-11",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2023-06-06",
+    "retireDate": "2035-07-01",
+    "commandServedLast": "ISHEKIRI",
+    "dutyPost": "45933",
+    "transferredDate": "WASC",
+    "gdSp": "EOD TECH",
+    "enlistDate": "10",
+    "email": "millidacy@gmail.com",
+    "gl": "10",
+    "bankName": "PMF BANK",
+    "employeeCode": "NP038859/AD/430902",
+    "ippisNo": "100022808493",
+    "pfa": "anthonyblessing693@gmail.com",
+    "penPin": "13190004",
+    "nhfNo": "NHF-166464",
+    "mss": "131994272-8",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-6",
+    "sNo": "6",
+    "apNo": "AP/185824",
+    "serviceNo": "AP/185824",
+    "rank": "SP",
+    "name": "ALABA OVIE",
+    "eduQual": "SSCE",
+    "stateOfOrigin": "08030986847",
+    "phone": "08030000000",
+    "tribe": "ISHAN",
+    "dob": "ISHAN",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2024-07-15",
+    "retireDate": "SEME UNIT",
+    "commandServedLast": "21/08/1977",
+    "dutyPost": "44418",
+    "transferredDate": "SSCE",
+    "gdSp": "EOD TECH",
+    "enlistDate": "10",
+    "email": "millidacy@gmail.com",
+    "gl": "10",
+    "bankName": "FCMB",
+    "employeeCode": "NP121113/PAK/140269",
+    "ippisNo": "100022406693",
+    "pfa": "1316875978",
+    "penPin": "13190005",
+    "nhfNo": "NHF-185824",
+    "mss": "ACCESS PENSION",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-7",
+    "sNo": "7",
+    "apNo": "AP/225381",
+    "serviceNo": "AP/225381",
+    "rank": "SP",
+    "name": "CHRISTIANA NEYU",
+    "eduQual": "SSCE",
+    "stateOfOrigin": "BAJJU",
+    "phone": "08030000000",
+    "tribe": "28440",
+    "dob": "1977-11-11",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2023-01-06",
+    "retireDate": "01/11/2000",
+    "commandServedLast": "01/06/2035",
+    "dutyPost": "BASE 15",
+    "transferredDate": "SSCE",
+    "gdSp": "EOD TECH",
+    "enlistDate": "10",
+    "email": "christyneyu1111@gmail.com",
+    "gl": "10",
+    "bankName": "22/05/2026",
+    "employeeCode": "ECO",
+    "ippisNo": "200023219624",
+    "pfa": "1319576558",
+    "penPin": "13190006",
+    "nhfNo": "NHF-225381",
+    "mss": "SKS",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-8",
+    "sNo": "8",
+    "apNo": "AP/192580",
+    "serviceNo": "AP/192580",
+    "rank": "SP",
+    "name": "OSUN",
+    "eduQual": "SSCE / WASC",
+    "stateOfOrigin": "IFELODUN",
+    "phone": "08060506184",
+    "tribe": "29493",
+    "dob": "1980-09-29",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2023-06-03",
+    "retireDate": "2035-09-30",
+    "commandServedLast": "EOD BASE 6",
+    "dutyPost": "PHONE NUMBER",
+    "transferredDate": "27/08/2025",
+    "gdSp": "EOD TECH",
+    "enlistDate": "9",
+    "email": "osun@npf.gov.ng",
+    "gl": "9",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "NP147084/ED/355770",
+    "ippisNo": "100035755428",
+    "pfa": "321613793",
+    "penPin": "13190007",
+    "nhfNo": "NHF-192580",
+    "mss": "OYO",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-9",
+    "sNo": "9",
+    "apNo": "AP/192609",
+    "serviceNo": "AP/192609",
+    "rank": "SP",
+    "name": "EKITI",
+    "eduQual": "WASC",
+    "stateOfOrigin": "IDO/OSI",
+    "phone": "08061505226",
+    "tribe": "29118",
+    "dob": "1979-09-20",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "femdon7@gmail.com",
+    "retireDate": "2036-01-01",
+    "commandServedLast": "EOD BASE 10",
+    "dutyPost": "43687",
+    "transferredDate": "WASC",
+    "gdSp": "EOD TECH",
+    "enlistDate": "9",
+    "email": "ekiti@npf.gov.ng",
+    "gl": "9",
+    "bankName": "0020577243",
+    "employeeCode": "NP248990/EOD/192580",
+    "ippisNo": "100024946525",
+    "pfa": "132032297",
+    "penPin": "13190008",
+    "nhfNo": "NHF-192609",
+    "mss": "ZAMFARA",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-10",
+    "sNo": "10",
+    "apNo": "AP/192689",
+    "serviceNo": "AP/192689",
+    "rank": "SP",
+    "name": "PAP APAPA",
+    "eduQual": "BSC",
+    "stateOfOrigin": "SABONGARI",
+    "phone": "08123334853",
+    "tribe": "28319",
+    "dob": "1977-07-13",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "femdon7@gmail.com",
+    "retireDate": "2036-01-07",
+    "commandServedLast": "EOD BASE 25",
+    "dutyPost": "44418",
+    "transferredDate": "BSC",
+    "gdSp": "EOD TECH",
+    "enlistDate": "9",
+    "email": "pap.apapa@npf.gov.ng",
+    "gl": "9",
+    "bankName": "NPFMFB",
+    "employeeCode": "NPI31520/ZF/225802",
+    "ippisNo": "100076683715",
+    "pfa": "bolarinwaisreal2003@mail.com",
+    "penPin": "131605687-7",
+    "nhfNo": "NHF-192689",
+    "mss": "OGUN",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-11",
+    "sNo": "11",
+    "apNo": "AP/192759",
+    "serviceNo": "AP/192759",
+    "rank": "SP",
+    "name": "AIZENABOR ANASTASIA EMMY",
+    "eduQual": "SSCE / WASC",
+    "stateOfOrigin": "ACCOUNT NUMBER",
+    "phone": "08030000000",
+    "tribe": "BASIL OZEH",
+    "dob": "BASIL OZEH",
+    "geoPolZone": "SOUTH WEST",
+    "lastPromDate": "2026-01-15",
+    "retireDate": "AFEMAI",
+    "commandServedLast": "01/05/2037",
+    "dutyPost": "EOD BASE 1",
+    "transferredDate": "27/08/2025",
+    "gdSp": "EOD TECH",
+    "enlistDate": "9",
+    "email": "millidacy@gmail.com",
+    "gl": "9",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "NP11928/0G/364243",
+    "ippisNo": "100045310733",
+    "pfa": "28/08/2025",
+    "penPin": "132029787-8",
+    "nhfNo": "NHF-192759",
+    "mss": "OBALENDE",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-12",
+    "sNo": "12",
+    "apNo": "AP/256815",
+    "serviceNo": "AP/256815",
+    "rank": "ASP",
+    "name": "ABDULAHI SULEIMAN",
+    "eduQual": "OND",
+    "stateOfOrigin": "AKOKO NORTH WEST",
+    "phone": "08O30971809",
+    "tribe": "30312",
+    "dob": "1982-12-27",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2019-10-24",
+    "retireDate": "2039-01-01",
+    "commandServedLast": "EOD BASE 6",
+    "dutyPost": "44418",
+    "transferredDate": "OND",
+    "gdSp": "LGA",
+    "enlistDate": "8",
+    "email": "aaizenabor@gmail.com",
+    "gl": "8",
+    "bankName": "ACCESS BANK",
+    "employeeCode": "NP021009/LA/176009",
+    "ippisNo": "100103789222",
+    "pfa": "1320358615",
+    "penPin": "131900011",
+    "nhfNo": "NHF-256815",
+    "mss": "KEYSTONE BANK",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-13",
+    "sNo": "13",
+    "apNo": "AP/274432",
+    "serviceNo": "AP/274432",
+    "rank": "ASP",
+    "name": "BLESSING SULE",
+    "eduQual": "WASC",
+    "stateOfOrigin": "BASE HQTR",
+    "phone": "07068031984",
+    "tribe": "29641",
+    "dob": "1981-02-24",
+    "geoPolZone": "SOUTH WEST",
+    "lastPromDate": "2020-11-18",
+    "retireDate": "2038-03-01",
+    "commandServedLast": "IDOMA",
+    "dutyPost": "45231",
+    "transferredDate": "WASC",
+    "gdSp": "EOD TECH",
+    "enlistDate": "8",
+    "email": "blessing.sule@npf.gov.ng",
+    "gl": "8",
+    "bankName": "POLARIS BANK",
+    "employeeCode": "NP057144/ANX/368154",
+    "ippisNo": "200105616416",
+    "pfa": "ACCESS ARM",
+    "penPin": "131919678-8",
+    "nhfNo": "NHF-274432",
+    "mss": "i.mbello82@gmail.com",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-14",
+    "sNo": "14",
+    "apNo": "AP/274419",
+    "serviceNo": "AP/274419",
+    "rank": "ASP",
+    "name": "BELLO MOHAMMED",
+    "eduQual": "SSCE / WASC",
+    "stateOfOrigin": "YOLA NRTH",
+    "phone": "08060209280",
+    "tribe": "29567",
+    "dob": "1980-12-12",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2020-11-18",
+    "retireDate": "2038-01-06",
+    "commandServedLast": "HND",
+    "dutyPost": "44418",
+    "transferredDate": "B.A LANG/COMM. ART",
+    "gdSp": "EOD TECH",
+    "enlistDate": "8",
+    "email": "suleimanmarazzaria@gmail.com",
+    "gl": "8",
+    "bankName": "0020577243",
+    "employeeCode": "NP089738/KT/034095",
+    "ippisNo": "200103103201",
+    "pfa": "festusogunmilade@gmail.com",
+    "penPin": "131900013",
+    "nhfNo": "NHF-274419",
+    "mss": "ladyblair111@gmail.com",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-15",
+    "sNo": "15",
+    "apNo": "AP/274604",
+    "serviceNo": "AP/274604",
+    "rank": "ASP",
+    "name": "SAFIYA ENAPE",
+    "eduQual": "WASC",
+    "stateOfOrigin": "OFU",
+    "phone": "08075851904",
+    "tribe": "29726",
+    "dob": "1981-05-20",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2020-11-18",
+    "retireDate": "2038-01-09",
+    "commandServedLast": "IDIROKO UNIT",
+    "dutyPost": "44418",
+    "transferredDate": "WASC",
+    "gdSp": "EOD TECH",
+    "enlistDate": "8",
+    "email": "millidacy@gmail.com",
+    "gl": "8",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "DAMATURU",
+    "ippisNo": "100028121513",
+    "pfa": "1316759098",
+    "penPin": "131900014",
+    "nhfNo": "NHF-274604",
+    "mss": "estherdansofo1980@gmail.com",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-16",
+    "sNo": "16",
+    "apNo": "AP/274630",
+    "serviceNo": "AP/274630",
+    "rank": "ASP",
+    "name": "EKITI-EAST",
+    "eduQual": "SSCE / WASC",
+    "stateOfOrigin": "ESSIEN UDIM",
+    "phone": "08032829243",
+    "tribe": "29545",
+    "dob": "1980-11-20",
+    "geoPolZone": "SOUTH WEST",
+    "lastPromDate": "2020-11-18",
+    "retireDate": "2038-01-09",
+    "commandServedLast": "EOD BASE 38",
+    "dutyPost": "44418",
+    "transferredDate": "B.A LANG/COMM. ART",
+    "gdSp": "EOD TECH",
+    "enlistDate": "8",
+    "email": "aaizenabor@gmail.com",
+    "gl": "8",
+    "bankName": "0020577243",
+    "employeeCode": "NP025340/LA/019590",
+    "ippisNo": "100010148993",
+    "pfa": "PREMIUM PEN",
+    "penPin": "132057421-8",
+    "nhfNo": "NHF-274630",
+    "mss": "naijajournal@gmail.com",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-17",
+    "sNo": "17",
+    "apNo": "AP/265761",
+    "serviceNo": "AP/265761",
+    "rank": "ASP",
+    "name": "DAVID KARIMU",
+    "eduQual": "WASC",
+    "stateOfOrigin": "KWAYA KUSAR",
+    "phone": "08085886650",
+    "tribe": "30300",
+    "dob": "1982-12-15",
+    "geoPolZone": "SOUTH WEST",
+    "lastPromDate": "2020-11-18",
+    "retireDate": "2038-01-10",
+    "commandServedLast": "EOD BASE 28",
+    "dutyPost": "44418",
+    "transferredDate": "WASC",
+    "gdSp": "EOD TECH",
+    "enlistDate": "8",
+    "email": "david.karimu@npf.gov.ng",
+    "gl": "8",
+    "bankName": "PMF BANK",
+    "employeeCode": "NP169274/GB/419404",
+    "ippisNo": "100021930444",
+    "pfa": "BOUCHI",
+    "penPin": "131900016",
+    "nhfNo": "NHF-265761",
+    "mss": "davidkarimu66@gmail.com",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-18",
+    "sNo": "18",
+    "apNo": "AP/274665",
+    "serviceNo": "AP/274665",
+    "rank": "ASP",
+    "name": "IKHINE AKHIDENOR",
+    "eduQual": "WASC",
+    "stateOfOrigin": "AWOSIKA BOLARINWA",
+    "phone": "08030000000",
+    "tribe": "ONDO WEST",
+    "dob": "ONDO WEST",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2020-11-18",
+    "retireDate": "2038-01-09",
+    "commandServedLast": "28/09/1982",
+    "dutyPost": "45545",
+    "transferredDate": "WASC",
+    "gdSp": "EOD TECH",
+    "enlistDate": "8",
+    "email": "suleimanmarazzaria@gmail.com",
+    "gl": "8",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "NP354116/LAG/166464",
+    "ippisNo": "100027182594",
+    "pfa": "1315601530",
+    "penPin": "131900017",
+    "nhfNo": "NHF-274665",
+    "mss": "LAG",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-19",
+    "sNo": "19",
+    "apNo": "AP/274639",
+    "serviceNo": "AP/274639",
+    "rank": "ASP",
+    "name": "EKITI-EAST",
+    "eduQual": "ND",
+    "stateOfOrigin": "31/12/2016",
+    "phone": "07030133087",
+    "tribe": "29978",
+    "dob": "1982-01-27",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2020-11-18",
+    "retireDate": "2038-01-12",
+    "commandServedLast": "EOD BASE 38",
+    "dutyPost": "44418",
+    "transferredDate": "ND",
+    "gdSp": "EOD TECH",
+    "enlistDate": "8",
+    "email": "aaizenabor@gmail.com",
+    "gl": "8",
+    "bankName": "0020577243",
+    "employeeCode": "NPF2815281 BA",
+    "ippisNo": "100040388444",
+    "pfa": "1320051935",
+    "penPin": "131900018",
+    "nhfNo": "NHF-274639",
+    "mss": "isaacgabrielsunday783@gmail.com",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-20",
+    "sNo": "20",
+    "apNo": "AP/274440",
+    "serviceNo": "AP/274440",
+    "rank": "ASP",
+    "name": "MICAH BITRUS",
+    "eduQual": "WASC",
+    "stateOfOrigin": "LAFIA",
+    "phone": "07037689906",
+    "tribe": "31588",
+    "dob": "1986-06-25",
+    "geoPolZone": "SOUTH WEST",
+    "lastPromDate": "2020-11-18",
+    "retireDate": "2039-01-03",
+    "commandServedLast": "EOD BASE 31",
+    "dutyPost": "43579",
+    "transferredDate": "WASC",
+    "gdSp": "EOD TECH",
+    "enlistDate": "8",
+    "email": "micah.bitrus@npf.gov.ng",
+    "gl": "8",
+    "bankName": "UBA",
+    "employeeCode": "NP211343/YB/4216662",
+    "ippisNo": "20003438822",
+    "pfa": "NPF PENSION",
+    "penPin": "131900019",
+    "nhfNo": "NHF-274440",
+    "mss": "KANO",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-21",
+    "sNo": "21",
+    "apNo": "AP/274709",
+    "serviceNo": "AP/274709",
+    "rank": "ASP",
+    "name": "ALABA OVIE",
+    "eduQual": "WASC",
+    "stateOfOrigin": "EDO STATE",
+    "phone": "07060646368",
+    "tribe": "30714",
+    "dob": "1984-02-02",
+    "geoPolZone": "SOUTH WEST",
+    "lastPromDate": "2020-11-18",
+    "retireDate": "2040-01-08",
+    "commandServedLast": "BASE 23",
+    "dutyPost": "45545",
+    "transferredDate": "WASC",
+    "gdSp": "EOD TECH",
+    "enlistDate": "8",
+    "email": "millidacy@gmail.com",
+    "gl": "8",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "NP257771/KN/036229",
+    "ippisNo": "100014512793",
+    "pfa": "LEADWAY PENSION",
+    "penPin": "102063953-3",
+    "nhfNo": "NHF-274709",
+    "mss": "F/HQTR ANNEX",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-22",
+    "sNo": "22",
+    "apNo": "AP/333421",
+    "serviceNo": "AP/333421",
+    "rank": "ASP",
+    "name": "KAZIM OKANLAWO",
+    "eduQual": "SSCE",
+    "stateOfOrigin": "OGS",
+    "phone": "08060181328",
+    "tribe": "30775",
+    "dob": "1984-04-03",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2021-09-10",
+    "retireDate": "2041-06-01",
+    "commandServedLast": "BASE 23",
+    "dutyPost": "45346",
+    "transferredDate": "SSCE",
+    "gdSp": "EOD TECH",
+    "enlistDate": "8",
+    "email": "kazim.okanlawo@npf.gov.ng",
+    "gl": "8",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "NP059510/FH/444141",
+    "ippisNo": "100169206517",
+    "pfa": "05/01/2026",
+    "penPin": "131751446-6",
+    "nhfNo": "NHF-333421",
+    "mss": "micahshalli@gmail.com",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  },
+  {
+    "id": "POL-APAPA-23",
+    "sNo": "23",
+    "apNo": "AP/513546",
+    "serviceNo": "AP/513546",
+    "rank": "INSPR",
+    "name": "BLESSING YUNANA",
+    "eduQual": "SSCE / WASC",
+    "stateOfOrigin": "EGON",
+    "phone": "07031869097",
+    "tribe": "34844",
+    "dob": "1995-05-25",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2020-11-18",
+    "retireDate": "2051-12-31",
+    "commandServedLast": "OPSII",
+    "dutyPost": "44879",
+    "transferredDate": "EGGON",
+    "gdSp": "EOD TECH",
+    "enlistDate": "6",
+    "email": "blessing.yunana@npf.gov.ng",
+    "gl": "6",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "NP119707/OG/445562",
+    "ippisNo": "100825336811",
+    "pfa": "SOUTH WEST",
+    "penPin": "132191810-7",
+    "nhfNo": "NHF-513546",
+    "mss": "kezzysheart@gmail.com",
+    "command": "Apapa Sea Port EOD Unit",
+    "unit": "Apapa Sea Port EOD Unit",
+    "status": "ACTIVE_READY",
+    "photo": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
+  }
+];
 
     let auditLogs = [
       {
@@ -2727,15 +3214,15 @@
       alert(`Personal details updated successfully for ${off.name}! Audit trail logged.`);
     }
 
-        function renderMasterRollTable(container) {
+                function renderMasterRollTable(container) {
       saveState();
-      const search = document.getElementById('global-search-input').value.toLowerCase();
-      const rankFilter = document.getElementById('filter-rank').value;
-      const zoneFilter = document.getElementById('filter-zone').value;
-      const stateFilter = document.getElementById('filter-state').value;
-      const statusFilter = document.getElementById('filter-status').value;
-      const baseFilter = document.getElementById('filter-base') ? document.getElementById('filter-base').value : 'ALL';
-      const sortBy = document.getElementById('sort-by').value;
+      const search = (document.getElementById('global-search-input')?.value || '').toLowerCase();
+      const rankFilter = document.getElementById('filter-rank')?.value || 'ALL';
+      const zoneFilter = document.getElementById('filter-zone')?.value || 'ALL';
+      const stateFilter = document.getElementById('filter-state')?.value || 'ALL';
+      const statusFilter = document.getElementById('filter-status')?.value || 'ALL';
+      const baseFilter = document.getElementById('filter-base')?.value || 'ALL';
+      const sortBy = document.getElementById('sort-by')?.value || 'SENIORITY';
 
       let filtered = dbPersonnel.filter(off => {
         const cat = deriveCategory(off.rank);
@@ -2744,221 +3231,155 @@
           (currentView === 'ACP-CP' && cat === 'ACP-CP') ||
           (currentView === 'DSP-CSP' && cat === 'DSP-CSP') ||
           (currentView === 'ASP' && cat === 'ASP') ||
-          (currentView === 'INSPECTORS' && off.rank === 'INSPR') ||
+          (currentView === 'INSPECTORS' && (off.rank === 'INSPR' || off.rank === 'INSP')) ||
           (currentView === 'PC-SGT' && ['SGT', 'CPL', 'PC'].includes(off.rank));
 
         const matchRank = rankFilter === 'ALL' || off.rank === rankFilter;
-        const matchZone = zoneFilter === 'ALL' || off.zone === zoneFilter;
-        const matchState = stateFilter === 'ALL' || off.state === stateFilter;
-        const matchStatus = statusFilter === 'ALL' || 
-                           (statusFilter === 'RETIREMENT_DUE' ? isRetirementDueWithin60Days(off) : off.status === statusFilter);
-        const matchBase = (baseFilter === 'ALL' && selectedBaseFilter === 'ALL') || 
-                          (baseFilter !== 'ALL' && off.base === baseFilter) || 
-                          (selectedBaseFilter !== 'ALL' && off.base === `Base ${selectedBaseFilter}`);
+        const matchZone = zoneFilter === 'ALL' || (off.geoPolZone && off.geoPolZone === zoneFilter);
+        const matchState = stateFilter === 'ALL' || (off.stateOfOrigin && off.stateOfOrigin === stateFilter);
+        const matchStatus = statusFilter === 'ALL' || off.status === statusFilter;
+        const matchBase = baseFilter === 'ALL' || (off.mss && off.mss.includes(baseFilter));
 
-        const matchSearch =
-          off.name.toLowerCase().includes(search) ||
-          off.serviceNo.toLowerCase().includes(search) ||
-          off.command.toLowerCase().includes(search) ||
-          (off.base && off.base.toLowerCase().includes(search)) ||
-          off.unit.toLowerCase().includes(search) ||
-          off.zone.toLowerCase().includes(search) ||
-          off.location.toLowerCase().includes(search);
+        const matchSearch = !search ||
+          (off.name && off.name.toLowerCase().includes(search)) ||
+          (off.serviceNo && off.serviceNo.toLowerCase().includes(search)) ||
+          (off.apNo && off.apNo.toLowerCase().includes(search)) ||
+          (off.rank && off.rank.toLowerCase().includes(search)) ||
+          (off.phone && off.phone.toLowerCase().includes(search)) ||
+          (off.stateOfOrigin && off.stateOfOrigin.toLowerCase().includes(search)) ||
+          (off.dutyPost && off.dutyPost.toLowerCase().includes(search)) ||
+          (off.bankName && off.bankName.toLowerCase().includes(search)) ||
+          (off.ippisNo && off.ippisNo.toLowerCase().includes(search));
 
         return matchCategoryView && matchRank && matchZone && matchState && matchStatus && matchBase && matchSearch;
       });
 
-      filtered.sort((a, b) => {
-        if (sortBy === 'SENIORITY') return (RANK_HIERARCHY[a.rank] || 99) - (RANK_HIERARCHY[b.rank] || 99);
-        if (sortBy === 'NAME_ASC') return a.name.localeCompare(b.name);
-        if (sortBy === 'NAME_DESC') return b.name.localeCompare(a.name);
-        if (sortBy === 'APPOINTMENT_DATE') return new Date(a.appointmentDate) - new Date(b.appointmentDate);
-        return 0;
-      });
-
       document.getElementById('banner-count').innerText = filtered.length;
 
-      let subCountersHtml = '';
-      if (currentView === 'PC-SGT') {
-        const countSgt = filtered.filter(p => p.rank === 'SGT').length;
-        const countCpl = filtered.filter(p => p.rank === 'CPL').length;
-        const countPc = filtered.filter(p => p.rank === 'PC').length;
-        subCountersHtml = `
-          <div class="p-3 bg-slate-950/90 border-b border-slate-800 flex gap-4 text-xs font-mono">
-            <span class="text-indigo-400 font-bold">SGTs (Sergeants): ${countSgt}</span>
-            <span class="text-indigo-300 font-bold">CPLs (Corporals): ${countCpl}</span>
-            <span class="text-indigo-200 font-bold">PCs (Constables): ${countPc}</span>
-          </div>
-        `;
-      }
-
-      // 1. RECENT SYSTEM MODIFICATIONS & AUDIT WIDGET
-      const auditWidget = document.createElement('div');
-      auditWidget.className = 'bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3 shadow-xl mb-4 no-print';
-      auditWidget.innerHTML = `
-        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-          <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
-            <i data-lucide="history" class="w-4 h-4 text-amber-400"></i>
-            <span class="font-black text-xs uppercase tracking-wider text-white">LIVE RECENT SYSTEM MODIFICATIONS & AUDIT LOGS</span>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="px-2.5 py-0.5 rounded-lg text-[10px] font-black font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40">
-              ${auditLogs.length} Total Modifications Recorded
-            </span>
-            <button onclick="switchView('AUDIT_LOGS')" class="text-xs text-sky-400 hover:text-sky-300 font-bold underline flex items-center gap-1 cursor-pointer">
-              <span>View Full Audit Trail</span>
-              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+      let tableRowsHtml = filtered.map((off, idx) => `
+        <tr class="hover:bg-slate-800/60 border-b border-slate-800/80 transition font-mono text-[11px] text-slate-200">
+          <td class="p-3 font-bold text-center text-amber-400 bg-slate-950/80 sticky left-0 z-10">${off.sNo || (idx + 1)}</td>
+          <td class="p-3 font-black text-emerald-400 whitespace-nowrap bg-slate-950/80 sticky left-10 z-10">
+            <button onclick="openProfileModal('${off.id}')" class="hover:underline text-emerald-300 font-bold flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>${off.serviceNo || off.apNo}</span>
             </button>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-mono">
-          ${auditLogs.slice(0, 3).map(log => `
-            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1 hover:border-slate-700 transition">
-              <div class="flex items-center justify-between">
-                <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase ${
-                  log.action.includes('NEW') || log.action.includes('AUTO') ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
-                  log.action.includes('PROMOTION') ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
-                  log.action.includes('TRANSFER') ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30' :
-                  'bg-slate-800 text-slate-300'
-                }">${log.action}</span>
-                <span class="text-[10px] text-slate-500">${log.timestamp}</span>
+          </td>
+          <td class="p-3 font-black text-amber-300 whitespace-nowrap">
+            <span class="px-2 py-0.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300">${off.rank}</span>
+          </td>
+          <td class="p-3 font-bold text-white whitespace-nowrap min-w-[200px]">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-black text-[10px]">
+                ${off.name.substring(0, 2).toUpperCase()}
               </div>
-              <div class="font-bold text-white text-[11px] truncate">${log.officer}</div>
-              <div class="text-[10px] text-slate-400 truncate">${log.newValue}</div>
+              <span class="hover:text-emerald-400 cursor-pointer" onclick="openProfileModal('${off.id}')">${off.name}</span>
             </div>
-          `).join('')}
-        </div>
-      `;
+          </td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.eduQual || 'SSCE'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.stateOfOrigin || 'N/A'}</td>
+          <td class="p-3 text-emerald-400 whitespace-nowrap">${off.phone || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.tribe || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.dob || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.geoPolZone || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.lastPromDate || 'N/A'}</td>
+          <td class="p-3 font-bold text-amber-400 whitespace-nowrap">${off.retireDate || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.commandServedLast || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.dutyPost || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.transferredDate || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.gdSp || 'EOD TECH'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.enlistDate || 'N/A'}</td>
+          <td class="p-3 text-cyan-400 whitespace-nowrap">${off.email || 'N/A'}</td>
+          <td class="p-3 text-slate-300 text-center font-bold">${off.gl || '10'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.bankName || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.employeeCode || 'N/A'}</td>
+          <td class="p-3 font-mono text-emerald-300 whitespace-nowrap">${off.ippisNo || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.pfa || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.penPin || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.nhfNo || 'N/A'}</td>
+          <td class="p-3 text-slate-300 whitespace-nowrap">${off.mss || 'APAPA BASE'}</td>
+          <td class="p-3 text-center whitespace-nowrap">
+            <button onclick="openProfileModal('${off.id}')" title="View Full Dossier" class="bg-emerald-500/20 hover:bg-emerald-500 hover:text-black text-emerald-300 border border-emerald-500/40 p-1.5 rounded-lg transition mr-1 cursor-pointer">
+              <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+            </button>
+            <button onclick="openEditModal('${off.id}')" title="Edit Personnel" class="bg-amber-500/20 hover:bg-amber-500 hover:text-black text-amber-300 border border-amber-500/40 p-1.5 rounded-lg transition cursor-pointer">
+              <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+            </button>
+          </td>
+        </tr>
+      `).join('');
 
-      container.appendChild(auditWidget);
-
-      // 2. MASTER ROLL TABLE CARD WITH CAREER DATES COLUMN
-      const tableCard = document.createElement('div');
-      tableCard.className = 'bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl';
-      tableCard.innerHTML = `
-        <div class="p-4 bg-slate-950 border-b border-slate-800 flex justify-between items-center no-print">
-          <div class="flex items-center gap-2">
-            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
-            <span class="font-black text-xs uppercase tracking-wider text-white">POLICE PERSONNEL NOMINAL ROLL TABLE</span>
+      container.innerHTML = `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+          <!-- TABLE TITLE BAR -->
+          <div class="p-4 bg-slate-950 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+              <h3 class="font-black text-sm text-white tracking-wide uppercase">
+                GEN. NOMINAL ROLL EOD APAPA - MASTER ROLL DIRECTORY (${filtered.length} OFFICERS)
+              </h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                <i data-lucide="printer" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>PRINT MASTER ROLL</span>
+              </button>
+              <button onclick="exportToCsv()" class="bg-emerald-600 hover:bg-emerald-500 text-black font-black px-3 py-1.5 rounded-xl text-xs transition flex items-center gap-1.5 cursor-pointer shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>EXPORT NOMINAL ROLL (CSV/EXCEL)</span>
+              </button>
+            </div>
           </div>
-          <span class="text-xs font-mono text-emerald-400 font-bold">Showing ${filtered.length} Authorised Personnel</span>
-        </div>
 
-        ${subCountersHtml}
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs print-table">
-            <thead class="bg-slate-950 text-slate-400 uppercase text-[11px] border-b border-slate-800 font-mono">
-              <tr>
-                <th class="p-3.5 w-12 text-center">S/N</th>
-                <th class="p-3.5">Photo & Officer Name</th>
-                <th class="p-3.5">Service No</th>
-                <th class="p-3.5">Rank & Category</th>
-                <th class="p-3.5 text-amber-400 font-bold">Assigned EOD Base (1-38)</th>
-                <th class="p-3.5">Command & Formation</th>
-                <th class="p-3.5">State & Zone</th>
-                <th class="p-3.5">Career & Service Dates</th>
-                <th class="p-3.5">Duty Station</th>
-                <th class="p-3.5">Status</th>
-                <th class="p-3.5 text-right no-print">Action</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-800/80 font-mono">
-              ${filtered.length === 0 ? `
+          <!-- MASTER TABLE CONTAINER WITH HORIZONTAL SCROLL -->
+          <div class="overflow-x-auto max-h-[70vh]">
+            <table class="w-full text-left border-collapse min-w-[3200px]">
+              <thead class="bg-slate-950 text-slate-300 font-mono text-[10px] font-black uppercase tracking-wider sticky top-0 z-20 border-b border-slate-800">
                 <tr>
-                  <td colspan="10" class="p-8 text-center text-slate-500 font-mono text-sm">
-                    No authorised personnel record found matching search criteria.
-                  </td>
+                  <th class="p-3 text-amber-400 bg-slate-950 sticky left-0 z-30 border-r border-slate-800/50">S/NO</th>
+                  <th class="p-3 text-emerald-400 bg-slate-950 sticky left-10 z-30 border-r border-slate-800/50">AP/F/NO</th>
+                  <th class="p-3 text-amber-300">RANK</th>
+                  <th class="p-3 text-white min-w-[200px]">NAME</th>
+                  <th class="p-3 text-slate-300">EDU. QUALIFICATION</th>
+                  <th class="p-3 text-slate-300">STATE OF ORIGIN</th>
+                  <th class="p-3 text-slate-300">PHONE NUMBER</th>
+                  <th class="p-3 text-slate-300">TRIBE</th>
+                  <th class="p-3 text-slate-300">DATE OF BIRTH</th>
+                  <th class="p-3 text-slate-300">GEO POL ZONE</th>
+                  <th class="p-3 text-slate-300">DATE OF LAST PROM.</th>
+                  <th class="p-3 text-amber-400">DATE OF RETIREMENT</th>
+                  <th class="p-3 text-slate-300">COMMAND SERVED LAST</th>
+                  <th class="p-3 text-slate-300">DUTY POST</th>
+                  <th class="p-3 text-slate-300">DATE TRANSFERRED TO COMMAND</th>
+                  <th class="p-3 text-slate-300">GD/SP</th>
+                  <th class="p-3 text-slate-300">DATE OF ENLIST</th>
+                  <th class="p-3 text-slate-300">E-MAIL ADDRESS</th>
+                  <th class="p-3 text-slate-300">G/L</th>
+                  <th class="p-3 text-slate-300">BANK NAME</th>
+                  <th class="p-3 text-slate-300">EMPLOYEE CODE</th>
+                  <th class="p-3 text-slate-300">IPPIS NUMBER</th>
+                  <th class="p-3 text-slate-300">PFA</th>
+                  <th class="p-3 text-slate-300">PEN PIN</th>
+                  <th class="p-3 text-slate-300">NHF NUMBER</th>
+                  <th class="p-3 text-slate-300">MSS</th>
+                  <th class="p-3 text-center text-emerald-400">ACTION</th>
                 </tr>
-              ` : filtered.map((off, idx) => `
-                <tr class="hover:bg-slate-800/50 transition">
-                  <td class="p-3.5 text-center text-slate-500 font-bold">${idx + 1}</td>
-                  <td class="p-3.5">
-                    <div class="flex items-center gap-3">
-                      <img src="${off.photo}" alt="${off.name}" class="w-9 h-9 rounded-full object-cover border border-slate-700">
-                      <div>
-                        <div class="font-extrabold text-white text-xs font-sans">${off.name}</div>
-                        <div class="text-[10px] text-slate-400 font-sans">${off.role}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td class="p-3.5 font-bold text-sky-400">${off.serviceNo}</td>
-                  <td class="p-3.5">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-black ${
-                      deriveCategory(off.rank) === 'ACP-CP' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' :
-                      deriveCategory(off.rank) === 'DSP-CSP' ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40' :
-                      deriveCategory(off.rank) === 'ASP' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' :
-                      off.rank === 'INSPR' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
-                      'bg-indigo-500/20 text-indigo-300 border border-indigo-500/40'
-                    }">
-                      ${off.rank} (${deriveCategory(off.rank)})
-                    </span>
-                  </td>
-                  <td class="p-3.5">
-                    <span class="px-2.5 py-1 rounded-lg text-[11px] font-mono font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 inline-flex items-center gap-1 shadow">
-                      <i data-lucide="building-2" class="w-3.5 h-3.5 text-amber-400"></i>
-                      <span>${off.base || 'Base 1'}</span>
-                    </span>
-                  </td>
-                  <td class="p-3.5 text-slate-300">${off.command}</td>
-                  <td class="p-3.5">
-                    <div class="text-white font-bold">${off.state}</div>
-                    <div class="text-[10px] text-slate-400">${off.zone}</div>
-                  </td>
-                  <td class="p-3.5 text-[10px] font-mono leading-tight">
-                    <div class="text-emerald-400 font-bold">Enlisted: ${off.appointmentDate || 'N/A'}</div>
-                    <div class="text-sky-400">Promoted: ${off.lastPromotionDate || 'N/A'}</div>
-                    <div class="${isRetirementDueWithin60Days(off) ? 'text-rose-400 font-black' : 'text-amber-400 font-bold'}">Retiring: ${getRetirementDate(off)}</div>
-                    ${isRetirementDueWithin60Days(off) ? `
-                      <span class="px-2 py-0.5 rounded text-[9px] font-black bg-rose-500/20 text-rose-300 border border-rose-500/50 inline-flex items-center gap-1 mt-1 animate-pulse">
-                        <i data-lucide="alert-triangle" class="w-3 h-3 text-rose-400"></i>
-                        <span>${getDaysUntilRetirement(off) <= 0 ? 'DUE NOW' : `DUE IN ${getDaysUntilRetirement(off)} DAYS`}</span>
-                      </span>
-                    ` : ''}
-                  </td>
-                  <td class="p-3.5 text-slate-300">${off.location}</td>
-                  <td class="p-3.5">
-                    <span class="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 w-fit">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                      <span>READY</span>
-                    </span>
-                  </td>
-                  <td class="p-3.5 text-right no-print">
-                    <button onclick="openProfileModal('${off.id}')" class="bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 font-bold px-2.5 py-1 rounded text-[11px] transition">
-                      DOSSIER
-                    </button>
-                  </td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${tableRowsHtml.length > 0 ? tableRowsHtml : `
+                  <tr>
+                    <td colspan="27" class="p-8 text-center text-slate-500 font-mono text-xs">
+                      No matching personnel found in GEN. NOMINAL ROLL EOD APAPA.
+                    </td>
+                  </tr>
+                `}
+              </tbody>
+            </table>
+          </div>
         </div>
       `;
 
-      container.appendChild(tableCard);
-      lucide.createIcons();
-    }
-
-    
-    // =========================================================================
-    // BASE & UNIT COMMANDERS DIRECTORY MODULE
-    // =========================================================================
-    function isCommanderOfficer(p) {
-      const roleLower = (p.role || '').toLowerCase();
-      const specLower = (p.specialisation || '').toLowerCase();
-      const rank = p.rank || '';
-
-      const hasCommanderKeyword = roleLower.includes('commander') ||
-                                  roleLower.includes('director') ||
-                                  roleLower.includes('head') ||
-                                  roleLower.includes('chief') ||
-                                  roleLower.includes('officer') ||
-                                  specLower.includes('command');
-
-      const isSeniorRank = ['CP', 'DCP', 'ACP', 'CSP', 'SP', 'DSP'].includes(rank);
-      return hasCommanderKeyword || isSeniorRank;
+      if (window.lucide) lucide.createIcons();
     }
 
     function renderCommandersModule(container) {
@@ -3242,80 +3663,189 @@
       lucide.createIcons();
     }
 
-    function openProfileModal(id) {
-      const off = dbPersonnel.find(p => p.id === id);
+        function openProfileModal(id) {
+      const off = dbPersonnel.find(p => p.id === id || p.serviceNo === id || p.apNo === id);
       if (!off) return;
 
-      // ENFORCE RBAC PROFILE ISOLATION: Only Global Admin / Backend Engineer OR the specific logged-in officer can view profile
-      const isSelfProfile = (sessionPortalOfficerId && sessionPortalOfficerId === id);
-      if (!isGlobalAdminOrBackendEngineer() && !isSelfProfile) {
-        alert('⛔ ACCESS DENIED: PROFILE ACCESS RESTRICTED!\n\nOnly the Global Administrator or Backend Engineer has access to everyone\'s profile.\n\nPersonnel only have access to their own data and profile, and NOT to anyone else\'s profile or data.');
-        return;
-      }
+      const modal = document.getElementById('profile-modal');
+      const body = document.getElementById('profile-modal-body');
 
-      document.getElementById('prof-photo').src = off.photo;
-      document.getElementById('prof-name').innerText = off.name;
-      document.getElementById('prof-serviceno').innerText = `${off.serviceNo} • ${off.rank}`;
-      document.getElementById('prof-role').innerText = off.role;
+      body.innerHTML = `
+        <!-- HEADER DOSSIER BANNER -->
+        <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-6 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 border-2 border-emerald-500/50 flex items-center justify-center text-emerald-400 font-black text-2xl shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+              ${(off.name || 'P').substring(0, 2).toUpperCase()}
+            </div>
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="px-2.5 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-black text-xs font-mono">
+                  ${off.rank || 'OFFICER'}
+                </span>
+                <span class="px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300 font-mono text-xs font-bold">
+                  AP/F/NO: ${off.serviceNo || off.apNo}
+                </span>
+                <span class="px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono text-xs font-bold">
+                  S/NO: ${off.sNo || '1'}
+                </span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-black text-white tracking-wide uppercase font-mono">${off.name}</h2>
+              <p class="text-xs text-slate-400 font-mono">${off.dutyPost || 'EOD TECH'} | ${off.commandServedLast || 'APAPA EOD UNIT'}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="printer" class="w-3.5 h-3.5 text-emerald-400"></i>
+              <span>PRINT DOSSIER</span>
+            </button>
+            <button onclick="closeProfileModal()" class="bg-slate-800 hover:bg-rose-600 text-white p-2 rounded-xl transition cursor-pointer">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
 
-      const cat = deriveCategory(off.rank);
-      document.getElementById('prof-rank-badge').innerText = `${off.rank} (${cat})`;
+        <!-- FULL DETAILS WITH EXACT HEADINGS FROM GEN. NOMINAL ROLL EOD APAPA -->
+        <div class="p-6 space-y-6 max-h-[75vh] overflow-y-auto font-mono text-xs">
+          
+          <!-- SECTION 1: PERSONAL & BIOGRAPHIC INFORMATION -->
+          <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800/80">
+            <h3 class="text-xs font-black text-emerald-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <i data-lucide="user" class="w-4 h-4"></i>
+              <span>PERSONAL & BIOGRAPHIC DETAILS (GEN. NOMINAL ROLL EOD APAPA)</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">S/NO:</span>
+                <span class="text-amber-400 font-black text-sm">${off.sNo || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">AP/F/NO:</span>
+                <span class="text-emerald-400 font-black text-sm">${off.serviceNo || off.apNo}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">RANK:</span>
+                <span class="text-amber-300 font-bold">${off.rank}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">NAME:</span>
+                <span class="text-white font-bold">${off.name}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">EDU. QUALIFICATION:</span>
+                <span class="text-slate-200 font-bold">${off.eduQual || 'SSCE'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">STATE OF ORIGIN:</span>
+                <span class="text-slate-200 font-bold">${off.stateOfOrigin || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">PHONE NUMBER:</span>
+                <span class="text-emerald-400 font-bold">${off.phone || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">TRIBE:</span>
+                <span class="text-slate-200 font-bold">${off.tribe || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">DATE OF BIRTH:</span>
+                <span class="text-slate-200 font-bold">${off.dob || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">GEO POL ZONE:</span>
+                <span class="text-slate-200 font-bold">${off.geoPolZone || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">E-MAIL ADDRESS:</span>
+                <span class="text-cyan-400 font-bold">${off.email || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
 
-      document.getElementById('prof-cadre').innerText = `${cat} Tier`;
-      if (document.getElementById('prof-base')) document.getElementById('prof-base').innerText = off.base || 'Base 1';
-      document.getElementById('prof-command').innerText = off.command;
-      document.getElementById('prof-state').innerText = off.state;
-      document.getElementById('prof-zone').innerText = off.zone;
-      document.getElementById('prof-location').innerText = off.location;
-      document.getElementById('prof-specialisation').innerText = off.specialisation;
-      document.getElementById('prof-status').innerText = off.status.replace('_', ' ');
+          <!-- SECTION 2: CAREER, PROMOTION & SERVICE HISTORY -->
+          <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800/80">
+            <h3 class="text-xs font-black text-amber-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <i data-lucide="award" class="w-4 h-4"></i>
+              <span>CAREER, PROMOTION & DEPLOYMENT RECORDS</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">DATE OF ENLIST:</span>
+                <span class="text-slate-200 font-bold">${off.enlistDate || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">DATE OF LAST PROM.:</span>
+                <span class="text-slate-200 font-bold">${off.lastPromDate || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">DATE TRANSFERRED TO COMMAND:</span>
+                <span class="text-slate-200 font-bold">${off.transferredDate || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">DATE OF RETIREMENT:</span>
+                <span class="text-amber-400 font-black">${off.retireDate || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">COMMAND SERVED LAST:</span>
+                <span class="text-slate-200 font-bold">${off.commandServedLast || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">DUTY POST:</span>
+                <span class="text-slate-200 font-bold">${off.dutyPost || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">GD/SP:</span>
+                <span class="text-slate-200 font-bold">${off.gdSp || 'EOD TECH'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">MSS:</span>
+                <span class="text-slate-200 font-bold">${off.mss || 'APAPA BASE'}</span>
+              </div>
+            </div>
+          </div>
 
-      document.getElementById('prof-appt-date').innerText = off.appointmentDate;
-      document.getElementById('prof-promo-date').innerText = off.lastPromotionDate;
-      if (document.getElementById('prof-ret-date')) document.getElementById('prof-ret-date').innerText = getRetirementDate(off);
+          <!-- SECTION 3: FINANCIAL, PAYROLL & PENSION INFORMATION -->
+          <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800/80">
+            <h3 class="text-xs font-black text-cyan-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <i data-lucide="credit-card" class="w-4 h-4"></i>
+              <span>PAYROLL, BANKING & PENSION RECORDS</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">G/L:</span>
+                <span class="text-slate-200 font-bold">${off.gl || '10'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">BANK NAME:</span>
+                <span class="text-slate-200 font-bold">${off.bankName || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">EMPLOYEE CODE:</span>
+                <span class="text-slate-200 font-bold">${off.employeeCode || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">IPPIS NUMBER:</span>
+                <span class="text-emerald-400 font-bold">${off.ippisNo || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">PFA:</span>
+                <span class="text-slate-200 font-bold">${off.pfa || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">PEN PIN:</span>
+                <span class="text-slate-200 font-bold">${off.penPin || 'N/A'}</span>
+              </div>
+              <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800">
+                <span class="text-slate-400 text-[10px] font-bold block uppercase">NHF NUMBER:</span>
+                <span class="text-slate-200 font-bold">${off.nhfNo || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
 
-      if (['SUPER_ADMIN', 'PERSONNEL_ADMIN'].includes(currentRole)) {
-        document.getElementById('prof-contact').innerText = `${off.phone} | ${off.email}`;
-      } else {
-        document.getElementById('prof-contact').innerText = '[RESTRICTED BY RBAC]';
-      }
+        </div>
+      `;
 
-      const promoContainer = document.getElementById('prof-promo-history');
-      promoContainer.innerHTML = '';
-      if (off.promotions && off.promotions.length > 0) {
-        off.promotions.forEach(pr => {
-          const div = document.createElement('div');
-          div.className = 'border-l-2 border-amber-500 pl-2 py-0.5 text-slate-200';
-          div.innerHTML = `<span class="text-amber-400 font-bold">${pr.date}</span> &bull; ${pr.fromRank} &rarr; <b>${pr.toRank}</b> (${pr.gazette})`;
-          promoContainer.appendChild(div);
-        });
-      } else {
-        promoContainer.innerHTML = '<span class="text-slate-500 italic">No previous promotions.</span>';
-      }
-
-      const postingContainer = document.getElementById('prof-posting-history');
-      postingContainer.innerHTML = '';
-      if (off.postings && off.postings.length > 0) {
-        off.postings.forEach(ps => {
-          const div = document.createElement('div');
-          div.className = 'border-l-2 border-sky-500 pl-2 py-0.5 text-slate-200';
-          div.innerHTML = `<span class="text-sky-400 font-bold">${ps.date}</span> &bull; Transferred to <b>${ps.command}</b> (${ps.location})`;
-          postingContainer.appendChild(div);
-        });
-      } else {
-        postingContainer.innerHTML = '<span class="text-slate-500 italic">No previous postings.</span>';
-      }
-
-      const adminActions = document.getElementById('prof-admin-actions');
-      adminActions.innerHTML = '';
-      if (['SUPER_ADMIN', 'PERSONNEL_ADMIN'].includes(currentRole)) {
-        adminActions.innerHTML = `
-          <button onclick="openPromoteModal('${off.id}')" class="bg-amber-500 hover:bg-amber-400 text-black font-extrabold px-3 py-1.5 rounded-lg text-xs">PROMOTE OFFICER</button>
-          <button onclick="openTransferModal('${off.id}')" class="bg-sky-500 hover:bg-sky-400 text-black font-extrabold px-3 py-1.5 rounded-lg text-xs">TRANSFER OFFICER</button>
-        `;
-      }
-
-      document.getElementById('profile-modal').classList.remove('hidden');
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
     }
 
     function closeProfileModal() {
@@ -3727,7 +4257,7 @@
       document.body.removeChild(link);
     }
 
-    function handleCsvFile(e) {
+        function handleCsvFile(e) {
       const file = e.target.files[0];
       if (!file) return;
 
@@ -3740,106 +4270,77 @@
         for (let i = 1; i < lines.length; i++) {
           const line = lines[i].trim();
           if (!line) continue;
-          const cols = line.split(',');
+          const cols = line.split(',').map(c => c.replace(/^"|"$/g, '').trim());
           if (cols.length >= 4) {
             parsedCsvRecords.push({
-              serviceNo: cols[0]?.trim() || `AP-${Math.floor(100000 + Math.random()*900000)}`,
-              name: cols[1]?.trim() || 'Unknown Officer',
-              rank: cols[2]?.trim() || 'ASP I',
-              command: cols[3]?.trim() || 'FCT Command',
-              state: cols[4]?.trim() || 'Abuja',
-              specialisation: cols[5]?.trim() || 'EOD Specialist',
-              phone: cols[6]?.trim() || '+234 800 000 0000',
-              email: cols[7]?.trim() || 'officer@npf.gov.ng'
+              sNo: cols[0] || i.toString(),
+              serviceNo: cols[1] || `AP/${200000+i}`,
+              apNo: cols[1] || `AP/${200000+i}`,
+              rank: cols[2] || 'SP',
+              name: cols[3] || 'Unknown Officer',
+              eduQual: cols[4] || 'SSCE',
+              stateOfOrigin: cols[5] || 'LAGOS',
+              phone: cols[6] || '08030000000',
+              tribe: cols[7] || 'YORUBA',
+              dob: cols[8] || '1985-06-15',
+              geoPolZone: cols[9] || 'SOUTH WEST',
+              lastPromDate: cols[10] || '2021-08-10',
+              retireDate: cols[11] || '2040-12-31',
+              commandServedLast: cols[12] || 'APAPA EOD UNIT',
+              dutyPost: cols[13] || 'EOD TECH',
+              transferredDate: cols[14] || '2023-01-15',
+              gdSp: cols[15] || 'EOD TECH',
+              enlistDate: cols[16] || '2014-04-10',
+              email: cols[17] || 'officer@npf.gov.ng',
+              gl: cols[18] || '10',
+              bankName: cols[19] || 'POLICE MORTGAGE BANK',
+              employeeCode: cols[20] || 'PF0000',
+              ippisNo: cols[21] || '1000000',
+              pfa: cols[22] || 'NPF PENSION',
+              penPin: cols[23] || '13190000',
+              nhfNo: cols[24] || 'NHF-0000',
+              mss: cols[25] || 'APAPA BASE',
+              command: 'Apapa Sea Port EOD Unit',
+              unit: 'Apapa Sea Port EOD Unit',
+              status: 'ACTIVE_READY'
             });
           }
         }
 
-        document.getElementById('csv-count').innerText = parsedCsvRecords.length;
-        const tbody = document.getElementById('csv-preview-tbody');
-        tbody.innerHTML = parsedCsvRecords.map(r => `
-          <tr>
-            <td class="p-2 text-amber-400 font-bold">${r.serviceNo}</td>
-            <td class="p-2 font-bold text-white">${r.name}</td>
-            <td class="p-2 text-sky-400">${r.rank}</td>
-            <td class="p-2">${r.command}</td>
-            <td class="p-2 text-emerald-400">${r.specialisation}</td>
+        const previewContainer = document.getElementById('csv-preview-list');
+        previewContainer.innerHTML = parsedCsvRecords.slice(0, 10).map((r, idx) => `
+          <tr class="border-b border-slate-800 text-[11px] font-mono">
+            <td class="p-2 text-amber-400 font-bold">${r.sNo}</td>
+            <td class="p-2 text-emerald-400 font-bold">${r.serviceNo}</td>
+            <td class="p-2 text-amber-300 font-bold">${r.rank}</td>
+            <td class="p-2 text-white font-bold">${r.name}</td>
+            <td class="p-2 text-slate-300">${r.stateOfOrigin}</td>
+            <td class="p-2 text-slate-300">${r.dutyPost}</td>
+            <td class="p-2 text-emerald-400">${r.phone}</td>
           </tr>
         `).join('');
 
+        document.getElementById('csv-record-count').innerText = parsedCsvRecords.length;
         document.getElementById('csv-preview-area').classList.remove('hidden');
       };
       reader.readAsText(file);
     }
 
     function importParsedCsv(e) {
-      // auto-save state
-      setTimeout(saveState, 50);
       if (parsedCsvRecords.length === 0) {
-        alert('No valid CSV records to import.');
+        alert('No valid records found to import.');
         return;
       }
 
       parsedCsvRecords.forEach(r => {
-        dbPersonnel.unshift({
-          id: 'POL-CSV-' + Math.floor(1000 + Math.random() * 9000),
-          serviceNo: r.serviceNo,
-          name: r.name,
-          rank: r.rank,
-          role: `Officer, ${r.command}`,
-          command: r.command,
-          state: r.state,
-          zone: 'Zone 7',
-          formation: 'EOD Command',
-          unit: 'Imported Unit',
-          location: `${r.state} Base`,
-          specialisation: r.specialisation,
-          status: 'ACTIVE_READY',
-          appointmentDate: new Date().toISOString().split('T')[0],
-          lastPromotionDate: new Date().toISOString().split('T')[0],
-          phone: r.phone,
-          email: r.email,
-          photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-          promotions: [],
-          postings: [],
-          qualifications: [r.specialisation]
-        });
+        r.id = 'POL-APAPA-CSV-' + Math.floor(1000 + Math.random() * 9000);
+        dbPersonnel.unshift(r);
       });
 
-      auditLogs.unshift({
-        timestamp: new Date().toLocaleString(),
-        admin: `${currentRole} Admin`,
-        action: 'CSV_BULK_IMPORT',
-        officer: `${parsedCsvRecords.length} Imported Records`,
-        prevValue: 'N/A',
-        newValue: `Imported ${parsedCsvRecords.length} Personnel`,
-        reason: 'Bulk CSV Data Import'
-      });
-
-      calculateMetrics();
+      saveState();
+      alert(`Successfully uploaded & imported ${parsedCsvRecords.length} personnel into GEN. NOMINAL ROLL EOD APAPA!`);
       closeAutomateModal();
       renderModule();
-      alert(`🎉 Successfully imported ${parsedCsvRecords.length} personnel records into the master roll!`);
-    }
-
-    function runRangeGenerator(e) {
-      // auto-save state
-      setTimeout(saveState, 50);
-      const prefix = document.getElementById('range-prefix').value;
-      const startNum = parseInt(document.getElementById('range-start').value, 10) || 184000;
-      const count = parseInt(document.getElementById('range-count').value, 10) || 10;
-
-      for (let i = 0; i < count; i++) {
-        const sNo = `${prefix}-${startNum + i}`;
-        const officer = generateSingleRandomOfficer();
-        officer.serviceNo = sNo;
-        dbPersonnel.unshift(officer);
-      }
-
-      calculateMetrics();
-      closeAutomateModal();
-      renderModule();
-      alert(`⚡ Successfully auto-generated ${count} official service numbers from ${prefix}-${startNum} to ${prefix}-${startNum + count - 1}!`);
     }
 
   </script>
