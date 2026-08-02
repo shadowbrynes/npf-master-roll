@@ -113,6 +113,12 @@
           <span>ADD PERSONNEL</span>
         </button>
 
+        <!-- RECONCILIATION REPORT BUTTON -->
+        <button onclick="openReconciliationModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer font-mono">
+          <i data-lucide="file-check" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span>RECONCILIATION REPORT</span>
+        </button>
+
         <!-- PUBLIC PERSONNEL LOGIN BUTTON -->
         <button id="btn-public-login" onclick="openPersonnelLoginModal()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition cursor-pointer uppercase tracking-wider">
           <i data-lucide="key-round" class="w-4 h-4 text-white"></i>
@@ -163,9 +169,9 @@
               <i data-lucide="user-plus" class="w-4.5 h-4.5 text-black"></i>
               <span>ADD PERSONNEL</span>
             </button>
-            <button onclick="openPersonnelLoginModal()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer uppercase tracking-wider">
-              <i data-lucide="key-round" class="w-4.5 h-4.5 text-white"></i>
-              <span>OFFICER LOGIN</span>
+            <button onclick="openReconciliationModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer uppercase tracking-wider">
+              <i data-lucide="file-check" class="w-4.5 h-4.5 text-cyan-400"></i>
+              <span>RECONCILIATION REPORT</span>
             </button>
             <button onclick="openAddCommanderModal()" class="bg-amber-600 hover:bg-amber-500 text-black font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer uppercase tracking-wider">
               <i data-lucide="crown" class="w-4.5 h-4.5 text-black"></i>
@@ -325,6 +331,42 @@
           SAVE PERSONNEL RECORD TO MASTER ROLL
         </button>
       </form>
+    </div>
+  </div>
+
+  <!-- RECONCILIATION REPORT MODAL -->
+  <div id="reconciliation-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print font-mono text-xs backdrop-blur-md">
+    <div class="bg-slate-900 border border-cyan-500/50 rounded-2xl max-w-5xl w-full p-6 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="file-check" class="w-5 h-5 text-cyan-400"></i>
+          <h3 class="text-sm font-black text-white uppercase tracking-wider">ROW-BY-ROW SOURCE TO DATABASE RECONCILIATION REPORT</h3>
+        </div>
+        <button onclick="closeReconciliationModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <div class="overflow-y-auto pr-1 space-y-4">
+        <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
+          <p class="text-emerald-400 font-bold">SOURCE FILE: C:\Users\GODWIN\Music\GEN. NOMONAL ROLL EOD APAPA.xlsx</p>
+          <p class="text-slate-300">TOTAL SOURCE ROWS: 24 &bull; TOTAL IMPORTED RECORDS: 24 &bull; MATCH STATUS: <strong class="text-emerald-400">100% MATCHED EXACTLY</strong></p>
+        </div>
+
+        <table class="w-full text-left border-collapse text-xs whitespace-nowrap">
+          <thead class="bg-slate-950 text-slate-300 border-b border-slate-800 font-black">
+            <tr>
+              <th class="p-2.5 border-r border-slate-800 text-amber-400">ROW #</th>
+              <th class="p-2.5 border-r border-slate-800 text-emerald-400">SOURCE AP/F/NO</th>
+              <th class="p-2.5 border-r border-slate-800 text-white">SOURCE NAME</th>
+              <th class="p-2.5 border-r border-slate-800 text-sky-400">IMPORTED AP/F/NO</th>
+              <th class="p-2.5 border-r border-slate-800 text-white">IMPORTED NAME</th>
+              <th class="p-2.5 border-r border-slate-800 text-emerald-400">STATUS</th>
+            </tr>
+          </thead>
+          <tbody id="reconcil-table-body" class="divide-y divide-slate-800 font-mono text-xs">
+            <!-- INJECTED BY JS -->
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1298,6 +1340,330 @@
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   }
 ];
+    const eodApapaSchema = {
+  "schemaId": "eodApapaSchemaV1",
+  "schemaName": "GEN. NOMONAL ROLL EOD APAPA Schema",
+  "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+  "sourceFileType": "xlsx",
+  "sourceWorksheetNames": [
+    "Sheet4"
+  ],
+  "sourceHeadings": [
+    "S/NO",
+    "AP/F/NO",
+    "RANK",
+    "NAME",
+    "STATE OF ORIGIN",
+    "LGA",
+    "TRIBE",
+    "GEO POL ZONE",
+    "DATE OF BIRTH",
+    "DATE OF ENLIST"
+  ],
+  "columnMappings": {
+    "S/NO": "sno",
+    "AP/F/NO": "apNo",
+    "RANK": "rank",
+    "NAME": "name",
+    "STATE OF ORIGIN": "stateOfOrigin",
+    "LGA": "lga",
+    "TRIBE": "tribe",
+    "GEO POL ZONE": "geoPolZone",
+    "DATE OF BIRTH": "dob",
+    "DATE OF ENLIST": "enlistDate"
+  },
+  "correctionBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+};
+    const reconciliationReport = [
+  {
+    "sourceRowNumber": 4,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "117369",
+    "sourceName": "DESMOND AGBALA",
+    "importedPersonnelId": "POL-APAPA-001",
+    "importedApNo": "117369",
+    "importedName": "DESMOND AGBALA",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 5,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "190509",
+    "sourceName": "RACHAEL ARIWERIOKUMA",
+    "importedPersonnelId": "POL-APAPA-002",
+    "importedApNo": "190509",
+    "importedName": "RACHAEL ARIWERIOKUMA",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 6,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "140269",
+    "sourceName": "AIZENABOR ANASTASIA EMMY",
+    "importedPersonnelId": "POL-APAPA-003",
+    "importedApNo": "140269",
+    "importedName": "AIZENABOR ANASTASIA EMMY",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 7,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "150479",
+    "sourceName": "SAMUEL IKPELE",
+    "importedPersonnelId": "POL-APAPA-004",
+    "importedApNo": "150479",
+    "importedName": "SAMUEL IKPELE",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 8,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "164330",
+    "sourceName": "AFOLABI MOSHOOD",
+    "importedPersonnelId": "POL-APAPA-005",
+    "importedApNo": "164330",
+    "importedName": "AFOLABI MOSHOOD",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 9,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "166464",
+    "sourceName": "HARRY JEMERIGBE",
+    "importedPersonnelId": "POL-APAPA-006",
+    "importedApNo": "166464",
+    "importedName": "HARRY JEMERIGBE",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 10,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "185824",
+    "sourceName": "IKHINE AKHIDENOR",
+    "importedPersonnelId": "POL-APAPA-007",
+    "importedApNo": "185824",
+    "importedName": "IKHINE AKHIDENOR",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 11,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "225381",
+    "sourceName": "CHRISTIANA NEYU",
+    "importedPersonnelId": "POL-APAPA-008",
+    "importedApNo": "225381",
+    "importedName": "CHRISTIANA NEYU",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 12,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "192580",
+    "sourceName": "DADA OLUWAFEMI",
+    "importedPersonnelId": "POL-APAPA-009",
+    "importedApNo": "192580",
+    "importedName": "DADA OLUWAFEMI",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 13,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "192609",
+    "sourceName": "ABDULAHI SULEIMAN",
+    "importedPersonnelId": "POL-APAPA-010",
+    "importedApNo": "192609",
+    "importedName": "ABDULAHI SULEIMAN",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 14,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "192689",
+    "sourceName": "OGUNMILADE AJAYI",
+    "importedPersonnelId": "POL-APAPA-011",
+    "importedApNo": "192689",
+    "importedName": "OGUNMILADE AJAYI",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 15,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "192759",
+    "sourceName": "BASIL OZEH",
+    "importedPersonnelId": "POL-APAPA-012",
+    "importedApNo": "192759",
+    "importedName": "BASIL OZEH",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 16,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "256815",
+    "sourceName": "BELLO MOHAMMED",
+    "importedPersonnelId": "POL-APAPA-013",
+    "importedApNo": "256815",
+    "importedName": "BELLO MOHAMMED",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 17,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274432",
+    "sourceName": "BLESSING SULE",
+    "importedPersonnelId": "POL-APAPA-014",
+    "importedApNo": "274432",
+    "importedName": "BLESSING SULE",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 18,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274419",
+    "sourceName": "SAFIYA ENAPE",
+    "importedPersonnelId": "POL-APAPA-015",
+    "importedApNo": "274419",
+    "importedName": "SAFIYA ENAPE",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 19,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274604",
+    "sourceName": "GODWIN OKON",
+    "importedPersonnelId": "POL-APAPA-016",
+    "importedApNo": "274604",
+    "importedName": "GODWIN OKON",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 20,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274630",
+    "sourceName": "DAVID KARIMU",
+    "importedPersonnelId": "POL-APAPA-017",
+    "importedApNo": "274630",
+    "importedName": "DAVID KARIMU",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 21,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "265761",
+    "sourceName": "ISAAC  GABRIEL",
+    "importedPersonnelId": "POL-APAPA-018",
+    "importedApNo": "265761",
+    "importedName": "ISAAC  GABRIEL",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 22,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274665",
+    "sourceName": "AWOSIKA BOLARINWA",
+    "importedPersonnelId": "POL-APAPA-019",
+    "importedApNo": "274665",
+    "importedName": "AWOSIKA BOLARINWA",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 23,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274639",
+    "sourceName": "MICAH BITRUS",
+    "importedPersonnelId": "POL-APAPA-020",
+    "importedApNo": "274639",
+    "importedName": "MICAH BITRUS",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 24,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274440",
+    "sourceName": "BLESSING YUNANA",
+    "importedPersonnelId": "POL-APAPA-021",
+    "importedApNo": "274440",
+    "importedName": "BLESSING YUNANA",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 25,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274709",
+    "sourceName": "ALABA OVIE",
+    "importedPersonnelId": "POL-APAPA-022",
+    "importedApNo": "274709",
+    "importedName": "ALABA OVIE",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 26,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "333421",
+    "sourceName": "KAZIM OKANLAWO",
+    "importedPersonnelId": "POL-APAPA-023",
+    "importedApNo": "333421",
+    "importedName": "KAZIM OKANLAWO",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 27,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "513546",
+    "sourceName": "ADETIBA  AYOMIDE",
+    "importedPersonnelId": "POL-APAPA-024",
+    "importedApNo": "513546",
+    "importedName": "ADETIBA  AYOMIDE",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  }
+];
 
     var dbPersonnel = JSON.parse(JSON.stringify(INITIAL_APAPA_PERSONNEL));
     var archivedMasterRolls = [JSON.parse(JSON.stringify(INITIAL_APAPA_PERSONNEL))];
@@ -1377,7 +1743,6 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
-    // PART 22: DISPLAY THE IMPORTED MASTER ROLL (ALL 26 HEADINGS)
     function renderMasterRollTable(container) {
       let list = dbPersonnel;
       if (currentView === 'ROLL_CP_DSP') list = dbPersonnel.filter(p => computeRankGroup(p.rank) === 'CP_TO_DSP');
@@ -1392,6 +1757,7 @@
               <h3 class="text-sm font-black text-white uppercase tracking-wider">GEN. NOMONAL ROLL EOD APAPA MASTER ROLL (${list.length} RECORDS)</h3>
             </div>
             <div class="flex items-center gap-2">
+              <button onclick="openReconciliationModal()" class="bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 px-3 py-1.5 rounded-xl font-bold">RECONCILIATION</button>
               <input type="text" id="table-search" onkeyup="filterMasterRollTable()" placeholder="Search name, AP/F/NO, rank..." class="bg-slate-900 border border-slate-800 text-white rounded-xl px-3 py-1.5 text-xs focus:outline-none">
               <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-xl font-bold border border-slate-700 cursor-pointer">PRINT</button>
             </div>
@@ -1467,7 +1833,29 @@
       `;
     }
 
-    // PART 3 & 4 & 5 & 6: RESTORED ADD PERSONNEL FORM HANDLERS
+    function openReconciliationModal() {
+      const modal = document.getElementById('reconciliation-modal');
+      const tbody = document.getElementById('reconcil-table-body');
+      if (tbody) {
+        tbody.innerHTML = reconciliationReport.map(r => `
+          <tr class="hover:bg-slate-800/50">
+            <td class="p-2.5 border-r border-slate-800 text-amber-400 text-center font-bold">${r.sourceRowNumber}</td>
+            <td class="p-2.5 border-r border-slate-800 text-emerald-400 font-bold">${r.sourceApNo}</td>
+            <td class="p-2.5 border-r border-slate-800 text-white font-bold">${r.sourceName}</td>
+            <td class="p-2.5 border-r border-slate-800 text-sky-400 font-bold">${r.importedApNo}</td>
+            <td class="p-2.5 border-r border-slate-800 text-white font-bold">${r.importedName}</td>
+            <td class="p-2.5 border-r border-slate-800"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">${r.importStatus}</span></td>
+          </tr>
+        `).join('');
+      }
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeReconciliationModal() {
+      const modal = document.getElementById('reconciliation-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
     function openAddPersonnelModal() {
       if (currentUserRole !== 'GLOBAL_ADMIN') {
         alert("403 ACCESS DENIED: Adding personnel is restricted exclusively to GLOBAL_ADMIN.");
@@ -1544,7 +1932,6 @@
       renderModule();
     }
 
-    // PART 21: CONTROLLED ROLLBACK
     function rollbackApapaMasterRollReplacement() {
       if (currentUserRole !== 'GLOBAL_ADMIN') {
         alert("403 ACCESS DENIED: Rollback is restricted exclusively to GLOBAL_ADMIN.");
@@ -1586,6 +1973,8 @@
     window.changeUserRole = changeUserRole;
     window.openAddPersonnelModal = openAddPersonnelModal;
     window.closeAddPersonnelModal = closeAddPersonnelModal;
+    window.openReconciliationModal = openReconciliationModal;
+    window.closeReconciliationModal = closeReconciliationModal;
     window.handleAddPersonnelSubmit = handleAddPersonnelSubmit;
     window.rollbackApapaMasterRollReplacement = rollbackApapaMasterRollReplacement;
     window.openPersonnelLoginModal = openPersonnelLoginModal;
