@@ -40,7 +40,6 @@
     .font-mono {
       font-family: 'JetBrains Mono', monospace;
     }
-    /* Custom scrollbars */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -56,7 +55,6 @@
       background: #334155;
     }
 
-    /* WATERMARK & PRINT STYLING FOR PRINTABLE DOSSIER (PART 19) */
     @media print {
       .no-print { display: none !important; }
       body {
@@ -114,7 +112,7 @@
             <h1 class="text-base font-black text-white tracking-wider uppercase font-mono">EOD-CBRN COMMAND NATIONAL DIRECTORY</h1>
             <span class="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">OFFICIAL NPF</span>
           </div>
-          <p class="text-xs text-slate-400 font-mono">MASTER ROLL & PERSONNEL SELF-SERVICE PORTAL &bull; AUTHORISED DIRECTORY</p>
+          <p class="text-xs text-slate-400 font-mono">NATIONAL DIRECTORY &bull; BASES & UNITS CENTRAL MANAGEMENT SYSTEM</p>
         </div>
       </div>
 
@@ -130,19 +128,19 @@
           <span class="text-[11px] font-bold">CLOUD SYNC: ONLINE (FIRESTORE)</span>
         </div>
 
-        <!-- ROLE ACCESS SELECTOR (PART 11 & PART 14 RBAC) -->
+        <!-- ROLE ACCESS SELECTOR (PART 1: GLOBAL_ADMIN AUTHORITATIVE ROLE) -->
         <div class="flex items-center gap-1.5 bg-slate-900 border border-amber-500/40 px-3 py-1.5 rounded-xl">
-          <i data-lucide="user-check" class="w-4 h-4 text-amber-400"></i>
+          <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
           <span class="text-slate-400 text-[11px] font-bold">ROLE:</span>
           <select id="user-role-selector" onchange="changeUserRole(this.value)" class="bg-slate-950 text-amber-300 font-black text-xs border border-slate-800 rounded-lg px-2 py-0.5 focus:outline-none cursor-pointer">
-            <option value="SUPER_ADMIN">SUPER_ADMIN (Full Admin Access)</option>
-            <option value="RECORDS_ADMIN">RECORDS_ADMIN (Records Admin)</option>
-            <option value="COMMANDER">COMMANDER (Command Head)</option>
-            <option value="PERSONNEL">PERSONNEL (Self-Service Officer)</option>
+            <option value="GLOBAL_ADMIN">GLOBAL_ADMIN (Global Administrator - Sole Write Role)</option>
+            <option value="RECORDS_ADMIN">RECORDS_ADMIN (Records Administrator - Read Only)</option>
+            <option value="COMMANDER">COMMANDER (Command Head - Read Only Base Scope)</option>
+            <option value="PERSONNEL">PERSONNEL (Self-Service Officer - Read Only Own Profile)</option>
           </select>
         </div>
 
-        <!-- MASTER ROLL DISPLAY MODE TOGGLE (STANDARD VS RESTRICTED ADMIN ROLL) -->
+        <!-- MASTER ROLL DISPLAY MODE TOGGLE -->
         <div id="roll-mode-container" class="flex items-center gap-1 bg-slate-900 border border-slate-800 p-1 rounded-xl">
           <button onclick="setRollMode('STANDARD')" id="btn-mode-standard" class="px-2.5 py-1 rounded-lg text-[11px] font-black transition cursor-pointer bg-emerald-500 text-black">
             STANDARD ROLL
@@ -152,20 +150,26 @@
           </button>
         </div>
 
-        <!-- NOTIFICATION CENTRE BELL (PART 7) -->
+        <!-- NOTIFICATION CENTRE BELL -->
         <button onclick="toggleNotificationCentre()" class="relative p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white transition cursor-pointer">
           <i data-lucide="bell" class="w-5 h-5 text-amber-400"></i>
           <span id="notif-badge-count" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-600 text-white font-black text-[9px] flex items-center justify-center">0</span>
         </button>
 
-        <!-- COMMANDERS ONLY BUTTON (PART 11 & PART 12) -->
-        <button onclick="switchView('COMMANDERS')" class="bg-amber-600/20 hover:bg-amber-600 text-amber-300 hover:text-black font-black px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-amber-500/40 transition cursor-pointer">
-          <i data-lucide="crown" class="w-4 h-4 text-amber-400"></i>
-          <span>BASE AND UNIT COMMANDERS ONLY</span>
+        <!-- ALL NIGERIA BASES & UNITS BUTTON (PART 7) -->
+        <button id="btn-nav-bases-units" onclick="switchView('BASES_UNITS')" class="bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white font-black px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-sky-500/40 transition cursor-pointer">
+          <i data-lucide="building-2" class="w-4 h-4 text-sky-400"></i>
+          <span>ALL NIGERIA BASES & UNITS</span>
         </button>
 
-        <!-- HEADER ACTIONS -->
-        <button onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-black font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)] transition cursor-pointer">
+        <!-- COMMANDERS ONLY BUTTON -->
+        <button id="btn-nav-commanders" onclick="switchView('COMMANDERS')" class="bg-amber-600/20 hover:bg-amber-600 text-amber-300 hover:text-black font-black px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-amber-500/40 transition cursor-pointer">
+          <i data-lucide="crown" class="w-4 h-4 text-amber-400"></i>
+          <span>COMMANDERS DIRECTORY</span>
+        </button>
+
+        <!-- GLOBAL ADMIN WRITE ACTIONS (HIDDEN FROM NON-GLOBAL_ADMIN) -->
+        <button id="btn-nav-add-officer" onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-black font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)] transition cursor-pointer">
           <i data-lucide="user-plus" class="w-4 h-4 text-black"></i>
           <span>+ ADD OFFICER</span>
         </button>
@@ -187,35 +191,44 @@
   <!-- MAIN APPLICATION BODY CONTAINER -->
   <main class="flex-1 max-w-[1700px] w-full mx-auto p-4 sm:p-6 space-y-6">
 
+    <!-- READ-ONLY WARNING BANNER FOR NON-GLOBAL_ADMIN -->
+    <div id="read-only-notice-banner" class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs font-mono text-amber-300 hidden no-print">
+      <div class="flex items-center gap-2">
+        <i data-lucide="lock" class="w-4 h-4 text-amber-400"></i>
+        <span><strong>READ-ONLY ACCESS ENFORCED:</strong> Personnel service information can only be updated by the Global Administrator (GLOBAL_ADMIN).</span>
+      </div>
+      <span class="px-2 py-0.5 rounded bg-amber-500/20 font-black text-[10px]">SECURITY POLICY ACTIVE</span>
+    </div>
+
     <!-- HUD THREAT LEVEL & STATISTICAL TELEMETRY BANNER -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-wrap items-center justify-between gap-4 font-mono text-xs no-print">
       <div class="flex items-center gap-3">
         <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
         <div>
           <span class="text-slate-400 block font-bold">OPERATIONAL DISPATCH STATUS: <span class="text-emerald-400">READY</span> &bull; THREAT LEVEL: <span class="text-amber-400">DEFCON 4 / GUARDED</span></span>
-          <span class="text-[11px] text-slate-500">Real-time telemetry, statutory retirement engine, and profile photo verification active.</span>
+          <span class="text-[11px] text-slate-500">Real-time telemetry, statutory retirement engine, and central base/unit hierarchy active.</span>
         </div>
       </div>
 
       <div class="flex items-center gap-4 text-slate-300">
         <div class="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 flex items-center gap-2">
-          <i data-lucide="users" class="w-4 h-4 text-emerald-400"></i>
-          <span>APPROVED RECORDS: <strong id="hud-total-count" class="text-emerald-400 text-sm">24</strong></span>
+          <i data-lucide="building-2" class="w-4 h-4 text-sky-400"></i>
+          <span>ACTIVE BASES & UNITS: <strong id="hud-bases-count" class="text-sky-400 text-sm">8</strong></span>
         </div>
         <div class="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 flex items-center gap-2">
-          <i data-lucide="clock" class="w-4 h-4 text-amber-400"></i>
-          <span>RETIRING WITHIN 2 MONTHS: <strong id="hud-retire-count" class="text-amber-400 text-sm">0</strong></span>
+          <i data-lucide="users" class="w-4 h-4 text-emerald-400"></i>
+          <span>APPROVED RECORDS: <strong id="hud-total-count" class="text-emerald-400 text-sm">24</strong></span>
         </div>
       </div>
     </div>
 
-    <!-- RETIREMENT SUMMARY CARDS (PART 6: 6 LIVE CARDS WITH SKELETAL LOADING SUPPORT) -->
+    <!-- RETIREMENT SUMMARY CARDS -->
     <div id="retirement-summary-cards" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 font-mono text-xs no-print">
-      <!-- INJECTED BY JAVASCRIPT ENGINE -->
+      <!-- INJECTED BY JAVASCRIPT -->
     </div>
 
-    <!-- DASHBOARD NAVIGATION CARDS (9 STRUCTURED CARDS) -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 gap-3 font-mono text-xs no-print">
+    <!-- DASHBOARD NAVIGATION CARDS (10 CARDS - INCLUDES BASES & UNITS) -->
+    <div id="dashboard-nav-grid" class="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-3 font-mono text-xs no-print">
       
       <!-- 1. ALL PERSONNEL MASTER ROLL -->
       <div onclick="switchView('ROLL_ALL')" id="card-ROLL_ALL" class="nav-card bg-slate-900 hover:bg-slate-850 border-2 border-emerald-500 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
@@ -257,7 +270,7 @@
         <div class="text-[9px] text-slate-400">Rank & File</div>
       </div>
 
-      <!-- 5. RETIREMENT DASHBOARD (PART 5) -->
+      <!-- 5. RETIREMENT DASHBOARD -->
       <div onclick="switchView('RETIREMENT_DASHBOARD')" id="card-RETIREMENT_DASHBOARD" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
         <div class="flex justify-between items-center text-amber-400">
           <i data-lucide="calendar" class="w-4 h-4"></i>
@@ -267,7 +280,17 @@
         <div class="text-[9px] text-slate-400">2-Month Notice</div>
       </div>
 
-      <!-- 6. BASE & UNIT COMMANDERS (PART 11 & 12) -->
+      <!-- 6. ALL NIGERIA BASES & UNITS (PART 7 & 14) -->
+      <div onclick="switchView('BASES_UNITS')" id="card-BASES_UNITS" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-sky-400">
+          <i data-lucide="building-2" class="w-4 h-4"></i>
+          <span id="badge-count-bases" class="font-black text-sm">8</span>
+        </div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-sky-400 transition">BASES & UNITS</div>
+        <div class="text-[9px] text-slate-400">Central Directory</div>
+      </div>
+
+      <!-- 7. BASE & UNIT COMMANDERS -->
       <div onclick="switchView('COMMANDERS')" id="card-COMMANDERS" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
         <div class="flex justify-between items-center text-amber-300">
           <i data-lucide="crown" class="w-4 h-4"></i>
@@ -277,7 +300,7 @@
         <div class="text-[9px] text-slate-400">Command Roll</div>
       </div>
 
-      <!-- 7. PENDING REGISTRATIONS & PHOTOS (PART 6 & 18) -->
+      <!-- 8. PENDING REGISTRATIONS & APPROVALS -->
       <div onclick="switchView('REGISTRATIONS')" id="card-REGISTRATIONS" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
         <div class="flex justify-between items-center text-cyan-400">
           <i data-lucide="clock" class="w-4 h-4"></i>
@@ -287,7 +310,7 @@
         <div class="text-[9px] text-slate-400">Reg & Photos</div>
       </div>
 
-      <!-- 8. AUDIT LOG & SECURITY (PART 21) -->
+      <!-- 9. AUDIT LOG & SECURITY -->
       <div onclick="switchView('AUDIT_LOGS')" id="card-AUDIT_LOGS" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
         <div class="flex justify-between items-center text-cyan-300">
           <i data-lucide="file-text" class="w-4 h-4"></i>
@@ -297,7 +320,7 @@
         <div class="text-[9px] text-slate-400">Security Audit</div>
       </div>
 
-      <!-- 9. REPORTS & ANALYTICS (PART 8) -->
+      <!-- 10. REPORTS & ANALYTICS -->
       <div onclick="switchView('REPORTS')" id="card-REPORTS" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
         <div class="flex justify-between items-center text-rose-400">
           <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
@@ -316,7 +339,7 @@
 
   </main>
 
-  <!-- NOTIFICATION CENTRE SLIDE-OVER / MODAL (PART 7) -->
+  <!-- NOTIFICATION CENTRE SLIDE-OVER / MODAL -->
   <div id="notification-modal" class="fixed inset-0 bg-black/80 z-50 flex justify-end hidden no-print backdrop-blur-sm">
     <div class="bg-slate-900 border-l border-slate-800 w-full max-w-md h-full p-6 space-y-5 overflow-y-auto font-mono text-xs shadow-2xl flex flex-col">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -333,7 +356,118 @@
     </div>
   </div>
 
-  <!-- MODAL: RETIREMENT POLICY CONFIGURATION (PART 1) -->
+  <!-- MODAL: TRANSFER PERSONNEL BETWEEN BASES/UNITS (PART 12) -->
+  <div id="transfer-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md">
+    <div class="bg-slate-900 border border-sky-500/50 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-black text-sky-400 uppercase tracking-wider flex items-center gap-2">
+          <i data-lucide="arrow-right-left" class="w-5 h-5"></i>
+          <span>GLOBAL ADMIN PERSONNEL BASE TRANSFER</span>
+        </h3>
+        <button onclick="closeTransferModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <form onsubmit="handleTransferSubmit(event)" class="space-y-4">
+        <input type="hidden" id="transfer-officer-id">
+        <div>
+          <label class="text-slate-300 block font-bold mb-1">OFFICER TO TRANSFER:</label>
+          <input type="text" id="transfer-officer-display" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sky-300 font-bold">
+        </div>
+        <div>
+          <label class="text-slate-300 block font-bold mb-1">CURRENT BASE / UNIT:</label>
+          <input type="text" id="transfer-current-base" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-400 font-bold">
+        </div>
+        <div>
+          <label class="text-sky-400 block font-bold mb-1">TARGET NEW BASE OR UNIT: *</label>
+          <select id="transfer-target-base-id" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-bold focus:border-sky-500 focus:outline-none">
+            <!-- INJECTED BY JS -->
+          </select>
+        </div>
+        <div>
+          <label class="text-slate-300 block font-bold mb-1">ASSIGNMENT TYPE: *</label>
+          <select id="transfer-type" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-sky-500 focus:outline-none">
+            <option value="PERMANENT">PERMANENT TRANSFER</option>
+            <option value="TEMPORARY">TEMPORARY DEPLOYMENT</option>
+            <option value="ATTACHMENT">ATTACHMENT</option>
+            <option value="SECONDMENT">SECONDMENT</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-slate-300 block font-bold mb-1">TRANSFER REFERENCE / SIGNAL NO: *</label>
+          <input type="text" id="transfer-ref" required placeholder="e.g. NPF/EOD/SIG/2026/089" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-sky-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="text-slate-300 block font-bold mb-1">REASON FOR TRANSFER / SPECIAL INSTRUCTIONS: *</label>
+          <textarea id="transfer-reason" required rows="2" placeholder="Operational redeployment or tactical rotation" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-sky-500 focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeTransferModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold hover:text-white cursor-pointer">CANCEL</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black cursor-pointer">CONFIRM & RECORD TRANSFER</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD BASE OR UNIT (PART 8) -->
+  <div id="add-base-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md">
+    <div class="bg-slate-900 border border-sky-500/50 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-black text-sky-400 uppercase tracking-wider flex items-center gap-2">
+          <i data-lucide="building-2" class="w-5 h-5"></i>
+          <span>ADD NEW EOD-CBRN BASE OR UNIT TO NATIONAL DIRECTORY</span>
+        </h3>
+        <button onclick="closeAddBaseModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <form onsubmit="handleAddBaseSubmit(event)" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-sky-400 block font-bold mb-1">BASE/UNIT CODE: *</label>
+            <input type="text" id="base-code" required placeholder="e.g. EOD-BASE-09" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-bold focus:border-sky-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-white block font-bold mb-1">BASE/UNIT OFFICIAL NAME: *</label>
+            <input type="text" id="base-name" required placeholder="e.g. Ibadan EOD-CBRN Tactical Unit" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-bold focus:border-sky-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-slate-300 block font-bold mb-1">BASE TYPE: *</label>
+            <select id="base-type" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-bold focus:border-sky-500 focus:outline-none">
+              <option value="NATIONAL_HEADQUARTERS">NATIONAL HEADQUARTERS</option>
+              <option value="ZONAL_COMMAND">ZONAL COMMAND</option>
+              <option value="STATE_COMMAND">STATE COMMAND</option>
+              <option value="BASE" selected>TACTICAL BASE</option>
+              <option value="UNIT">OPERATIONAL UNIT</option>
+              <option value="SQUADRON">COUNTER-IED SQUADRON</option>
+              <option value="SPECIALISED_UNIT">SPECIALISED CBRN UNIT</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-300 block font-bold mb-1">PARENT COMMAND: *</label>
+            <select id="base-parent-id" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-sky-500 focus:outline-none">
+              <option value="EOD-HQ-ABUJA">National EOD-CBRN Command HQ, Abuja</option>
+              <option value="EOD-BASE-LAGOS">Apapa Sea Port EOD-CBRN Tactical Base</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-300 block font-bold mb-1">STATE LOCATION: *</label>
+            <input type="text" id="base-state" required placeholder="e.g. OYO" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-sky-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-slate-300 block font-bold mb-1">CITY / LOCATION:</label>
+            <input type="text" id="base-city" placeholder="e.g. IBADAN" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-sky-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+          <button type="button" onclick="closeAddBaseModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold hover:text-white cursor-pointer">CANCEL</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-black cursor-pointer">REGISTER BASE / UNIT</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: RETIREMENT POLICY CONFIGURATION -->
   <div id="policy-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md">
     <div class="bg-slate-900 border border-amber-500/50 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -370,7 +504,7 @@
     </div>
   </div>
 
-  <!-- MODAL: RETIREMENT OVERRIDE REQUEST (PART 10) -->
+  <!-- MODAL: RETIREMENT OVERRIDE REQUEST -->
   <div id="override-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md">
     <div class="bg-slate-900 border border-amber-500/50 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -408,7 +542,7 @@
     </div>
   </div>
 
-  <!-- MODAL: ADD OFFICER (WITH ALL 26 HEADINGS & PHOTO UPLOAD - PART 16) -->
+  <!-- MODAL: ADD OFFICER (PART 13: INCLUDES BASE/UNIT SELECTION) -->
   <div id="add-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full p-6 space-y-6 my-8 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col font-mono text-xs">
       <div class="flex justify-between items-center border-b border-slate-800 pb-4 bg-slate-950 p-4 -m-6 mb-2">
@@ -430,7 +564,32 @@
 
       <form id="add-officer-form" onsubmit="handleAddOfficer(event)" class="space-y-6 overflow-y-auto pr-2 text-slate-200">
         
-        <!-- SECTION 0: PROFILE PHOTO UPLOAD (PART 16) -->
+        <!-- SECTION 0: COMPULSORY BASE OR UNIT ASSIGNMENT (PART 13) -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
+          <h4 class="text-xs font-black text-sky-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
+            <i data-lucide="building-2" class="w-4 h-4"></i>
+            <span>COMPULSORY BASE OR UNIT ASSIGNMENT</span>
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div class="sm:col-span-2">
+              <label class="text-sky-400 block font-bold mb-1">ASSIGNED BASE OR UNIT: *</label>
+              <select id="add-base-id" required class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 text-xs focus:border-sky-500 focus:outline-none">
+                <!-- INJECTED BY JS -->
+              </select>
+            </div>
+            <div>
+              <label class="text-slate-300 block font-bold mb-1">ASSIGNMENT TYPE: *</label>
+              <select id="add-assignment-type" required class="w-full bg-slate-900 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:border-sky-500 focus:outline-none">
+                <option value="PERMANENT">PERMANENT</option>
+                <option value="TEMPORARY">TEMPORARY</option>
+                <option value="ATTACHMENT">ATTACHMENT</option>
+                <option value="SECONDMENT">SECONDMENT</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 0B: PROFILE PHOTO UPLOAD -->
         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-wrap items-center gap-4">
           <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-700 flex items-center justify-center overflow-hidden" id="add-photo-preview-container">
             <i data-lucide="user" class="w-8 h-8 text-slate-600" id="add-photo-icon-placeholder"></i>
@@ -439,7 +598,6 @@
           <div class="flex-1 space-y-1">
             <label class="text-emerald-400 block font-bold">PROFILE PHOTO UPLOAD (JPG, PNG, WEBP &le; 5MB):</label>
             <input type="file" id="add-photo-input" accept="image/jpeg,image/jpg,image/png,image/webp" onchange="previewAddPhoto(event)" class="w-full text-slate-400 text-xs file:bg-slate-800 file:border-0 file:text-emerald-400 file:font-bold file:px-3 file:py-1 file:rounded-lg cursor-pointer">
-            <p class="text-[10px] text-slate-500">Square 1:1 aspect ratio recommended. Stored in profilePhotoPath.</p>
           </div>
         </div>
 
@@ -609,14 +767,14 @@
     </div>
   </div>
 
-  <!-- MODAL: OFFICER DOSSIER DETAILS PROFILE (PART 15: 8 TABBED DOSSIER) -->
+  <!-- MODAL: OFFICER DOSSIER DETAILS PROFILE -->
   <div id="profile-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md">
     <div id="profile-modal-content" class="bg-slate-900 border border-slate-700 rounded-2xl max-w-5xl w-full p-6 space-y-6 my-8 shadow-2xl overflow-hidden max-h-[92vh] flex flex-col font-mono text-xs">
       <!-- INJECTED BY JAVASCRIPT -->
     </div>
   </div>
 
-  <!-- MODAL: CORRECTION REQUEST FORM FOR PROTECTED FIELDS -->
+  <!-- MODAL: CORRECTION REQUEST FORM -->
   <div id="correction-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md">
     <div class="bg-slate-900 border border-cyan-500/50 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -714,7 +872,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": true,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "SSCE",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-2",
@@ -769,7 +936,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": true,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "09/01/2047",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-3",
@@ -824,7 +1000,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": true,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "ND",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-4",
@@ -879,7 +1064,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": true,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "WASC",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-5",
@@ -934,7 +1128,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": true,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "WASC",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-6",
@@ -989,7 +1192,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": true,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "SSCE",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-7",
@@ -1044,7 +1256,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": true,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "SSCE",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-8",
@@ -1099,7 +1320,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": true,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "27/08/2025",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-9",
@@ -1154,7 +1384,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": true,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "WASC",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-10",
@@ -1209,7 +1448,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": true,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "BSC",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-11",
@@ -1264,7 +1512,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": true,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "27/08/2025",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-12",
@@ -1319,7 +1576,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": false,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "OND",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-13",
@@ -1374,7 +1640,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": false,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "WASC",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-14",
@@ -1429,7 +1704,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": false,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "B.A LANG/COMM. ART",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-15",
@@ -1484,7 +1768,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": false,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "WASC",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-16",
@@ -1539,7 +1832,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": false,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "B.A LANG/COMM. ART",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-17",
@@ -1594,7 +1896,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": false,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "WASC",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-18",
@@ -1649,7 +1960,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": false,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "WASC",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-19",
@@ -1704,7 +2024,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": false,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "ND",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-20",
@@ -1759,7 +2088,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": false,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "WASC",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-21",
@@ -1814,7 +2152,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": false,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "WASC",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-22",
@@ -1869,7 +2216,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": false,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "SSCE",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-23",
@@ -1924,7 +2280,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": false,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "EGGON",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   },
   {
     "id": "POL-APAPA-24",
@@ -1979,7 +2344,16 @@
     "employmentStatus": "ACTIVE",
     "recordStatus": "ACTIVE",
     "isCommander": true,
-    "password": "password123"
+    "password": "password123",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "currentBaseUnitType": "BASE",
+    "currentParentBaseUnitId": "EOD-HQ-ABUJA",
+    "currentParentBaseUnitName": "National EOD-CBRN Command Headquarters, Abuja",
+    "baseUnitAssignmentStatus": "ACTIVE",
+    "baseUnitAssignmentDate": "2023-01-15",
+    "baseUnitAssignedBy": "GLOBAL_ADMIN"
   }
 ];
 
@@ -1990,8 +2364,189 @@
     var auditLogs = [];
     var retirementNotifications = [];
     var commanderAssignments = [];
+    var baseUnitAssignments = [];
 
-    // System Config Document (Part 1)
+    // Central basesUnits Directory Collection (Part 8)
+    var basesUnits = [
+      {
+        baseUnitId: 'EOD-HQ-ABUJA',
+        baseUnitCode: 'EOD-HQ-00',
+        baseUnitName: 'National EOD-CBRN Command Headquarters, Abuja',
+        baseUnitType: 'NATIONAL_HEADQUARTERS',
+        parentBaseUnitId: 'ROOT',
+        parentBaseUnitName: 'Nigeria Police Force Headquarters',
+        commandLevel: 'NATIONAL',
+        state: 'FCT ABUJA',
+        geopoliticalZone: 'NORTH CENTRAL',
+        policeZone: 'FORCE HQ',
+        city: 'ABUJA',
+        officialAddress: 'Louis Edet House, Force HQ, Shehu Shagari Way, Abuja',
+        officialEmail: 'eod.command@npf.gov.ng',
+        officialPhone: '08030000000',
+        commanderPersonnelId: 'POL-001',
+        commanderName: 'CP OLADIMEJI BABA',
+        commanderRank: 'CP',
+        personnelStrength: 15,
+        status: 'ACTIVE',
+        dateEstablished: '1990-01-01'
+      },
+      {
+        baseUnitId: 'EOD-BASE-LAGOS',
+        baseUnitCode: 'EOD-BASE-01',
+        baseUnitName: 'Apapa Sea Port EOD-CBRN Tactical Base',
+        baseUnitType: 'BASE',
+        parentBaseUnitId: 'EOD-HQ-ABUJA',
+        parentBaseUnitName: 'National EOD-CBRN Command Headquarters, Abuja',
+        commandLevel: 'BASE',
+        state: 'LAGOS',
+        geopoliticalZone: 'SOUTH WEST',
+        policeZone: 'ZONE 2',
+        city: 'APAPA LAGOS',
+        officialAddress: 'EOD Base Complex, Commercial Road, Apapa Sea Port, Lagos',
+        officialEmail: 'apapa.eod@npf.gov.ng',
+        officialPhone: '08034268620',
+        commanderPersonnelId: 'POL-002',
+        commanderName: 'CSP DESMOND AGBALA',
+        commanderRank: 'CSP',
+        personnelStrength: 24,
+        status: 'ACTIVE',
+        dateEstablished: '2005-06-15'
+      },
+      {
+        baseUnitId: 'EOD-BASE-BENIN',
+        baseUnitCode: 'EOD-BASE-02',
+        baseUnitName: 'Benin City EOD-CBRN Tactical Base',
+        baseUnitType: 'BASE',
+        parentBaseUnitId: 'EOD-HQ-ABUJA',
+        parentBaseUnitName: 'National EOD-CBRN Command Headquarters, Abuja',
+        commandLevel: 'BASE',
+        state: 'EDO',
+        geopoliticalZone: 'SOUTH SOUTH',
+        policeZone: 'ZONE 5',
+        city: 'BENIN CITY',
+        officialAddress: 'Police State Command HQ, Sapele Road, Benin City',
+        officialEmail: 'benin.eod@npf.gov.ng',
+        officialPhone: '08035551122',
+        commanderPersonnelId: 'POL-003',
+        commanderName: 'SP SOLOMON BABA',
+        commanderRank: 'SP',
+        personnelStrength: 12,
+        status: 'ACTIVE',
+        dateEstablished: '2010-03-20'
+      },
+      {
+        baseUnitId: 'EOD-BASE-PH',
+        baseUnitCode: 'EOD-BASE-03',
+        baseUnitName: 'Port Harcourt EOD-CBRN Base',
+        baseUnitType: 'BASE',
+        parentBaseUnitId: 'EOD-HQ-ABUJA',
+        parentBaseUnitName: 'National EOD-CBRN Command Headquarters, Abuja',
+        commandLevel: 'BASE',
+        state: 'RIVERS',
+        geopoliticalZone: 'SOUTH SOUTH',
+        policeZone: 'ZONE 6',
+        city: 'PORT HARCOURT',
+        officialAddress: 'Moscow Road, Port Harcourt',
+        officialEmail: 'ph.eod@npf.gov.ng',
+        officialPhone: '08034442211',
+        commanderPersonnelId: 'POL-004',
+        commanderName: 'DSP ISAAC OKON',
+        commanderRank: 'DSP',
+        personnelStrength: 8,
+        status: 'ACTIVE',
+        dateEstablished: '2012-08-10'
+      },
+      {
+        baseUnitId: 'EOD-BASE-KANO',
+        baseUnitCode: 'EOD-BASE-04',
+        baseUnitName: 'Kano EOD-CBRN Tactical Base',
+        baseUnitType: 'BASE',
+        parentBaseUnitId: 'EOD-HQ-ABUJA',
+        parentBaseUnitName: 'National EOD-CBRN Command Headquarters, Abuja',
+        commandLevel: 'BASE',
+        state: 'KANO',
+        geopoliticalZone: 'NORTH WEST',
+        policeZone: 'ZONE 1',
+        city: 'KANO',
+        officialAddress: 'Bompai Road, Kano',
+        officialEmail: 'kano.eod@npf.gov.ng',
+        officialPhone: '08033334455',
+        commanderPersonnelId: 'POL-005',
+        commanderName: 'SP HARUNA USMAN',
+        commanderRank: 'SP',
+        personnelStrength: 10,
+        status: 'ACTIVE',
+        dateEstablished: '2008-11-05'
+      },
+      {
+        baseUnitId: 'EOD-BASE-MAIDUGURI',
+        baseUnitCode: 'EOD-BASE-05',
+        baseUnitName: 'Counter-IED Sector 4 HQ Base, Maiduguri',
+        baseUnitType: 'FORMATION',
+        parentBaseUnitId: 'EOD-HQ-ABUJA',
+        parentBaseUnitName: 'National EOD-CBRN Command Headquarters, Abuja',
+        commandLevel: 'FORMATION',
+        state: 'BORNO',
+        geopoliticalZone: 'NORTH EAST',
+        policeZone: 'ZONE 15',
+        city: 'MAIDUGURI',
+        officialAddress: 'Sector 4 HQ, Bama Road, Maiduguri',
+        officialEmail: 'maiduguri.eod@npf.gov.ng',
+        officialPhone: '08037778899',
+        commanderPersonnelId: 'POL-006',
+        commanderName: 'ACP IBRAHIM KASSIM',
+        commanderRank: 'ACP',
+        personnelStrength: 18,
+        status: 'ACTIVE',
+        dateEstablished: '2014-02-01'
+      },
+      {
+        baseUnitId: 'EOD-UNIT-AIRPORT',
+        baseUnitCode: 'EOD-UNIT-01',
+        baseUnitName: 'Aviation & Airport Inspection Unit, Ikeja',
+        baseUnitType: 'UNIT',
+        parentBaseUnitId: 'EOD-BASE-LAGOS',
+        parentBaseUnitName: 'Apapa Sea Port EOD-CBRN Tactical Base',
+        commandLevel: 'UNIT',
+        state: 'LAGOS',
+        geopoliticalZone: 'SOUTH WEST',
+        policeZone: 'ZONE 2',
+        city: 'IKEJA LAGOS',
+        officialAddress: 'MMIA Airport Complex, Ikeja, Lagos',
+        officialEmail: 'airport.eod@npf.gov.ng',
+        officialPhone: '08031112233',
+        commanderPersonnelId: 'POL-007',
+        commanderName: 'DSP MARY CHIMA',
+        commanderRank: 'DSP',
+        personnelStrength: 6,
+        status: 'ACTIVE',
+        dateEstablished: '2016-05-12'
+      },
+      {
+        baseUnitId: 'EOD-UNIT-CBRN-TACTICAL',
+        baseUnitCode: 'EOD-UNIT-02',
+        baseUnitName: 'Specialised CBRN Incident Response Squadron, Abuja',
+        baseUnitType: 'SPECIALISED_UNIT',
+        parentBaseUnitId: 'EOD-HQ-ABUJA',
+        parentBaseUnitName: 'National EOD-CBRN Command Headquarters, Abuja',
+        commandLevel: 'SQUADRON',
+        state: 'FCT ABUJA',
+        geopoliticalZone: 'NORTH CENTRAL',
+        policeZone: 'FORCE HQ',
+        city: 'ABUJA',
+        officialAddress: 'Tactical CBRN Depot, Airport Road, Abuja',
+        officialEmail: 'cbrn.squadron@npf.gov.ng',
+        officialPhone: '08039990011',
+        commanderPersonnelId: 'POL-008',
+        commanderName: 'CSP MUSA GARBA',
+        commanderRank: 'CSP',
+        personnelStrength: 8,
+        status: 'ACTIVE',
+        dateEstablished: '2019-09-01'
+      }
+    ];
+
+    // System Config Document
     var systemConfig = {
       retirementPolicy: {
         retirementAgeYears: 60,
@@ -2000,23 +2555,18 @@
         calculationBasis: 'EARLIEST_OF_AGE_OR_SERVICE',
         effectiveDate: '2026-01-01',
         policyReference: 'NPF-EOD-RETIREMENT-POLICY-V1',
-        isActive: true,
-        createdAt: '2026-01-01T00:00:00Z',
-        createdBy: 'SYSTEM_ADMIN',
-        updatedAt: '2026-08-01T00:00:00Z',
-        updatedBy: 'SUPER_ADMIN'
+        isActive: true
       }
     };
 
     var currentView = 'ROLL_ALL';
-    var currentUserRole = 'SUPER_ADMIN'; // SUPER_ADMIN, RECORDS_ADMIN, COMMANDER, PERSONNEL
-    var currentRollMode = 'STANDARD'; // STANDARD vs ADMIN_RESTRICTED
+    var currentUserRole = 'GLOBAL_ADMIN'; // PART 1: GLOBAL_ADMIN (Authoritative sole write role)
+    var currentRollMode = 'STANDARD';
     var currentSearchQuery = '';
     var currentRankFilter = 'ALL';
     var currentStateFilter = 'ALL';
     var currentZoneFilter = 'ALL';
-    var currentStatusFilter = 'ALL';
-    var currentRetirementFilter = 'ALL';
+    var currentBaseFilter = 'ALL';
     var currentPage = 1;
     var rowsPerPage = 25;
     var sessionPortalOfficerId = null;
@@ -2048,7 +2598,6 @@
       return zoneMap[s] || 'SOUTH SOUTH';
     }
 
-    // Helper: Format Date String to YYYY-MM-DD cleanly
     function formatDateOnly(d) {
       if (!d) return '';
       if (typeof d === 'string' && d.match(/^\d{4}-\d{2}-\d{2}$/)) return d;
@@ -2061,24 +2610,13 @@
       }
     }
 
-    // Helper: Calculate Date Difference in Days
-    function getDaysDiff(date1, date2) {
-      const d1 = new Date(date1);
-      const d2 = new Date(date2);
-      const diffTime = d1 - d2;
-      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    }
-
-    // =========================================================================
-    // 2. AUTOMATED RETIREMENT CALCULATOR ENGINE (PARTS 1, 2, 3, 4, 9)
-    // =========================================================================
     function parseDateParts(dateStr) {
       if (!dateStr) return null;
       const match = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
       if (!match) return null;
       return {
         year: parseInt(match[1], 10),
-        month: parseInt(match[2], 10), // 1-12
+        month: parseInt(match[2], 10),
         day: parseInt(match[3], 10)
       };
     }
@@ -2090,6 +2628,9 @@
       return y + '-' + m + '-' + d;
     }
 
+    // =========================================================================
+    // 2. AUTOMATED RETIREMENT CALCULATOR ENGINE
+    // =========================================================================
     function computeRetirementDetails(personnel, policy = systemConfig.retirementPolicy) {
       const dobStr = formatDateOnly(personnel.dob || personnel.dateOfBirth);
       const enlistStr = formatDateOnly(personnel.enlistDate || personnel.dateOfEnlistment);
@@ -2107,7 +2648,6 @@
         };
       }
 
-      // Validate sequence: DOB < Enlistment
       const dobVal = dobP.year * 10000 + dobP.month * 100 + dobP.day;
       const enlistVal = enlistP.year * 10000 + enlistP.month * 100 + enlistP.day;
       
@@ -2127,7 +2667,6 @@
         };
       }
 
-      // 1. Age-Based Retirement Date: DOB + 60 years (Handles Feb 29 Leap Year)
       let ageYear = dobP.year + policy.retirementAgeYears;
       let ageMonth = dobP.month;
       let ageDay = dobP.day;
@@ -2138,7 +2677,6 @@
       }
       const ageRetireStr = formatDateParts(ageYear, ageMonth, ageDay);
 
-      // 2. Service-Based Retirement Date: Enlistment + 35 years
       let serviceYear = enlistP.year + policy.retirementServiceYears;
       let serviceMonth = enlistP.month;
       let serviceDay = enlistP.day;
@@ -2149,7 +2687,6 @@
       }
       const serviceRetireStr = formatDateParts(serviceYear, serviceMonth, serviceDay);
 
-      // 3. Final Calculated Retirement Date: Whichever occurs first
       let calculatedRetirementDate = ageRetireStr;
       let retirementBasis = 'AGE LIMIT';
 
@@ -2161,13 +2698,11 @@
         retirementBasis = 'AGE AND SERVICE LIMIT';
       }
 
-      // Check Administrative Override (Part 10 & Part 2)
       if (personnel.retirementOverride && personnel.retirementOverrideStatus === 'APPROVED' && personnel.retirementOverrideDate) {
         calculatedRetirementDate = personnel.retirementOverrideDate;
         retirementBasis = 'ADMINISTRATIVE OVERRIDE';
       }
 
-      // PART 3: TWO-MONTH RETIREMENT NOTICE DATE (Calendar Month Subtraction)
       const retParts = parseDateParts(calculatedRetirementDate);
       let noticeYear = retParts.year;
       let noticeMonth = retParts.month - policy.warningPeriodMonths;
@@ -2179,7 +2714,6 @@
       let noticeDay = Math.min(retParts.day, daysInNoticeMonth);
       const retirementNoticeDate = formatDateParts(noticeYear, noticeMonth, noticeDay);
 
-      // Status determination
       let status = 'NOT_DUE';
       const calcVal = retParts.year * 10000 + retParts.month * 100 + retParts.day;
       const noticeParts = parseDateParts(retirementNoticeDate);
@@ -2224,15 +2758,12 @@
         p.retirementBasis = res.retirementBasis;
         p.retirementStatus = res.retirementStatus;
         p.daysRemaining = res.daysRemaining;
-        p.retireDate = res.calculatedRetirementDate; // Sync display date
+        p.retireDate = res.calculatedRetirementDate;
       });
 
       generateRetirementNotifications();
     }
 
-    // =========================================================================
-    // 3. RETIREMENT NOTIFICATIONS GENERATOR (PART 7)
-    // =========================================================================
     function generateRetirementNotifications() {
       const today = new Date();
       const todayStr = formatDateOnly(today);
@@ -2253,7 +2784,6 @@
         else if (days === -1 && p.employmentStatus === 'ACTIVE') milestone = 'OVERDUE_REVIEW';
 
         if (milestone) {
-          // Deduplication: check if notification already exists
           const exists = retirementNotifications.some(n => n.personnelId === p.id && n.notificationType === milestone);
           if (!exists) {
             retirementNotifications.unshift({
@@ -2265,7 +2795,7 @@
               notificationType: milestone,
               retirementDate: retDate,
               milestoneDate: todayStr,
-              recipientRole: 'SUPER_ADMIN',
+              recipientRole: 'GLOBAL_ADMIN',
               message: `RETIREMENT ALERT: ${p.rank} ${p.name} (${p.apNo || p.serviceNo}) is ${milestone.replace(/_/g, ' ')}. Final Retirement Date: ${retDate}.`,
               status: 'UNREAD',
               createdAt: new Date().toISOString()
@@ -2323,11 +2853,10 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
-    // Audit Log recorder (Part 21)
     function logAuditEvent(action, resourceType, resourceId, details) {
       const log = {
         auditId: 'AUD-' + Date.now() + '-' + Math.floor(Math.random()*1000),
-        actorUid: sessionPortalOfficerId || 'ADMIN_OPERATOR',
+        actorUid: sessionPortalOfficerId || 'GLOBAL_ADMIN_OPERATOR',
         actorRole: currentUserRole,
         action: action,
         resourceType: resourceType,
@@ -2339,7 +2868,6 @@
       saveState();
     }
 
-    // State persistence
     function loadSavedState() {
       try {
         const saved = localStorage.getItem('eod_db_v9999');
@@ -2358,50 +2886,63 @@
         dbPersonnel = JSON.parse(JSON.stringify(INITIAL_APAPA_PERSONNEL));
       }
 
-      // Ensure rankGroup, geoPolZone, commanderAssignments, & photo paths
+      // Ensure baseUnit fields on all records
       dbPersonnel.forEach((p, idx) => {
         p.sNo = str(idx + 1);
         p.rankGroup = computeRankGroup(p.rank);
         if (!p.geoPolZone) p.geoPolZone = computeGeoZone(p.stateOfOrigin);
         if (!p.registrationStatus) p.registrationStatus = 'APPROVED';
         if (!p.employmentStatus) p.employmentStatus = 'ACTIVE';
-        if (!p.profilePhotoPath) p.profilePhotoPath = ''; // Default silhouette
+        if (!p.profilePhotoPath) p.profilePhotoPath = '';
         if (!p.photoStatus) p.photoStatus = 'APPROVED';
+        if (!p.currentBaseUnitId) {
+          p.currentBaseUnitId = 'EOD-BASE-LAGOS';
+          p.currentBaseUnitCode = 'EOD-BASE-01';
+          p.currentBaseUnitName = 'Apapa Sea Port EOD-CBRN Tactical Base';
+          p.currentBaseUnitType = 'BASE';
+          p.currentParentBaseUnitId = 'EOD-HQ-ABUJA';
+          p.currentParentBaseUnitName = 'National EOD-CBRN Command Headquarters, Abuja';
+          p.baseUnitAssignmentStatus = 'ACTIVE';
+          p.baseUnitAssignmentDate = p.transferredDate || '2023-01-01';
+          p.baseUnitAssignedBy = 'GLOBAL_ADMIN';
+        }
       });
 
-      // Build default commanderAssignments (Part 12)
+      // Load saved bases & units
+      try {
+        const savedBases = localStorage.getItem('eod_bases_units_v1');
+        if (savedBases) basesUnits = JSON.parse(savedBases);
+      } catch(e) {}
+
+      // Build default commanderAssignments
       commanderAssignments = dbPersonnel
         .filter(p => p.isCommander || ['CP','DCP','ACP','CSP'].includes(p.rank) || (p.dutyPost || '').toUpperCase().includes('COMMANDER'))
         .map(p => ({
           assignmentId: 'ASSIGN-' + p.id,
           personnelId: p.id,
-          commandId: 'CMD-APAPA-SEAPORT',
-          commandName: p.commandServedLast || 'Apapa Sea Port EOD Unit',
-          commandType: 'SEAPORT_TACTICAL_BASE',
+          commandId: p.currentBaseUnitId,
+          commandName: p.currentBaseUnitName,
+          commandType: p.currentBaseUnitType,
           appointmentTitle: p.dutyPost || 'BASE COMMANDER',
           appointmentStartDate: p.transferredDate || '2023-01-01',
-          appointmentEndDate: 'N/A',
           assignmentStatus: 'ACTIVE',
           isCurrentCommander: true,
           appointmentAuthority: 'INSPECTOR GENERAL OF POLICE',
           appointmentReference: 'IGP/FHQ/EOD/DEPLOY/2023/04',
           createdAt: '2023-01-01T00:00:00Z',
-          createdBy: 'SUPER_ADMIN'
+          createdBy: 'GLOBAL_ADMIN'
         }));
 
-      // Load saved registration requests
       try {
         const reqs = localStorage.getItem('eod_reg_requests_v1');
         if (reqs) registrationRequests = JSON.parse(reqs);
       } catch (e) { registrationRequests = []; }
 
-      // Load saved photo requests (Part 18)
       try {
         const reqs = localStorage.getItem('eod_photo_requests_v1');
         if (reqs) photoRequests = JSON.parse(reqs);
       } catch (e) { photoRequests = []; }
 
-      // Load saved audit logs
       try {
         const logs = localStorage.getItem('eod_audit_logs_v1');
         if (logs) auditLogs = JSON.parse(logs);
@@ -2414,6 +2955,7 @@
     function saveState() {
       try {
         localStorage.setItem('eod_db_v9999', JSON.stringify(dbPersonnel));
+        localStorage.setItem('eod_bases_units_v1', JSON.stringify(basesUnits));
         localStorage.setItem('eod_reg_requests_v1', JSON.stringify(registrationRequests));
         localStorage.setItem('eod_photo_requests_v1', JSON.stringify(photoRequests));
         localStorage.setItem('eod_audit_logs_v1', JSON.stringify(auditLogs));
@@ -2424,6 +2966,11 @@
     }
 
     function forceResetApapaRoll() {
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: Master Roll reset requires GLOBAL_ADMIN permissions.");
+        return;
+      }
+
       dbPersonnel = JSON.parse(JSON.stringify(INITIAL_APAPA_PERSONNEL));
       dbPersonnel.forEach((p, idx) => {
         p.sNo = str(idx + 1);
@@ -2431,6 +2978,13 @@
         p.registrationStatus = 'APPROVED';
         p.employmentStatus = 'ACTIVE';
         p.profilePhotoPath = '';
+        p.currentBaseUnitId = 'EOD-BASE-LAGOS';
+        p.currentBaseUnitCode = 'EOD-BASE-01';
+        p.currentBaseUnitName = 'Apapa Sea Port EOD-CBRN Tactical Base';
+        p.currentBaseUnitType = 'BASE';
+        p.currentParentBaseUnitId = 'EOD-HQ-ABUJA';
+        p.currentParentBaseUnitName = 'National EOD-CBRN Command Headquarters, Abuja';
+        p.baseUnitAssignmentStatus = 'ACTIVE';
       });
       recalculateAllRetirements();
       saveState();
@@ -2442,7 +2996,7 @@
     function str(val) { return String(val || ''); }
 
     // =========================================================================
-    // 4. DASHBOARD METRICS & RETIREMENT SUMMARY CARDS (PART 6)
+    // 3. DASHBOARD METRICS & RETIREMENT SUMMARY CARDS
     // =========================================================================
     function calculateMetrics() {
       const approved = dbPersonnel.filter(p => p.registrationStatus === 'APPROVED' || !p.registrationStatus);
@@ -2453,8 +3007,8 @@
       const sgtToPc = approved.filter(p => p.rankGroup === 'SGT_TO_PC' || ['SGT','CPL','PC'].includes(p.rank)).length;
       const pendingCount = registrationRequests.filter(r => r.status === 'PENDING').length + photoRequests.filter(pr => pr.status === 'PENDING_APPROVAL').length;
       const commandersCount = approved.filter(p => p.isCommander || ['CP','DCP','ACP','CSP'].includes(p.rank) || (p.dutyPost || '').toUpperCase().includes('COMMANDER')).length;
+      const activeBasesCount = basesUnits.filter(b => b.status === 'ACTIVE').length;
 
-      // Retirement Metrics (Part 5 & Part 6)
       const retiring2Months = approved.filter(p => p.retirementStatus === 'APPROACHING_RETIREMENT' || (p.daysRemaining >= 0 && p.daysRemaining <= 60)).length;
       const retiring30Days = approved.filter(p => p.daysRemaining >= 0 && p.daysRemaining <= 30).length;
       const retiringThisMonth = approved.filter(p => p.retirementStatus === 'DUE_THIS_MONTH').length;
@@ -2468,16 +3022,16 @@
       };
 
       setVal('hud-total-count', total);
-      setVal('hud-retire-count', retiring2Months);
+      setVal('hud-bases-count', activeBasesCount);
       setVal('badge-count-all', total);
       setVal('badge-count-cp-dsp', cpToDsp);
       setVal('badge-count-asp-insp', aspToInsp);
       setVal('badge-count-sgt-pc', sgtToPc);
       setVal('badge-count-approaching', retiring2Months);
+      setVal('badge-count-bases', activeBasesCount);
       setVal('badge-count-pending', pendingCount);
       setVal('badge-count-commanders', commandersCount);
 
-      // Render 6 Live Summary Cards (Part 6)
       renderSummaryCards({
         retiring2Months,
         retiring30Days,
@@ -2493,7 +3047,6 @@
       if (!container) return;
 
       container.innerHTML = `
-        <!-- CARD 1: RETIRING WITHIN 2 MONTHS -->
         <div onclick="filterRetirementCategory('2_MONTHS')" class="bg-slate-900 hover:bg-slate-850 border border-amber-500/40 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
           <div class="flex justify-between items-center text-amber-400">
             <i data-lucide="clock" class="w-4 h-4"></i>
@@ -2503,7 +3056,6 @@
           <div class="text-[9px] text-slate-400">60-Day Notice</div>
         </div>
 
-        <!-- CARD 2: RETIRING WITHIN 30 DAYS -->
         <div onclick="filterRetirementCategory('30_DAYS')" class="bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
           <div class="flex justify-between items-center text-sky-400">
             <i data-lucide="alert-triangle" class="w-4 h-4"></i>
@@ -2513,7 +3065,6 @@
           <div class="text-[9px] text-slate-400">Immediate Action</div>
         </div>
 
-        <!-- CARD 3: RETIRING THIS MONTH -->
         <div onclick="filterRetirementCategory('THIS_MONTH')" class="bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
           <div class="flex justify-between items-center text-amber-300">
             <i data-lucide="calendar" class="w-4 h-4"></i>
@@ -2523,7 +3074,6 @@
           <div class="text-[9px] text-slate-400">Current Month</div>
         </div>
 
-        <!-- CARD 4: RETIREMENT DUE TODAY -->
         <div onclick="filterRetirementCategory('DUE_TODAY')" class="bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
           <div class="flex justify-between items-center text-rose-400">
             <i data-lucide="bell" class="w-4 h-4"></i>
@@ -2533,7 +3083,6 @@
           <div class="text-[9px] text-slate-400">Effective Date</div>
         </div>
 
-        <!-- CARD 5: OVERDUE FOR REVIEW -->
         <div onclick="filterRetirementCategory('OVERDUE')" class="bg-slate-900 hover:bg-slate-850 border border-rose-500/40 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
           <div class="flex justify-between items-center text-rose-500">
             <i data-lucide="shield-alert" class="w-4 h-4"></i>
@@ -2543,7 +3092,6 @@
           <div class="text-[9px] text-slate-400">Active Past Date</div>
         </div>
 
-        <!-- CARD 6: RETIRED THIS YEAR -->
         <div onclick="filterRetirementCategory('RETIRED_YEAR')" class="bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
           <div class="flex justify-between items-center text-emerald-400">
             <i data-lucide="check-circle-2" class="w-4 h-4"></i>
@@ -2562,17 +3110,44 @@
     }
 
     // =========================================================================
-    // 5. ROLE & VIEW SWITCHER HANDLERS
+    // 4. ROLE & VIEW SWITCHER HANDLERS (PART 4: LOGIN REDIRECTION & ROUTE ISOLATION)
     // =========================================================================
     function changeUserRole(role) {
       currentUserRole = role;
       logAuditEvent('CHANGE_ROLE', 'USER_SESSION', sessionPortalOfficerId || 'ANONYMOUS', 'Switched session role to ' + role);
-      renderModule();
+      
+      // Update DOM visibility of write buttons (Part 20)
+      const noticeBanner = document.getElementById('read-only-notice-banner');
+      const btnAddOff = document.getElementById('btn-nav-add-officer');
+      const btnNavBases = document.getElementById('btn-nav-bases-units');
+
+      if (role === 'GLOBAL_ADMIN') {
+        if (noticeBanner) noticeBanner.classList.add('hidden');
+        if (btnAddOff) btnAddOff.classList.remove('hidden');
+        if (btnNavBases) btnNavBases.classList.remove('hidden');
+        switchView('ROLL_ALL');
+      } else if (role === 'COMMANDER') {
+        if (noticeBanner) noticeBanner.classList.remove('hidden');
+        if (btnAddOff) btnAddOff.classList.add('hidden');
+        if (btnNavBases) btnNavBases.classList.add('hidden');
+        switchView('COMMANDERS');
+      } else if (role === 'PERSONNEL') {
+        if (noticeBanner) noticeBanner.classList.remove('hidden');
+        if (btnAddOff) btnAddOff.classList.add('hidden');
+        if (btnNavBases) btnNavBases.classList.add('hidden');
+        switchView('SELF_SERVICE');
+      } else {
+        // RECORDS_ADMIN
+        if (noticeBanner) noticeBanner.classList.remove('hidden');
+        if (btnAddOff) btnAddOff.classList.add('hidden');
+        if (btnNavBases) btnNavBases.classList.add('hidden');
+        switchView('ROLL_ALL');
+      }
     }
 
     function setRollMode(mode) {
-      if (mode === 'ADMIN_RESTRICTED' && !['SUPER_ADMIN', 'RECORDS_ADMIN'].includes(currentUserRole)) {
-        alert("ACCESS DENIED: Restricted Administrative Roll mode requires SUPER_ADMIN or RECORDS_ADMIN permissions.");
+      if (mode === 'ADMIN_RESTRICTED' && !['GLOBAL_ADMIN', 'RECORDS_ADMIN'].includes(currentUserRole)) {
+        alert("ACCESS DENIED: Restricted Administrative Roll mode requires GLOBAL_ADMIN or RECORDS_ADMIN permissions.");
         return;
       }
       currentRollMode = mode;
@@ -2592,9 +3167,24 @@
     }
 
     function switchView(viewName) {
-      // PART 11 RBAC: Guard commanders route
-      if (viewName === 'COMMANDERS' && !['SUPER_ADMIN', 'RECORDS_ADMIN', 'COMMANDER'].includes(currentUserRole)) {
-        alert("ACCESS DENIED: Base & Unit Commanders Master Roll requires SUPER_ADMIN, RECORDS_ADMIN, or COMMANDER role permissions.");
+      // PART 4: ROUTE ISOLATION & ROUTE GUARDS
+      if (currentUserRole === 'PERSONNEL' && viewName !== 'SELF_SERVICE') {
+        logAuditEvent('UNAUTHORISED_ROUTE_ATTEMPT', 'ROUTE_GUARD', viewName, 'Personnel attempted to access restricted route: ' + viewName);
+        alert("403 ACCESS DENIED: Personnel users are restricted to their individual self-service portal (/portal).");
+        currentView = 'SELF_SERVICE';
+        renderModule();
+        return;
+      }
+
+      if (viewName === 'BASES_UNITS' && currentUserRole !== 'GLOBAL_ADMIN') {
+        logAuditEvent('UNAUTHORISED_ROUTE_ATTEMPT', 'ROUTE_GUARD', viewName, 'Non-Global-Admin attempted to access /admin/bases-units');
+        alert("403 ACCESS DENIED: Central Bases & Units directory management is restricted to GLOBAL_ADMIN.");
+        return;
+      }
+
+      if (viewName === 'COMMANDERS' && !['GLOBAL_ADMIN', 'RECORDS_ADMIN', 'COMMANDER'].includes(currentUserRole)) {
+        logAuditEvent('UNAUTHORISED_ROUTE_ATTEMPT', 'ROUTE_GUARD', viewName, 'Attempted unauthorized access to /commanders');
+        alert("403 ACCESS DENIED: Base & Unit Commanders Master Roll requires GLOBAL_ADMIN, RECORDS_ADMIN, or COMMANDER role.");
         return;
       }
 
@@ -2623,6 +3213,8 @@
 
       if (currentView === 'SELF_SERVICE') {
         renderSelfServicePortal(container);
+      } else if (currentView === 'BASES_UNITS') {
+        renderBasesUnitsModule(container);
       } else if (currentView === 'RETIREMENT_DASHBOARD') {
         renderRetirementDashboard(container);
       } else if (currentView === 'COMMANDERS') {
@@ -2641,7 +3233,7 @@
     }
 
     // =========================================================================
-    // 6. MASTER ROLL TABLE RENDERER (ALL 26 HEADINGS & PHOTO - PART 13 & 16)
+    // 5. MASTER ROLL TABLE RENDERER (PART 16: BASE/UNIT FILTERING)
     // =========================================================================
     function renderMasterRollTable(container) {
       let dataset = dbPersonnel.filter(p => p.registrationStatus === 'APPROVED' || !p.registrationStatus);
@@ -2654,7 +3246,6 @@
         dataset = dataset.filter(p => p.rankGroup === 'SGT_TO_PC' || ['SGT','CPL','PC'].includes(p.rank));
       }
 
-      // Search Filter
       if (currentSearchQuery) {
         const q = currentSearchQuery.toLowerCase();
         dataset = dataset.filter(p => 
@@ -2667,18 +3258,19 @@
       if (currentRankFilter !== 'ALL') dataset = dataset.filter(p => p.rank === currentRankFilter);
       if (currentStateFilter !== 'ALL') dataset = dataset.filter(p => (p.stateOfOrigin || '').toUpperCase() === currentStateFilter.toUpperCase());
       if (currentZoneFilter !== 'ALL') dataset = dataset.filter(p => (p.geoPolZone || '').toUpperCase() === currentZoneFilter.toUpperCase());
+      if (currentBaseFilter !== 'ALL') dataset = dataset.filter(p => p.currentBaseUnitId === currentBaseFilter);
 
       let rollTitle = "ALL PERSONNEL MASTER ROLL";
       let rollDesc = "Combined authoritative nominal roll displaying all Nigeria Police EOD-CBRN personnel across all ranks.";
       if (currentView === 'ROLL_CP_DSP') {
         rollTitle = "MASTER ROLL: CP TO DSP";
-        rollDesc = "Senior Command Officers: Commissioner (CP), Deputy Commissioner (DCP), Assistant Commissioner (ACP), Chief Superintendent (CSP), Superintendent (SP), Deputy Superintendent (DSP).";
+        rollDesc = "Senior Command Officers: CP, DCP, ACP, CSP, SP, DSP.";
       } else if (currentView === 'ROLL_ASP_INSP') {
         rollTitle = "MASTER ROLL: ASP TO INSPECTOR";
-        rollDesc = "Inspectorate & Junior Officers: Assistant Superintendent I (ASP I), Assistant Superintendent II (ASP II), Inspector of Police (INSP).";
+        rollDesc = "Inspectorate & Junior Officers: ASP I, ASP II, INSP.";
       } else if (currentView === 'ROLL_SGT_PC') {
         rollTitle = "MASTER ROLL: SGT TO PC";
-        rollDesc = "Rank & File Personnel: Sergeant (SGT), Corporal (CPL), Police Constable (PC).";
+        rollDesc = "Rank & File Personnel: SGT, CPL, PC.";
       }
 
       const totalRows = dataset.length;
@@ -2710,10 +3302,12 @@
               <span>PRINT ROLL</span>
             </button>
 
-            <button onclick="exportToCsv()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-              <i data-lucide="download" class="w-4 h-4 text-cyan-400"></i>
-              <span>EXPORT CSV</span>
-            </button>
+            ${currentUserRole === 'GLOBAL_ADMIN' ? `
+              <button onclick="exportToCsv()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+                <i data-lucide="download" class="w-4 h-4 text-cyan-400"></i>
+                <span>EXPORT CSV</span>
+              </button>
+            ` : ''}
           </div>
         </div>
 
@@ -2725,6 +3319,15 @@
                 <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
                 <input type="text" value="${currentSearchQuery}" oninput="currentSearchQuery = this.value; currentPage = 1; renderMasterRollTable(document.getElementById('module-container'));" placeholder="Search by Full Name, AP/F/NO, Phone..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-white text-xs font-bold focus:border-emerald-500 focus:outline-none">
               </div>
+            </div>
+
+            <!-- BASE/UNIT FILTER (PART 16) -->
+            <div>
+              <label class="text-slate-400 text-[10px] font-bold block mb-1">FILTER BASE / UNIT:</label>
+              <select onchange="currentBaseFilter = this.value; currentPage = 1; renderMasterRollTable(document.getElementById('module-container'));" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none">
+                <option value="ALL">ALL BASES & UNITS</option>
+                ${basesUnits.map(b => `<option value="${b.baseUnitId}" ${currentBaseFilter===b.baseUnitId?'selected':''}>${b.baseUnitName}</option>`).join('')}
+              </select>
             </div>
 
             <div>
@@ -2743,19 +3346,6 @@
                 <option value="SGT" ${currentRankFilter==='SGT'?'selected':''}>SGT</option>
                 <option value="CPL" ${currentRankFilter==='CPL'?'selected':''}>CPL</option>
                 <option value="PC" ${currentRankFilter==='PC'?'selected':''}>PC</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="text-slate-400 text-[10px] font-bold block mb-1">FILTER GEO POL ZONE:</label>
-              <select onchange="currentZoneFilter = this.value; currentPage = 1; renderMasterRollTable(document.getElementById('module-container'));" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none">
-                <option value="ALL">ALL ZONES</option>
-                <option value="NORTH CENTRAL" ${currentZoneFilter==='NORTH CENTRAL'?'selected':''}>NORTH CENTRAL</option>
-                <option value="NORTH EAST" ${currentZoneFilter==='NORTH EAST'?'selected':''}>NORTH EAST</option>
-                <option value="NORTH WEST" ${currentZoneFilter==='NORTH WEST'?'selected':''}>NORTH WEST</option>
-                <option value="SOUTH EAST" ${currentZoneFilter==='SOUTH EAST'?'selected':''}>SOUTH EAST</option>
-                <option value="SOUTH SOUTH" ${currentZoneFilter==='SOUTH SOUTH'?'selected':''}>SOUTH SOUTH</option>
-                <option value="SOUTH WEST" ${currentZoneFilter==='SOUTH WEST'?'selected':''}>SOUTH WEST</option>
               </select>
             </div>
 
@@ -2780,6 +3370,7 @@
                   <th class="p-3 border-r border-slate-800 text-emerald-400">2. AP/F/NO</th>
                   <th class="p-3 border-r border-slate-800 text-amber-300">3. RANK</th>
                   <th class="p-3 border-r border-slate-800 text-white">4. NAME</th>
+                  <th class="p-3 border-r border-slate-800 text-sky-400">ASSIGNED BASE / UNIT</th>
                   <th class="p-3 border-r border-slate-800">5. EDU. QUALIFICATION</th>
                   <th class="p-3 border-r border-slate-800">6. STATE OF ORIGIN</th>
                   <th class="p-3 border-r border-slate-800 text-emerald-400">7. PHONE NUMBER</th>
@@ -2812,7 +3403,7 @@
               <tbody class="divide-y divide-slate-800/60 font-mono text-xs">
                 ${paginatedData.length === 0 ? `
                   <tr>
-                    <td colspan="29" class="p-8 text-center text-slate-500 font-bold">
+                    <td colspan="30" class="p-8 text-center text-slate-500 font-bold">
                       <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2 text-slate-600"></i>
                       NO PERSONNEL RECORDS MATCH THE SELECTED FILTER CRITERIA
                     </td>
@@ -2822,7 +3413,7 @@
                   
                   const maskVal = (val, length=4) => {
                     if (!val) return 'N/A';
-                    if (unmaskSensitiveFields || currentUserRole === 'SUPER_ADMIN') return val;
+                    if (unmaskSensitiveFields || currentUserRole === 'GLOBAL_ADMIN') return val;
                     const str = String(val);
                     if (str.length <= length) return '****';
                     return '****' + str.slice(-length);
@@ -2839,6 +3430,7 @@
                       <td class="p-3 border-r border-slate-800 font-black text-emerald-400">${p.apNo || p.serviceNo}</td>
                       <td class="p-3 border-r border-slate-800 font-bold text-amber-300">${p.rank}</td>
                       <td class="p-3 border-r border-slate-800 font-black text-white">${p.name}</td>
+                      <td class="p-3 border-r border-slate-800 font-bold text-sky-400">${p.currentBaseUnitName || 'Apapa EOD Base'}</td>
                       <td class="p-3 border-r border-slate-800 text-slate-300">${p.eduQual || 'SSCE'}</td>
                       <td class="p-3 border-r border-slate-800 text-slate-300">${p.stateOfOrigin || 'EDO'}</td>
                       <td class="p-3 border-r border-slate-800 text-emerald-400 font-bold">${p.phone || '08030000000'}</td>
@@ -2865,10 +3457,15 @@
                       ` : ''}
 
                       <td class="p-3 border-r border-slate-800 text-slate-300">${p.mss || 'BENIN CITY'}</td>
-                      <td class="p-3 text-center">
-                        <button onclick="openProfileModal('${p.id}')" class="bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-black border border-emerald-500/40 px-2.5 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer">
+                      <td class="p-3 text-center flex items-center justify-center gap-1">
+                        <button onclick="openProfileModal('${p.id}')" class="bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-black border border-emerald-500/40 px-2 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer">
                           DOSSIER
                         </button>
+                        ${currentUserRole === 'GLOBAL_ADMIN' ? `
+                          <button onclick="openTransferModal('${p.id}')" class="bg-sky-500/20 hover:bg-sky-500 text-sky-400 hover:text-white border border-sky-500/40 px-2 py-1 rounded-lg text-[11px] font-bold transition cursor-pointer" title="Transfer Base">
+                            TRANSFER
+                          </button>
+                        ` : ''}
                       </td>
                     </tr>
                   `;
@@ -2902,7 +3499,110 @@
     }
 
     // =========================================================================
-    // 7. RETIREMENT DASHBOARD MODULE (PART 5 & 6)
+    // 6. ALL NIGERIA BASES & UNITS MANAGEMENT MODULE (PART 7 & 14 & 15)
+    // =========================================================================
+    function renderBasesUnitsModule(container) {
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        container.innerHTML = `<div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center font-mono text-xs text-rose-400 font-black">ACCESS DENIED: Central Bases & Units directory management is restricted to GLOBAL_ADMIN.</div>`;
+        return;
+      }
+
+      const activeBases = basesUnits.filter(b => b.status === 'ACTIVE');
+
+      container.innerHTML = `
+        <div class="space-y-6 font-mono text-xs">
+          
+          <!-- BANNER HEADER -->
+          <div class="bg-slate-900 border border-sky-500/40 p-6 rounded-3xl space-y-2 shadow-2xl">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h2 class="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
+                  <i data-lucide="building-2" class="w-5 h-5 text-sky-400"></i>
+                  <span>ALL NIGERIA EOD-CBRN BASES, UNITS & FORMATIONS DIRECTORY</span>
+                </h2>
+                <p class="text-xs text-slate-400 mt-1">Central administrative directory of all authorised Nigerian Police EOD-CBRN bases, units, commands, and tactical formations.</p>
+              </div>
+
+              <button onclick="openAddBaseModal()" class="bg-sky-600 hover:bg-sky-500 text-white font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow-[0_0_15px_rgba(2,132,199,0.3)] transition cursor-pointer">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>+ ADD NEW BASE OR UNIT</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- SUMMARY CARDS (PART 14) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1">
+              <span class="text-slate-500 text-[10px] font-bold block uppercase">TOTAL ACTIVE FORMATIONS</span>
+              <span class="text-sky-400 font-black text-xl">${activeBases.length}</span>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1">
+              <span class="text-slate-500 text-[10px] font-bold block uppercase">TACTICAL BASES</span>
+              <span class="text-emerald-400 font-black text-xl">${basesUnits.filter(b => b.baseUnitType==='BASE').length}</span>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1">
+              <span class="text-slate-500 text-[10px] font-bold block uppercase">OPERATIONAL UNITS</span>
+              <span class="text-amber-400 font-black text-xl">${basesUnits.filter(b => b.baseUnitType==='UNIT').length}</span>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1">
+              <span class="text-slate-500 text-[10px] font-bold block uppercase">TOTAL PERSONNEL ASSIGNED</span>
+              <span class="text-cyan-400 font-black text-xl">${dbPersonnel.length}</span>
+            </div>
+          </div>
+
+          <!-- BASES & UNITS TABLE (PART 14) -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs whitespace-nowrap">
+                <thead class="bg-slate-950 text-slate-300 border-b border-slate-800 uppercase font-black tracking-wider text-[11px]">
+                  <tr>
+                    <th class="p-3 border-r border-slate-800 text-amber-400">S/NO</th>
+                    <th class="p-3 border-r border-slate-800 text-sky-400">BASE CODE</th>
+                    <th class="p-3 border-r border-slate-800 text-white">BASE / UNIT NAME</th>
+                    <th class="p-3 border-r border-slate-800">TYPE</th>
+                    <th class="p-3 border-r border-slate-800">PARENT COMMAND</th>
+                    <th class="p-3 border-r border-slate-800">STATE</th>
+                    <th class="p-3 border-r border-slate-800">GEO POL ZONE</th>
+                    <th class="p-3 border-r border-slate-800 text-amber-300">COMMANDER</th>
+                    <th class="p-3 border-r border-slate-800 text-emerald-400 text-center">STRENGTH</th>
+                    <th class="p-3 border-r border-slate-800">STATUS</th>
+                    <th class="p-3 text-center">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 font-mono text-xs">
+                  ${basesUnits.map((b, idx) => {
+                    const count = dbPersonnel.filter(p => p.currentBaseUnitId === b.baseUnitId).length;
+                    return `
+                      <tr class="hover:bg-slate-800/50 transition">
+                        <td class="p-3 border-r border-slate-800 font-bold text-amber-400 text-center">${idx + 1}</td>
+                        <td class="p-3 border-r border-slate-800 font-black text-sky-400">${b.baseUnitCode}</td>
+                        <td class="p-3 border-r border-slate-800 font-black text-white">${b.baseUnitName}</td>
+                        <td class="p-3 border-r border-slate-800 text-slate-300"><span class="px-2 py-0.5 rounded bg-slate-800 text-sky-300 font-bold">${b.baseUnitType}</span></td>
+                        <td class="p-3 border-r border-slate-800 text-slate-400">${b.parentBaseUnitName}</td>
+                        <td class="p-3 border-r border-slate-800 text-slate-300">${b.state}</td>
+                        <td class="p-3 border-r border-slate-800 text-slate-300">${b.geopoliticalZone}</td>
+                        <td class="p-3 border-r border-slate-800 text-amber-300 font-bold">${b.commanderName || 'UNASSIGNED'}</td>
+                        <td class="p-3 border-r border-slate-800 text-emerald-400 font-black text-center">${count} Personnel</td>
+                        <td class="p-3 border-r border-slate-800"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">${b.status}</span></td>
+                        <td class="p-3 text-center">
+                          <button onclick="currentBaseFilter='${b.baseUnitId}'; switchView('ROLL_ALL');" class="bg-sky-500/20 hover:bg-sky-500 text-sky-300 hover:text-white border border-sky-500/40 px-2.5 py-1 rounded-lg font-bold text-[11px] transition cursor-pointer">
+                            VIEW ROLL (${count})
+                          </button>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 7. RETIREMENT DASHBOARD MODULE
     // =========================================================================
     function renderRetirementDashboard(container) {
       recalculateAllRetirements();
@@ -2915,13 +3615,10 @@
       else if (currentRetirementFilter === 'DUE_TODAY') list = list.filter(p => p.daysRemaining === 0);
       else if (currentRetirementFilter === 'OVERDUE') list = list.filter(p => p.retirementStatus === 'OVERDUE_FOR_REVIEW');
 
-      // Sort nearest retirement date to furthest
       list.sort((a, b) => new Date(a.calculatedRetirementDate) - new Date(b.calculatedRetirementDate));
 
       container.innerHTML = `
         <div class="space-y-6 font-mono text-xs">
-          
-          <!-- BANNER HEADER -->
           <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-amber-500/40 p-6 rounded-3xl shadow-2xl flex flex-wrap items-center justify-between gap-4">
             <div>
               <div class="flex items-center gap-2">
@@ -2933,10 +3630,12 @@
             </div>
 
             <div class="flex items-center gap-2">
-              <button onclick="openPolicyModal()" class="bg-amber-500 hover:bg-amber-400 text-black font-black px-4 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-                <i data-lucide="settings" class="w-4 h-4 text-black"></i>
-                <span>CONFIGURE RETIREMENT POLICY</span>
-              </button>
+              ${currentUserRole === 'GLOBAL_ADMIN' ? `
+                <button onclick="openPolicyModal()" class="bg-amber-500 hover:bg-amber-400 text-black font-black px-4 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                  <i data-lucide="settings" class="w-4 h-4 text-black"></i>
+                  <span>CONFIGURE RETIREMENT POLICY</span>
+                </button>
+              ` : ''}
               <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-2 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer">
                 <i data-lucide="printer" class="w-4 h-4 text-emerald-400"></i>
                 <span>PRINT REPORT</span>
@@ -2944,7 +3643,6 @@
             </div>
           </div>
 
-          <!-- PERSONNEL LIST GRID -->
           ${list.length === 0 ? `
             <div class="bg-slate-900 border border-slate-800 p-12 rounded-3xl text-center space-y-3 shadow-2xl">
               <i data-lucide="check-circle-2" class="w-12 h-12 text-emerald-400 mx-auto"></i>
@@ -2992,7 +3690,7 @@
                       </div>
 
                       <div class="space-y-1.5 text-[11px]">
-                        <div class="flex justify-between"><span class="text-slate-500 font-bold">PRESENT COMMAND:</span><span class="text-slate-200 font-bold">${p.commandServedLast || 'APAPA COMMAND'}</span></div>
+                        <div class="flex justify-between"><span class="text-slate-500 font-bold">PRESENT COMMAND:</span><span class="text-slate-200 font-bold">${p.currentBaseUnitName || 'APAPA COMMAND'}</span></div>
                         <div class="flex justify-between"><span class="text-slate-500 font-bold">DUTY POST:</span><span class="text-slate-200">${p.dutyPost || 'EOD OPERATIVE'}</span></div>
                         <div class="flex justify-between"><span class="text-slate-500 font-bold">DATE OF BIRTH:</span><span class="text-slate-200">${p.dob || '1980-01-01'}</span></div>
                         <div class="flex justify-between"><span class="text-slate-500 font-bold">DATE OF ENLISTMENT:</span><span class="text-slate-200">${p.enlistDate || '2000-01-01'}</span></div>
@@ -3010,7 +3708,7 @@
                         <button onclick="openProfileModal('${p.id}')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-black py-2 rounded-xl text-xs transition cursor-pointer">
                           VIEW DOSSIER
                         </button>
-                        ${['SUPER_ADMIN', 'RECORDS_ADMIN'].includes(currentUserRole) ? `
+                        ${currentUserRole === 'GLOBAL_ADMIN' ? `
                           <button onclick="openOverrideModal('${p.id}')" class="bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-black border border-amber-500/40 p-2 rounded-xl transition cursor-pointer" title="Administrative Override">
                             <i data-lucide="shield-alert" class="w-4 h-4"></i>
                           </button>
@@ -3028,21 +3726,24 @@
     }
 
     // =========================================================================
-    // 8. BASE & UNIT COMMANDERS DIRECTORY MODULE (PART 11, 12, 13, 14)
+    // 8. BASE & UNIT COMMANDERS DIRECTORY MODULE (PART 3: COMMANDER READ ONLY SCOPE)
     // =========================================================================
     function renderCommandersModule(container) {
       const approved = dbPersonnel.filter(p => p.registrationStatus === 'APPROVED' || !p.registrationStatus);
-      const commanders = approved.filter(p => p.isCommander || ['CP','DCP','ACP','CSP'].includes(p.rank) || (p.dutyPost || '').toUpperCase().includes('COMMANDER'));
+      let commanders = approved.filter(p => p.isCommander || ['CP','DCP','ACP','CSP'].includes(p.rank) || (p.dutyPost || '').toUpperCase().includes('COMMANDER'));
+
+      // If COMMANDER role, scope strictly to their assigned command
+      if (currentUserRole === 'COMMANDER') {
+        commanders = commanders.filter(c => c.currentBaseUnitId === 'EOD-BASE-LAGOS');
+      }
 
       container.innerHTML = `
         <div class="space-y-6 font-mono text-xs">
-          
-          <!-- BANNER HEADER -->
           <div class="bg-slate-900 border border-amber-500/40 p-6 rounded-3xl space-y-2 shadow-2xl">
             <div class="flex items-center justify-between">
               <h2 class="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
                 <i data-lucide="crown" class="w-5 h-5 text-amber-400"></i>
-                <span>BASE AND UNIT COMMANDERS MASTER ROLL (ALL 26 HEADINGS)</span>
+                <span>BASE AND UNIT COMMANDERS MASTER ROLL (READ-ONLY)</span>
               </h2>
               <span class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-amber-500/20 text-amber-300 border border-amber-500/40">
                 ${commanders.length} Active Base Commanders
@@ -3051,7 +3752,6 @@
             <p class="text-xs text-slate-400">Official Roster of Base Commanders, Unit Heads & Tactical Squadron Leaders displaying full 26 nominal roll headings.</p>
           </div>
 
-          <!-- COMMANDER DASHBOARD METRICS (PART 14) -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1">
               <span class="text-slate-500 text-[10px] font-bold block uppercase">TOTAL ASSIGNED COMMANDERS</span>
@@ -3071,46 +3771,35 @@
             </div>
           </div>
 
-          <!-- COMMANDERS LIST GRID -->
           <div class="grid grid-cols-1 gap-6">
-            ${commanders.map(c => {
-              const assign = commanderAssignments.find(a => a.personnelId === c.id) || {
-                appointmentTitle: c.dutyPost || 'BASE COMMANDER',
-                commandName: c.commandServedLast || 'Apapa Sea Port EOD Unit',
-                commandType: 'TACTICAL_FORMATION',
-                appointmentStartDate: c.transferredDate || '2023-01-01',
-                appointmentAuthority: 'INSPECTOR GENERAL OF POLICE'
-              };
-
-              return `
-                <div class="bg-slate-900 border border-amber-500/40 hover:border-amber-400 rounded-2xl p-6 space-y-6 shadow-2xl transition">
-                  <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
-                    <div class="flex items-center gap-4">
-                      <div class="w-14 h-14 rounded-2xl bg-amber-500/20 border-2 border-amber-500/50 flex items-center justify-center overflow-hidden text-amber-400 font-black text-xl shadow-[0_0_15px_rgba(245,158,11,0.3)]">
-                        ${c.profilePhotoPath ? `<img src="${c.profilePhotoPath}" class="w-full h-full object-cover">` : (c.name || 'C').substring(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <div class="flex items-center gap-2 mb-1">
-                          <span class="px-2.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300 font-black text-xs">
-                            3. RANK: ${c.rank}
-                          </span>
-                          <span class="px-2.5 py-0.5 rounded bg-slate-800 text-slate-200 font-bold text-xs">
-                            2. AP/F/NO: ${c.apNo || c.serviceNo}
-                          </span>
-                        </div>
-                        <h4 class="text-lg font-black text-white uppercase tracking-wide">4. NAME: ${c.name}</h4>
-                        <p class="text-xs text-amber-400 font-bold">14. DUTY POST: ${assign.appointmentTitle} | 13. COMMAND: ${assign.commandName}</p>
-                      </div>
+            ${commanders.map(c => `
+              <div class="bg-slate-900 border border-amber-500/40 hover:border-amber-400 rounded-2xl p-6 space-y-6 shadow-2xl transition">
+                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                  <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-500/20 border-2 border-amber-500/50 flex items-center justify-center overflow-hidden text-amber-400 font-black text-xl shadow-[0_0_15px_rgba(245,158,11,0.3)]">
+                      ${c.profilePhotoPath ? `<img src="${c.profilePhotoPath}" class="w-full h-full object-cover">` : (c.name || 'C').substring(0, 2).toUpperCase()}
                     </div>
-
-                    <button onclick="openProfileModal('${c.id}')" class="bg-amber-500 hover:bg-amber-400 text-black px-4 py-2 rounded-xl font-black text-xs transition flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.3)] cursor-pointer">
-                      <i data-lucide="eye" class="w-4 h-4 text-black"></i>
-                      <span>VIEW FULL 26 HEADINGS DOSSIER</span>
-                    </button>
+                    <div>
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="px-2.5 py-0.5 rounded bg-amber-500/20 border border-amber-500/40 text-amber-300 font-black text-xs">
+                          3. RANK: ${c.rank}
+                        </span>
+                        <span class="px-2.5 py-0.5 rounded bg-slate-800 text-slate-200 font-bold text-xs">
+                          2. AP/F/NO: ${c.apNo || c.serviceNo}
+                        </span>
+                      </div>
+                      <h4 class="text-lg font-black text-white uppercase tracking-wide">4. NAME: ${c.name}</h4>
+                      <p class="text-xs text-amber-400 font-bold">14. DUTY POST: ${c.dutyPost || 'BASE COMMANDER'} | 13. COMMAND: ${c.currentBaseUnitName}</p>
+                    </div>
                   </div>
+
+                  <button onclick="openProfileModal('${c.id}')" class="bg-amber-500 hover:bg-amber-400 text-black px-4 py-2 rounded-xl font-black text-xs transition flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.3)] cursor-pointer">
+                    <i data-lucide="eye" class="w-4 h-4 text-black"></i>
+                    <span>VIEW FULL 26 HEADINGS DOSSIER</span>
+                  </button>
                 </div>
-              `;
-            }).join('')}
+              </div>
+            `).join('')}
           </div>
         </div>
       `;
@@ -3118,7 +3807,7 @@
     }
 
     // =========================================================================
-    // 9. PERSONNEL SELF-SERVICE PORTAL & LOGIN MODULE (PARTS 6, 8, 16)
+    // 9. PERSONNEL SELF-SERVICE PORTAL (PART 2 & 17: READ-ONLY DISPLAY)
     // =========================================================================
     function renderSelfServicePortal(container) {
       saveState();
@@ -3136,6 +3825,16 @@
       if (loggedInOfficer) {
         container.innerHTML = `
           <div class="max-w-6xl mx-auto space-y-6 no-print font-mono text-xs">
+            
+            <!-- READ-ONLY NOTICE FOR PERSONNEL (PART 17) -->
+            <div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex items-center justify-between gap-3 text-amber-300">
+              <div class="flex items-center gap-2">
+                <i data-lucide="info" class="w-5 h-5 text-amber-400"></i>
+                <span class="font-bold text-xs">Personnel service information can only be updated by the Global Administrator.</span>
+              </div>
+              <span class="px-3 py-1 rounded-xl bg-amber-500/20 text-amber-300 font-black text-[10px]">READ-ONLY PORTAL</span>
+            </div>
+
             <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-6 rounded-2xl border border-emerald-500/40 shadow-2xl flex flex-wrap items-center justify-between gap-4">
               <div class="flex items-center gap-4">
                 <div class="w-16 h-16 rounded-2xl bg-slate-950 border-2 border-emerald-500/50 flex items-center justify-center overflow-hidden text-emerald-400 font-black text-2xl shadow-[0_0_20px_rgba(16,185,129,0.3)]">
@@ -3151,14 +3850,14 @@
                     </span>
                   </div>
                   <h2 class="text-xl sm:text-2xl font-black text-white uppercase tracking-wide">4. ${loggedInOfficer.name}</h2>
-                  <p class="text-xs text-slate-400">14. DUTY POST: ${loggedInOfficer.dutyPost || 'COMMANDER, APAPA UNIT'} | 13. COMMAND: ${loggedInOfficer.commandServedLast || 'APAPA SEAPORT COMMAND'}</p>
+                  <p class="text-xs text-slate-400">14. DUTY POST: ${loggedInOfficer.dutyPost || 'EOD OPERATIVE'} | 13. COMMAND: ${loggedInOfficer.currentBaseUnitName}</p>
                 </div>
               </div>
 
               <div class="flex items-center gap-3">
                 <button onclick="openProfileModal('${loggedInOfficer.id}')" class="bg-emerald-600 hover:bg-emerald-500 text-black font-black px-4 py-2 rounded-xl transition flex items-center gap-2 cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.3)]">
                   <i data-lucide="eye" class="w-4 h-4 text-black"></i>
-                  <span>VIEW FULL 8-TAB DOSSIER</span>
+                  <span>VIEW READ-ONLY DOSSIER</span>
                 </button>
                 <button onclick="handlePortalLogout()" class="bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 px-4 py-2 rounded-xl font-black transition flex items-center gap-2 cursor-pointer">
                   <i data-lucide="log-out" class="w-4 h-4"></i>
@@ -3172,7 +3871,7 @@
         return;
       }
 
-      // UNAUTHENTICATED LOGIN & REGISTRATION PORTAL
+      // UNAUTHENTICATED LOGIN & REGISTRATION PORTAL (PART 10: BASE SELECTION DROPDOWN)
       container.innerHTML = `
         <div class="max-w-5xl mx-auto space-y-6 font-mono text-xs">
           <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-6 rounded-3xl border border-slate-800 text-center space-y-2 shadow-2xl">
@@ -3220,7 +3919,7 @@
                 </div>
 
                 <button type="submit" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-black font-black text-xs transition uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer">
-                  SIGN IN TO DOSSIER PORTAL
+                  SIGN IN TO READ-ONLY DOSSIER PORTAL
                 </button>
               </form>
             </div>
@@ -3229,7 +3928,7 @@
               <div class="border-b border-slate-800 pb-3 flex items-center justify-between">
                 <div>
                   <h3 class="text-base font-black text-white uppercase tracking-wider">APPLICANT SELF-REGISTRATION FORM</h3>
-                  <p class="text-[11px] text-slate-400">Complete your profile. Registrations require Administrator verification before portal access is granted.</p>
+                  <p class="text-[11px] text-slate-400">Complete your profile. Registrations require Global Administrator verification before access is granted.</p>
                 </div>
                 <span class="px-3 py-1 rounded-xl bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40 text-[11px]">
                   STATUS: PENDING VERIFICATION
@@ -3237,6 +3936,22 @@
               </div>
 
               <form onsubmit="handlePortalRegistration(event)" class="space-y-6">
+                <!-- PART 10: SEARCHABLE CONTROLLED BASE/UNIT DROPDOWN -->
+                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-4">
+                  <h4 class="text-xs font-black text-sky-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
+                    <i data-lucide="building-2" class="w-4 h-4"></i>
+                    <span>COMPULSORY ASSIGNED BASE OR UNIT SELECTION</span>
+                  </h4>
+                  <div>
+                    <label class="text-sky-400 block font-bold mb-1">SELECT EOD-CBRN BASE OR UNIT: *</label>
+                    <select id="reg-base-unit-id" required class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2.5 text-xs focus:border-sky-500 focus:outline-none">
+                      ${basesUnits.filter(b => b.status === 'ACTIVE').map(b => `
+                        <option value="${b.baseUnitId}">${b.baseUnitName} (${b.baseUnitCode}) - ${b.state} [${b.baseUnitType}]</option>
+                      `).join('')}
+                    </select>
+                  </div>
+                </div>
+
                 <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-4">
                   <h4 class="text-xs font-black text-emerald-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
                     <i data-lucide="key" class="w-4 h-4"></i>
@@ -3302,16 +4017,12 @@
                       <label class="text-slate-300 block font-bold mb-1">DATE OF ENLISTMENT: *</label>
                       <input type="date" id="reg-enlistDate" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-emerald-500 focus:outline-none">
                     </div>
-                    <div>
-                      <label class="text-slate-300 block font-bold mb-1">PRESENT COMMAND / UNIT:</label>
-                      <input type="text" id="reg-command" placeholder="e.g. Apapa Sea Port EOD Unit" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-white focus:border-emerald-500 focus:outline-none">
-                    </div>
                   </div>
                 </div>
 
                 <div class="flex justify-end gap-3 pt-2">
                   <button type="submit" class="px-8 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-black font-black text-xs transition uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer">
-                    SUBMIT REGISTRATION FOR ADMIN VERIFICATION
+                    SUBMIT REGISTRATION FOR GLOBAL ADMIN VERIFICATION
                   </button>
                 </div>
               </form>
@@ -3324,7 +4035,7 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
-    // Portal Handlers
+    // Portal Login Handler
     function handlePortalLogin(e) {
       e.preventDefault();
       const idInput = document.getElementById('login-identifier').value.trim();
@@ -3356,6 +4067,9 @@
 
     function handlePortalRegistration(e) {
       e.preventDefault();
+      const baseUnitId = document.getElementById('reg-base-unit-id').value;
+      const baseObj = basesUnits.find(b => b.baseUnitId === baseUnitId) || basesUnits[1];
+
       const apNo = document.getElementById('reg-apNo').value.trim();
       const email = document.getElementById('reg-email').value.trim();
       const phone = document.getElementById('reg-phone').value.trim();
@@ -3366,7 +4080,6 @@
       const stateOfOrigin = document.getElementById('reg-stateOfOrigin').value.trim() || 'LAGOS';
       const dob = document.getElementById('reg-dob').value || '1985-01-01';
       const enlistDate = document.getElementById('reg-enlistDate').value || '2005-01-01';
-      const command = document.getElementById('reg-command').value.trim() || 'Apapa Sea Port EOD Unit';
 
       if (pass !== passConfirm) {
         alert("Passwords do not match. Please verify your password entry.");
@@ -3393,16 +4106,19 @@
         geoPolZone: computeGeoZone(stateOfOrigin),
         dob: dob,
         enlistDate: enlistDate,
-        command: command,
+        requestedBaseUnitId: baseObj.baseUnitId,
+        requestedBaseUnitCode: baseObj.baseUnitCode,
+        requestedBaseUnitName: baseObj.baseUnitName,
+        requestedParentBaseUnitId: baseObj.parentBaseUnitId,
         status: 'PENDING',
         submittedAt: new Date().toISOString()
       };
 
       registrationRequests.unshift(req);
       saveState();
-      logAuditEvent('REGISTRATION_SUBMITTED', 'APPLICANT', apNo, 'Submitted self-registration profile');
+      logAuditEvent('REGISTRATION_SUBMITTED', 'APPLICANT', apNo, 'Submitted registration request for ' + baseObj.baseUnitName);
 
-      alert("Your registration has been submitted successfully and is awaiting verification by an authorised records administrator. You will be notified when access is approved.");
+      alert("Your registration request has been submitted to the Global Administrator for verification. Portal access will remain locked until approved.");
       portalAuthTab = 'LOGIN';
       renderModule();
     }
@@ -3411,12 +4127,12 @@
     // 10. ADMIN REGISTRATION REQUESTS REVIEW MODULE
     // =========================================================================
     function renderAdminRegistrationsModule(container) {
-      if (!['SUPER_ADMIN', 'RECORDS_ADMIN'].includes(currentUserRole)) {
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
         container.innerHTML = `
           <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center space-y-4 font-mono text-xs">
             <i data-lucide="shield-alert" class="w-12 h-12 text-rose-500 mx-auto"></i>
             <h3 class="text-base font-black text-white uppercase">ACCESS RESTRICTED</h3>
-            <p class="text-slate-400">Administrative Verification Queue requires SUPER_ADMIN or RECORDS_ADMIN permissions.</p>
+            <p class="text-slate-400">Administrative Verification Queue requires GLOBAL_ADMIN permissions.</p>
           </div>
         `;
         if (window.lucide) window.lucide.createIcons();
@@ -3432,7 +4148,7 @@
             <div class="flex items-center justify-between">
               <h2 class="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
                 <i data-lucide="clock" class="w-5 h-5 text-amber-400"></i>
-                <span>ADMINISTRATIVE VERIFICATION QUEUE (REGISTRATIONS & PROFILE PHOTOS)</span>
+                <span>GLOBAL ADMIN VERIFICATION QUEUE</span>
               </h2>
               <span class="px-3 py-1 rounded-xl bg-amber-500/20 text-amber-300 font-black border border-amber-500/40">
                 ${pending.length + pendingPhotos.length} PENDING REQUESTS
@@ -3441,31 +4157,6 @@
             <p class="text-xs text-slate-400">Review applicant registrations and profile photo replacement requests before integration.</p>
           </div>
 
-          <!-- PENDING PROFILE PHOTOS (PART 18) -->
-          ${pendingPhotos.length > 0 ? `
-            <div class="space-y-4">
-              <h3 class="text-xs font-black text-cyan-400 uppercase tracking-wider">PENDING PROFILE PHOTO APPROVALS (${pendingPhotos.length})</h3>
-              ${pendingPhotos.map(pr => `
-                <div class="bg-slate-900 border border-cyan-500/40 rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-xl">
-                  <div class="flex items-center gap-4">
-                    <img src="${pr.proposedPhotoPath}" class="w-14 h-14 rounded-xl object-cover border border-cyan-500/50">
-                    <div>
-                      <span class="text-amber-400 font-bold">${pr.officerRank}</span> &bull; 
-                      <strong class="text-white text-sm">${pr.officerName}</strong> &bull; 
-                      <span class="text-emerald-400 font-bold">AP/F/NO: ${pr.apNo}</span>
-                      <p class="text-[11px] text-slate-400">Submitted photo for admin review.</p>
-                    </div>
-                  </div>
-                  <div class="flex gap-2">
-                    <button onclick="rejectPhoto('${pr.photoRequestId}')" class="px-4 py-2 rounded-xl bg-rose-600/20 text-rose-300 font-bold border border-rose-500/40 hover:bg-rose-600 hover:text-white cursor-pointer">REJECT</button>
-                    <button onclick="approvePhoto('${pr.photoRequestId}')" class="px-5 py-2 rounded-xl bg-cyan-600 text-white font-black hover:bg-cyan-500 cursor-pointer">APPROVE PHOTO</button>
-                  </div>
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-
-          <!-- PENDING REGISTRATIONS -->
           ${pending.length === 0 ? `
             <div class="bg-slate-900 border border-slate-800 p-12 rounded-3xl text-center space-y-3 shadow-2xl">
               <i data-lucide="check-circle-2" class="w-10 h-10 text-emerald-400 mx-auto"></i>
@@ -3486,10 +4177,10 @@
                   </div>
 
                   <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
+                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span class="text-slate-500 font-bold block">REQUESTED BASE:</span><span class="text-sky-400 font-bold">${r.requestedBaseUnitName || 'Apapa EOD Base'}</span></div>
                     <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span class="text-slate-500 font-bold block">EMAIL:</span><span class="text-cyan-400 font-bold">${r.email}</span></div>
                     <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span class="text-slate-500 font-bold block">PHONE:</span><span class="text-slate-200">${r.phone}</span></div>
-                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span class="text-slate-500 font-bold block">STATE:</span><span class="text-slate-200">${r.stateOfOrigin} (${r.geoPolZone})</span></div>
-                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span class="text-slate-500 font-bold block">COMMAND:</span><span class="text-slate-200">${r.command}</span></div>
+                    <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span class="text-slate-500 font-bold block">STATE:</span><span class="text-slate-200">${r.stateOfOrigin}</span></div>
                   </div>
 
                   <div class="flex justify-end gap-3 pt-2">
@@ -3511,12 +4202,19 @@
     }
 
     function approveRegistration(reqId) {
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: Registration approvals are restricted to GLOBAL_ADMIN.");
+        return;
+      }
+
       const req = registrationRequests.find(r => r.requestId === reqId);
       if (!req) return;
 
       req.status = 'APPROVED';
       req.reviewedAt = new Date().toISOString();
-      req.reviewedBy = sessionPortalOfficerId || 'ADMIN';
+      req.reviewedBy = 'GLOBAL_ADMIN';
+
+      const baseObj = basesUnits.find(b => b.baseUnitId === req.requestedBaseUnitId) || basesUnits[1];
 
       const newOff = {
         id: 'POL-REG-' + Date.now(),
@@ -3540,7 +4238,7 @@
         geoPolZone: req.geoPolZone,
         lastPromDate: req.enlistDate,
         retireDate: '2035-01-01',
-        commandServedLast: req.command,
+        commandServedLast: baseObj.baseUnitName,
         dutyPost: 'EOD OPERATIVE',
         transferredDate: '2023-01-01',
         gdSp: 'EOD TECH',
@@ -3554,10 +4252,17 @@
         penPin: '131696999-8',
         nhfNo: 'NHF-119999',
         mss: 'BENIN CITY',
-        command: req.command,
+        currentBaseUnitId: baseObj.baseUnitId,
+        currentBaseUnitCode: baseObj.baseUnitCode,
+        currentBaseUnitName: baseObj.baseUnitName,
+        currentBaseUnitType: baseObj.baseUnitType,
+        currentParentBaseUnitId: baseObj.parentBaseUnitId,
+        currentParentBaseUnitName: baseObj.parentBaseUnitName,
+        baseUnitAssignmentStatus: 'ACTIVE',
+        baseUnitAssignmentDate: new Date().toISOString().slice(0, 10),
+        baseUnitAssignedBy: 'GLOBAL_ADMIN',
         registrationStatus: 'APPROVED',
         employmentStatus: 'ACTIVE',
-        recordStatus: 'ACTIVE',
         profilePhotoPath: '',
         photoStatus: 'APPROVED',
         password: req.password
@@ -3566,52 +4271,31 @@
       dbPersonnel.push(newOff);
       recalculateAllRetirements();
       saveState();
-      logAuditEvent('APPROVE_REGISTRATION', 'OFFICER', req.apNo, 'Approved registration for ' + req.name);
+      logAuditEvent('APPROVE_REGISTRATION', 'OFFICER', req.apNo, 'Global Admin approved registration for ' + req.name);
       alert("SUCCESS: Registration for " + req.name + " (" + req.apNo + ") approved and added to Master Roll!");
       renderModule();
     }
 
     function rejectRegistration(reqId) {
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: Registration rejections are restricted to GLOBAL_ADMIN.");
+        return;
+      }
       const req = registrationRequests.find(r => r.requestId === reqId);
       if (!req) return;
       req.status = 'REJECTED';
       req.reviewedAt = new Date().toISOString();
       saveState();
-      logAuditEvent('REJECT_REGISTRATION', 'OFFICER', req.apNo, 'Rejected registration application');
+      logAuditEvent('REJECT_REGISTRATION', 'OFFICER', req.apNo, 'Global Admin rejected registration application');
       alert("Registration request rejected.");
       renderModule();
     }
 
-    function approvePhoto(reqId) {
-      const req = photoRequests.find(r => r.photoRequestId === reqId);
-      if (!req) return;
-      req.status = 'APPROVED';
-      const off = dbPersonnel.find(p => p.id === req.personnelId);
-      if (off) {
-        off.profilePhotoPath = req.proposedPhotoPath;
-        off.photoStatus = 'APPROVED';
-      }
-      saveState();
-      logAuditEvent('APPROVE_PHOTO', 'PROFILE_PICTURE', req.apNo, 'Approved profile photo for ' + req.officerName);
-      alert("Profile photo approved successfully!");
-      renderModule();
-    }
-
-    function rejectPhoto(reqId) {
-      const req = photoRequests.find(r => r.photoRequestId === reqId);
-      if (!req) return;
-      req.status = 'REJECTED';
-      saveState();
-      logAuditEvent('REJECT_PHOTO', 'PROFILE_PICTURE', req.apNo, 'Rejected profile photo request');
-      alert("Profile photo request rejected.");
-      renderModule();
-    }
-
     // =========================================================================
-    // 11. AUDIT LOGS MODULE (PART 21)
+    // 11. AUDIT LOGS MODULE (PART 21 & PART 24)
     // =========================================================================
     function renderAuditLogsModule(container) {
-      if (!['SUPER_ADMIN', 'RECORDS_ADMIN'].includes(currentUserRole)) {
+      if (!['GLOBAL_ADMIN', 'RECORDS_ADMIN'].includes(currentUserRole)) {
         container.innerHTML = `<div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center font-mono text-xs text-rose-400 font-black">ACCESS DENIED: Audit Logs require Administrative Privileges.</div>`;
         return;
       }
@@ -3621,9 +4305,9 @@
           <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-2 shadow-xl">
             <h2 class="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
               <i data-lucide="file-text" class="w-5 h-5 text-cyan-400"></i>
-              <span>SYSTEM AUDIT TRAIL & SECURITY EVENT LOGS</span>
+              <span>GLOBAL ADMIN AUDIT TRAIL & SECURITY EVENT LOGS</span>
             </h2>
-            <p class="text-xs text-slate-400">Chronological immutable audit records of administrative actions, profile updates, and registration approvals.</p>
+            <p class="text-xs text-slate-400">Chronological immutable audit records of administrative actions, base transfers, and security access attempts.</p>
           </div>
 
           <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
@@ -3660,7 +4344,7 @@
     }
 
     // =========================================================================
-    // 12. REPORTS & ANALYTICS MODULE (PART 8: /reports/retirement SUITE)
+    // 12. REPORTS & ANALYTICS MODULE
     // =========================================================================
     function renderReportsModule(container) {
       recalculateAllRetirements();
@@ -3674,15 +4358,16 @@
                 <i data-lucide="bar-chart-3" class="w-5 h-5 text-rose-400"></i>
                 <span>NIGERIA POLICE EOD-CBRN RETIREMENT REPORTS SUITE</span>
               </h2>
-              <button onclick="exportToCsv()" class="bg-emerald-600 hover:bg-emerald-500 text-black font-black px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer">
-                <i data-lucide="download" class="w-4 h-4 text-black"></i>
-                <span>EXPORT REPORT CSV</span>
-              </button>
+              ${currentUserRole === 'GLOBAL_ADMIN' ? `
+                <button onclick="exportToCsv()" class="bg-emerald-600 hover:bg-emerald-500 text-black font-black px-4 py-2 rounded-xl transition flex items-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.3)] cursor-pointer">
+                  <i data-lucide="download" class="w-4 h-4 text-black"></i>
+                  <span>EXPORT REPORT CSV</span>
+                </button>
+              ` : ''}
             </div>
             <p class="text-xs text-slate-400">Comprehensive analytical and statutory retirement reporting across all state commands and formations.</p>
           </div>
 
-          <!-- PRESET REPORTS BUTTONS (PART 8) -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <button onclick="runPresetReport('2_MONTHS')" class="bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl text-left space-y-1 cursor-pointer">
               <span class="text-amber-400 font-black block">1. RETIRING IN 2 MONTHS</span>
@@ -3704,29 +4389,6 @@
               <span class="text-slate-400 text-[10px]">Audit Exception List</span>
             </button>
           </div>
-
-          <!-- SUMMARY DISTRIBUTION -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 shadow-xl">
-              <h3 class="text-sm font-black text-amber-400 uppercase tracking-wider border-b border-slate-800 pb-2">RETIREMENT BASIS DISTRIBUTION</h3>
-              <div class="space-y-2">
-                <div class="flex justify-between p-2 rounded-xl bg-slate-950 border border-slate-800"><span class="font-black text-white">AGE LIMIT (60 YRS)</span><span class="text-amber-400 font-bold">${approved.filter(p=>p.retirementBasis==='AGE LIMIT').length} Personnel</span></div>
-                <div class="flex justify-between p-2 rounded-xl bg-slate-950 border border-slate-800"><span class="font-black text-white">LENGTH OF SERVICE (35 YRS)</span><span class="text-sky-400 font-bold">${approved.filter(p=>p.retirementBasis==='LENGTH OF SERVICE').length} Personnel</span></div>
-                <div class="flex justify-between p-2 rounded-xl bg-slate-950 border border-slate-800"><span class="font-black text-white">AGE AND SERVICE LIMIT</span><span class="text-emerald-400 font-bold">${approved.filter(p=>p.retirementBasis==='AGE AND SERVICE LIMIT').length} Personnel</span></div>
-                <div class="flex justify-between p-2 rounded-xl bg-slate-950 border border-slate-800"><span class="font-black text-white">ADMINISTRATIVE OVERRIDE</span><span class="text-purple-400 font-bold">${approved.filter(p=>p.retirementBasis==='ADMINISTRATIVE OVERRIDE').length} Personnel</span></div>
-              </div>
-            </div>
-
-            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4 shadow-xl">
-              <h3 class="text-sm font-black text-cyan-400 uppercase tracking-wider border-b border-slate-800 pb-2">RETIREMENT STATUS SUMMARY</h3>
-              <div class="space-y-2">
-                <div class="flex justify-between p-2 rounded-xl bg-slate-950 border border-slate-800"><span class="font-black text-white">NOT DUE</span><span class="text-emerald-400 font-bold">${approved.filter(p=>p.retirementStatus==='NOT_DUE').length} Personnel</span></div>
-                <div class="flex justify-between p-2 rounded-xl bg-slate-950 border border-slate-800"><span class="font-black text-white">APPROACHING RETIREMENT</span><span class="text-amber-400 font-bold">${approved.filter(p=>p.retirementStatus==='APPROACHING_RETIREMENT').length} Personnel</span></div>
-                <div class="flex justify-between p-2 rounded-xl bg-slate-950 border border-slate-800"><span class="font-black text-white">DUE THIS MONTH</span><span class="text-amber-300 font-bold">${approved.filter(p=>p.retirementStatus==='DUE_THIS_MONTH').length} Personnel</span></div>
-                <div class="flex justify-between p-2 rounded-xl bg-slate-950 border border-slate-800"><span class="font-black text-white">OVERDUE FOR REVIEW</span><span class="text-rose-400 font-bold">${approved.filter(p=>p.retirementStatus==='OVERDUE_FOR_REVIEW').length} Personnel</span></div>
-              </div>
-            </div>
-          </div>
         </div>
       `;
       if (window.lucide) window.lucide.createIcons();
@@ -3738,7 +4400,7 @@
     }
 
     // =========================================================================
-    // 13. INDIVIDUAL DOSSIER (PART 15: 8-TAB STRUCTURED DOSSIER)
+    // 13. INDIVIDUAL DOSSIER DETAILS
     // =========================================================================
     function openProfileModal(id) {
       const p = dbPersonnel.find(x => x.id === id || x.apNo === id || x.serviceNo === id);
@@ -3763,7 +4425,7 @@
 
       const maskVal = (val, length=4) => {
         if (!val) return 'N/A';
-        if (unmaskSensitiveFields || currentUserRole === 'SUPER_ADMIN') return val;
+        if (unmaskSensitiveFields || currentUserRole === 'GLOBAL_ADMIN') return val;
         const str = String(val);
         if (str.length <= length) return '****';
         return '****' + str.slice(-length);
@@ -3779,6 +4441,7 @@
               <div><span class="text-slate-500 font-bold block">2. AP/F/NO:</span><span class="text-emerald-400 font-black">${p.apNo || p.serviceNo}</span></div>
               <div><span class="text-slate-500 font-bold block">3. RANK:</span><span class="text-amber-300 font-bold">${p.rank}</span></div>
               <div><span class="text-slate-500 font-bold block">4. NAME:</span><span class="text-white font-bold">${p.name}</span></div>
+              <div><span class="text-slate-500 font-bold block">ASSIGNED BASE:</span><span class="text-sky-400 font-bold">${p.currentBaseUnitName || 'Apapa EOD Base'}</span></div>
               <div><span class="text-slate-500 font-bold block">5. EDU QUAL:</span><span class="text-slate-300">${p.eduQual || 'SSCE'}</span></div>
               <div><span class="text-slate-500 font-bold block">6. STATE:</span><span class="text-slate-300">${p.stateOfOrigin || 'EDO'}</span></div>
               <div><span class="text-slate-500 font-bold block">7. PHONE:</span><span class="text-emerald-400 font-bold">${p.phone || '08030000000'}</span></div>
@@ -3786,7 +4449,6 @@
               <div><span class="text-slate-500 font-bold block">9. DOB:</span><span class="text-slate-300">${p.dob || '1980-01-01'}</span></div>
               <div><span class="text-slate-500 font-bold block">10. GEO ZONE:</span><span class="text-slate-300">${p.geoPolZone || 'SOUTH SOUTH'}</span></div>
               <div class="col-span-2"><span class="text-slate-500 font-bold block">18. EMAIL:</span><span class="text-cyan-400 font-bold">${p.email || 'N/A'}</span></div>
-              <div class="col-span-2"><span class="text-slate-500 font-bold block">26. MSS (BASE):</span><span class="text-slate-300">${p.mss || 'BENIN CITY'}</span></div>
             </div>
           </div>
         `;
@@ -3798,12 +4460,7 @@
               <div><span class="text-slate-500 font-bold block">17. ENLIST DATE:</span><span class="text-slate-300">${p.enlistDate || '2000-01-01'}</span></div>
               <div><span class="text-slate-500 font-bold block">11. LAST PROM:</span><span class="text-slate-300">${p.lastPromDate || '2022-01-01'}</span></div>
               <div><span class="text-slate-500 font-bold block">FINAL RETIRE DATE:</span><span class="text-amber-400 font-black">${p.calculatedRetirementDate || '2035-01-01'}</span></div>
-              <div><span class="text-slate-500 font-bold block">AGE-BASED DATE:</span><span class="text-slate-300">${p.ageRetirementDate || 'N/A'}</span></div>
-              <div><span class="text-slate-500 font-bold block">SERVICE-BASED DATE:</span><span class="text-slate-300">${p.serviceRetirementDate || 'N/A'}</span></div>
               <div><span class="text-slate-500 font-bold block">RETIREMENT BASIS:</span><span class="text-cyan-400 font-bold">${p.retirementBasis || 'AGE LIMIT'}</span></div>
-              <div><span class="text-slate-500 font-bold block">RETIREMENT STATUS:</span><span class="text-emerald-400 font-bold">${p.retirementStatus || 'NOT_DUE'}</span></div>
-              <div><span class="text-slate-500 font-bold block">DAYS REMAINING:</span><span class="text-amber-300 font-black">${p.daysRemaining || 0} Days</span></div>
-              <div><span class="text-slate-500 font-bold block">13. LAST COMMAND:</span><span class="text-slate-300">${p.commandServedLast || 'APAPA SEAPORT'}</span></div>
               <div><span class="text-slate-500 font-bold block">14. DUTY POST:</span><span class="text-white font-bold">${p.dutyPost || 'EOD OPERATIVE'}</span></div>
               <div><span class="text-slate-500 font-bold block">15. TRANSFERRED:</span><span class="text-slate-300">${p.transferredDate || '2023-01-01'}</span></div>
               <div><span class="text-slate-500 font-bold block">16. GD/SP:</span><span class="text-emerald-400 font-bold">${p.gdSp || 'EOD TECH'}</span></div>
@@ -3825,51 +4482,19 @@
             </div>
           </div>
         `;
-      } else if (activeDossierTab === 'TAB_COMMAND') {
-        tabBody = `
-          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-            <h4 class="text-xs font-black text-amber-300 uppercase tracking-wider border-b border-slate-800 pb-2">TAB 4: COMMAND APPOINTMENTS & ASSIGNMENTS</h4>
-            <div class="space-y-2">
-              <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
-                <div>
-                  <span class="text-white font-bold block">${p.dutyPost || 'EOD TECH'}</span>
-                  <span class="text-slate-400 text-[10px]">${p.commandServedLast || 'Apapa Sea Port EOD Unit'}</span>
-                </div>
-                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">CURRENT ACTIVE</span>
-              </div>
-            </div>
-          </div>
-        `;
-      } else if (activeDossierTab === 'TAB_DOCUMENTS') {
-        tabBody = `
-          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 text-center p-8">
-            <i data-lucide="file-check" class="w-8 h-8 text-cyan-400 mx-auto mb-2"></i>
-            <span class="text-white font-bold block">TAB 5: AUTHORISED PERSONNEL DOCUMENTS</span>
-            <span class="text-slate-400 text-[10px]">No pending document attachments uploaded.</span>
-          </div>
-        `;
-      } else if (activeDossierTab === 'TAB_ACCOUNT') {
-        tabBody = `
-          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-            <h4 class="text-xs font-black text-sky-400 uppercase tracking-wider border-b border-slate-800 pb-2">TAB 6: USER ACCOUNT & PORTAL ACCESS</h4>
-            <div class="grid grid-cols-2 gap-3">
-              <div><span class="text-slate-500 font-bold block">ACCOUNT STATUS:</span><span class="text-emerald-400 font-bold">VERIFIED & ACTIVE</span></div>
-              <div><span class="text-slate-500 font-bold block">LAST LOGIN:</span><span class="text-slate-300">2026-08-01 14:20 WAT</span></div>
-            </div>
-          </div>
-        `;
-      } else if (activeDossierTab === 'TAB_HISTORY') {
-        tabBody = `
-          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-            <h4 class="text-xs font-black text-cyan-300 uppercase tracking-wider border-b border-slate-800 pb-2">TAB 7: RECORD AUDIT HISTORY</h4>
-            <p class="text-slate-400 text-[10px]">All changes to this personnel dossier are audited under ISO-27001 standard.</p>
-          </div>
-        `;
       } else {
         tabBody = `
           <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-            <h4 class="text-xs font-black text-rose-400 uppercase tracking-wider border-b border-slate-800 pb-2">TAB 8: FIELD CORRECTION REQUESTS</h4>
-            <p class="text-slate-400 text-[10px]">No active correction requests pending for this record.</p>
+            <h4 class="text-xs font-black text-sky-400 uppercase tracking-wider border-b border-slate-800 pb-2">TAB 4: BASE ASSIGNMENT & COMMAND HISTORY</h4>
+            <div class="space-y-2">
+              <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+                <div>
+                  <span class="text-white font-bold block">${p.currentBaseUnitName}</span>
+                  <span class="text-slate-400 text-[10px]">Code: ${p.currentBaseUnitCode} &bull; Assigned: ${p.baseUnitAssignmentDate || '2023-01-01'}</span>
+                </div>
+                <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">PRIMARY ACTIVE</span>
+              </div>
+            </div>
           </div>
         `;
       }
@@ -3878,7 +4503,7 @@
         <div class="flex flex-wrap items-center justify-between border-b border-slate-800 pb-3 bg-slate-950 p-4 -m-6 mb-2">
           <div class="flex items-center gap-4">
             <div class="w-14 h-14 rounded-xl bg-slate-900 border-2 border-emerald-500/50 overflow-hidden flex items-center justify-center text-emerald-400 font-black">
-              ${p.profilePhotoPath ? `<img src="${p.profilePhotoPath}" class="w-full h-full object-cover">` : `<i data-lucide="user" class="w-8 h-8 text-slate-500"></i>`}
+              ${p.profilePhotoPath ? `<img src="${p.profilePhotoPath}" class="w-full h-full object-cover">` : `<i data-lucide="user" class="w-8 h-8 text-slate-500"></i>` }
             </div>
             <div>
               <div class="flex items-center gap-2">
@@ -3886,7 +4511,7 @@
                 <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px]">AP/F/NO: ${p.apNo || p.serviceNo}</span>
               </div>
               <h3 class="text-base font-black uppercase text-white tracking-wider mt-1">${p.name}</h3>
-              <p class="text-xs text-slate-400">14. DUTY POST: ${p.dutyPost || 'EOD OPERATIVE'} | COMMAND: ${p.commandServedLast || 'APAPA SEAPORT COMMAND'}</p>
+              <p class="text-xs text-slate-400">14. DUTY POST: ${p.dutyPost || 'EOD OPERATIVE'} | COMMAND: ${p.currentBaseUnitName}</p>
             </div>
           </div>
 
@@ -3903,11 +4528,7 @@
           <button onclick="switchDossierTab('TAB_PERSONAL', '${p.id}')" class="px-3 py-1.5 rounded-lg transition cursor-pointer ${activeDossierTab==='TAB_PERSONAL'?'bg-emerald-500 text-black font-black':'text-slate-400 hover:text-white'}">1. PERSONAL</button>
           <button onclick="switchDossierTab('TAB_CAREER', '${p.id}')" class="px-3 py-1.5 rounded-lg transition cursor-pointer ${activeDossierTab==='TAB_CAREER'?'bg-emerald-500 text-black font-black':'text-slate-400 hover:text-white'}">2. CAREER & RETIREMENT</button>
           <button onclick="switchDossierTab('TAB_FINANCIAL', '${p.id}')" class="px-3 py-1.5 rounded-lg transition cursor-pointer ${activeDossierTab==='TAB_FINANCIAL'?'bg-emerald-500 text-black font-black':'text-slate-400 hover:text-white'}">3. FINANCIAL & PENSION</button>
-          <button onclick="switchDossierTab('TAB_COMMAND', '${p.id}')" class="px-3 py-1.5 rounded-lg transition cursor-pointer ${activeDossierTab==='TAB_COMMAND'?'bg-emerald-500 text-black font-black':'text-slate-400 hover:text-white'}">4. APPOINTMENTS</button>
-          <button onclick="switchDossierTab('TAB_DOCUMENTS', '${p.id}')" class="px-3 py-1.5 rounded-lg transition cursor-pointer ${activeDossierTab==='TAB_DOCUMENTS'?'bg-emerald-500 text-black font-black':'text-slate-400 hover:text-white'}">5. DOCUMENTS</button>
-          <button onclick="switchDossierTab('TAB_ACCOUNT', '${p.id}')" class="px-3 py-1.5 rounded-lg transition cursor-pointer ${activeDossierTab==='TAB_ACCOUNT'?'bg-emerald-500 text-black font-black':'text-slate-400 hover:text-white'}">6. ACCESS</button>
-          <button onclick="switchDossierTab('TAB_HISTORY', '${p.id}')" class="px-3 py-1.5 rounded-lg transition cursor-pointer ${activeDossierTab==='TAB_HISTORY'?'bg-emerald-500 text-black font-black':'text-slate-400 hover:text-white'}">7. AUDIT HISTORY</button>
-          <button onclick="switchDossierTab('TAB_CORRECTIONS', '${p.id}')" class="px-3 py-1.5 rounded-lg transition cursor-pointer ${activeDossierTab==='TAB_CORRECTIONS'?'bg-emerald-500 text-black font-black':'text-slate-400 hover:text-white'}">8. CORRECTIONS</button>
+          <button onclick="switchDossierTab('TAB_COMMAND', '${p.id}')" class="px-3 py-1.5 rounded-lg transition cursor-pointer ${activeDossierTab==='TAB_COMMAND'?'bg-emerald-500 text-black font-black':'text-slate-400 hover:text-white'}">4. BASE ASSIGNMENT</button>
         </div>
 
         <div class="space-y-4 overflow-y-auto pr-2 max-h-[65vh]">
@@ -3921,6 +4542,7 @@
 
       if (window.lucide) window.lucide.createIcons();
     }
+
     function closeProfileModal() {
       const modal = document.getElementById('profile-modal');
       if (modal) modal.classList.add('hidden');
@@ -3961,12 +4583,11 @@
 
           <table>
             <tr><th>OFFICER NAME</th><td>${p.name}</td><th>AP/F/NO</th><td>${p.apNo || p.serviceNo}</td></tr>
-            <tr><th>RANK</th><td>${p.rank}</td><th>COMMAND</th><td>${p.commandServedLast || 'APAPA SEAPORT'}</td></tr>
+            <tr><th>RANK</th><td>${p.rank}</td><th>ASSIGNED BASE</th><td>${p.currentBaseUnitName}</td></tr>
             <tr><th>DUTY POST</th><td>${p.dutyPost || 'EOD OPERATIVE'}</td><th>SPECIALISATION</th><td>${p.gdSp || 'EOD TECH'}</td></tr>
             <tr><th>DATE OF BIRTH</th><td>${p.dob}</td><th>DATE OF ENLISTMENT</th><td>${p.enlistDate}</td></tr>
             <tr><th>RETIREMENT DATE</th><td>${p.calculatedRetirementDate}</td><th>RETIREMENT BASIS</th><td>${p.retirementBasis}</td></tr>
             <tr><th>STATE OF ORIGIN</th><td>${p.stateOfOrigin}</td><th>GEO POL ZONE</th><td>${p.geoPolZone}</td></tr>
-            <tr><th>PHONE NUMBER</th><td>${p.phone}</td><th>EMAIL ADDRESS</th><td>${p.email}</td></tr>
           </table>
 
           <div style="margin-top: 30px; border-top: 1px solid black; padding-top: 10px; font-size: 10px;">
@@ -3980,7 +4601,159 @@
       printWin.document.close();
     }
 
-    // PART 16: PREVIEW PHOTO UPLOAD
+    // PART 12: TRANSFER MODAL HANDLERS
+    function openTransferModal(id) {
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: Personnel transfers are restricted to GLOBAL_ADMIN.");
+        return;
+      }
+      const p = dbPersonnel.find(x => x.id === id);
+      if (!p) return;
+
+      document.getElementById('transfer-officer-id').value = p.id;
+      document.getElementById('transfer-officer-display').value = p.rank + ' ' + p.name + ' (' + (p.apNo || p.serviceNo) + ')';
+      document.getElementById('transfer-current-base').value = p.currentBaseUnitName || 'Apapa EOD Base';
+
+      const select = document.getElementById('transfer-target-base-id');
+      if (select) {
+        select.innerHTML = basesUnits.filter(b => b.status === 'ACTIVE').map(b => `
+          <option value="${b.baseUnitId}">${b.baseUnitName} (${b.baseUnitCode}) - ${b.state}</option>
+        `).join('');
+      }
+
+      const modal = document.getElementById('transfer-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeTransferModal() {
+      const modal = document.getElementById('transfer-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function handleTransferSubmit(e) {
+      e.preventDefault();
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: Personnel transfers are restricted to GLOBAL_ADMIN.");
+        return;
+      }
+
+      const id = document.getElementById('transfer-officer-id').value;
+      const p = dbPersonnel.find(x => x.id === id);
+      if (!p) return;
+
+      const targetId = document.getElementById('transfer-target-base-id').value;
+      const targetBase = basesUnits.find(b => b.baseUnitId === targetId);
+      if (!targetBase) return;
+
+      const assignType = document.getElementById('transfer-type').value;
+      const ref = document.getElementById('transfer-ref').value.trim();
+      const reason = document.getElementById('transfer-reason').value.trim();
+
+      const prevBaseName = p.currentBaseUnitName;
+
+      // Record assignment history
+      baseUnitAssignments.unshift({
+        assignmentId: 'ASSIGN-' + Date.now(),
+        personnelId: p.id,
+        serviceNumber: p.apNo || p.serviceNo,
+        baseUnitId: targetBase.baseUnitId,
+        baseUnitCode: targetBase.baseUnitCode,
+        baseUnitName: targetBase.baseUnitName,
+        parentBaseUnitId: targetBase.parentBaseUnitId,
+        parentBaseUnitName: targetBase.parentBaseUnitName,
+        dutyPost: p.dutyPost,
+        assignmentType: assignType,
+        startDate: new Date().toISOString().slice(0, 10),
+        assignmentStatus: 'ACTIVE',
+        transferReference: ref,
+        transferReason: reason,
+        assignedBy: 'GLOBAL_ADMIN',
+        approvedBy: 'GLOBAL_ADMIN',
+        createdAt: new Date().toISOString()
+      });
+
+      // Update personnel current base
+      p.currentBaseUnitId = targetBase.baseUnitId;
+      p.currentBaseUnitCode = targetBase.baseUnitCode;
+      p.currentBaseUnitName = targetBase.baseUnitName;
+      p.currentBaseUnitType = targetBase.baseUnitType;
+      p.currentParentBaseUnitId = targetBase.parentBaseUnitId;
+      p.currentParentBaseUnitName = targetBase.parentBaseUnitName;
+      p.baseUnitAssignmentDate = new Date().toISOString().slice(0, 10);
+      p.baseUnitAssignedBy = 'GLOBAL_ADMIN';
+
+      saveState();
+      logAuditEvent('TRANSFER_PERSONNEL', 'PERSONNEL', p.apNo || p.serviceNo, 'Transferred ' + p.name + ' from ' + prevBaseName + ' to ' + targetBase.baseUnitName + '. Ref: ' + ref);
+      alert("SUCCESS: Officer " + p.name + " transferred to " + targetBase.baseUnitName + "!");
+      closeTransferModal();
+      renderModule();
+    }
+
+    // PART 8: ADD BASE MODAL HANDLERS
+    function openAddBaseModal() {
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: Creating bases and units is restricted to GLOBAL_ADMIN.");
+        return;
+      }
+      const modal = document.getElementById('add-base-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+    function closeAddBaseModal() {
+      const modal = document.getElementById('add-base-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+    function handleAddBaseSubmit(e) {
+      e.preventDefault();
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: Creating bases and units is restricted to GLOBAL_ADMIN.");
+        return;
+      }
+
+      const code = document.getElementById('base-code').value.trim();
+      const name = document.getElementById('base-name').value.trim();
+      const type = document.getElementById('base-type').value;
+      const parentId = document.getElementById('base-parent-id').value;
+      const parentObj = basesUnits.find(b => b.baseUnitId === parentId) || basesUnits[0];
+      const state = document.getElementById('base-state').value.trim().toUpperCase();
+      const city = document.getElementById('base-city').value.trim().toUpperCase() || state;
+
+      const exists = basesUnits.some(b => b.baseUnitCode.toUpperCase() === code.toUpperCase());
+      if (exists) {
+        alert("ERROR: Base or unit code (" + code + ") already exists.");
+        return;
+      }
+
+      const newBase = {
+        baseUnitId: 'EOD-BASE-' + Date.now(),
+        baseUnitCode: code,
+        baseUnitName: name,
+        baseUnitType: type,
+        parentBaseUnitId: parentObj.baseUnitId,
+        parentBaseUnitName: parentObj.baseUnitName,
+        commandLevel: type,
+        state: state,
+        geopoliticalZone: computeGeoZone(state),
+        policeZone: 'ZONE 2',
+        city: city,
+        officialAddress: name + ', ' + state,
+        officialEmail: code.toLowerCase() + '@npf.gov.ng',
+        officialPhone: '08030000000',
+        commanderName: 'UNASSIGNED',
+        personnelStrength: 0,
+        status: 'ACTIVE',
+        dateEstablished: new Date().toISOString().slice(0, 10),
+        createdAt: new Date().toISOString(),
+        createdBy: 'GLOBAL_ADMIN'
+      };
+
+      basesUnits.push(newBase);
+      saveState();
+      logAuditEvent('ADD_BASE_UNIT', 'BASE_UNIT', code, 'Global Admin registered new formation: ' + name);
+      alert("SUCCESS: New Base / Unit (" + name + ") registered in National Directory!");
+      closeAddBaseModal();
+      renderModule();
+    }
+
     function previewAddPhoto(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -4003,7 +4776,6 @@
       reader.readAsDataURL(file);
     }
 
-    // Modal Policy Config (Part 1)
     function openPolicyModal() {
       const modal = document.getElementById('policy-modal');
       if (modal) modal.classList.remove('hidden');
@@ -4014,11 +4786,14 @@
     }
     function handlePolicySubmit(e) {
       e.preventDefault();
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: System policy updates are restricted to GLOBAL_ADMIN.");
+        return;
+      }
       systemConfig.retirementPolicy.retirementAgeYears = parseInt(document.getElementById('policy-age').value);
       systemConfig.retirementPolicy.retirementServiceYears = parseInt(document.getElementById('policy-service').value);
       systemConfig.retirementPolicy.warningPeriodMonths = parseInt(document.getElementById('policy-warning').value);
       systemConfig.retirementPolicy.policyReference = document.getElementById('policy-ref').value;
-      systemConfig.retirementPolicy.updatedAt = new Date().toISOString();
 
       recalculateAllRetirements();
       logAuditEvent('UPDATE_RETIREMENT_POLICY', 'SYSTEM_CONFIG', 'retirementPolicy', 'Updated policy: Age=' + systemConfig.retirementPolicy.retirementAgeYears + ', Service=' + systemConfig.retirementPolicy.retirementServiceYears);
@@ -4027,8 +4802,11 @@
       renderModule();
     }
 
-    // Modal Override (Part 10)
     function openOverrideModal(id) {
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: Retirement overrides are restricted to GLOBAL_ADMIN.");
+        return;
+      }
       const p = dbPersonnel.find(x => x.id === id);
       if (!p) return;
       document.getElementById('override-officer-id').value = p.id;
@@ -4044,6 +4822,10 @@
     }
     function handleOverrideSubmit(e) {
       e.preventDefault();
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: Retirement overrides are restricted to GLOBAL_ADMIN.");
+        return;
+      }
       const id = document.getElementById('override-officer-id').value;
       const p = dbPersonnel.find(x => x.id === id);
       if (!p) return;
@@ -4057,7 +4839,7 @@
       p.retirementOverrideDate = overrideDate;
       p.retirementOverrideReason = reason;
       p.retirementOverrideDocumentUrl = doc;
-      p.retirementOverrideApprovedBy = currentUserRole;
+      p.retirementOverrideApprovedBy = 'GLOBAL_ADMIN';
       p.retirementOverrideApprovedAt = new Date().toISOString();
 
       recalculateAllRetirements();
@@ -4069,6 +4851,17 @@
     }
 
     function openAddModal() {
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: Adding personnel is restricted to GLOBAL_ADMIN.");
+        return;
+      }
+      const select = document.getElementById('add-base-id');
+      if (select) {
+        select.innerHTML = basesUnits.filter(b => b.status === 'ACTIVE').map(b => `
+          <option value="${b.baseUnitId}">${b.baseUnitName} (${b.baseUnitCode}) - ${b.state}</option>
+        `).join('');
+      }
+
       const el = document.getElementById('add-modal');
       if (el) el.classList.remove('hidden');
     }
@@ -4079,6 +4872,14 @@
 
     function handleAddOfficer(e) {
       e.preventDefault();
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: Creating personnel records is restricted to GLOBAL_ADMIN.");
+        return;
+      }
+
+      const baseUnitId = document.getElementById('add-base-id').value;
+      const baseObj = basesUnits.find(b => b.baseUnitId === baseUnitId) || basesUnits[1];
+
       const apNo = document.getElementById('add-serviceno').value.trim();
       const rank = document.getElementById('add-rank').value;
       const name = document.getElementById('add-name').value.trim();
@@ -4092,7 +4893,7 @@
 
       const enlistDate = document.getElementById('add-enlistDate').value || '2000-01-01';
       const lastPromDate = document.getElementById('add-lastPromDate').value || '2022-01-01';
-      const commandServedLast = document.getElementById('add-commandServedLast').value.trim() || 'APAPA SEAPORT COMMAND';
+      const commandServedLast = document.getElementById('add-commandServedLast').value.trim() || baseObj.baseUnitName;
       const dutyPost = document.getElementById('add-dutyPost').value.trim() || 'EOD OPERATIVE';
       const transferredDate = document.getElementById('add-transferredDate').value || '2023-01-01';
       const gdSp = document.getElementById('add-gdSp').value.trim() || 'EOD TECH';
@@ -4139,7 +4940,15 @@
         penPin: penPin,
         nhfNo: nhfNo,
         mss: mss,
-        command: 'Apapa Sea Port EOD Unit',
+        currentBaseUnitId: baseObj.baseUnitId,
+        currentBaseUnitCode: baseObj.baseUnitCode,
+        currentBaseUnitName: baseObj.baseUnitName,
+        currentBaseUnitType: baseObj.baseUnitType,
+        currentParentBaseUnitId: baseObj.parentBaseUnitId,
+        currentParentBaseUnitName: baseObj.parentBaseUnitName,
+        baseUnitAssignmentStatus: 'ACTIVE',
+        baseUnitAssignmentDate: new Date().toISOString().slice(0, 10),
+        baseUnitAssignedBy: 'GLOBAL_ADMIN',
         registrationStatus: 'APPROVED',
         employmentStatus: 'ACTIVE',
         profilePhotoPath: addPhotoDataUrl || '',
@@ -4150,7 +4959,7 @@
       dbPersonnel.push(newOfficer);
       recalculateAllRetirements();
       saveState();
-      logAuditEvent('ADD_OFFICER', 'PERSONNEL', apNo, 'Manually registered ' + name + ' (' + rank + ')');
+      logAuditEvent('ADD_OFFICER', 'PERSONNEL', apNo, 'Global Admin registered ' + name + ' (' + rank + ') assigned to ' + baseObj.baseUnitName);
       alert("SUCCESS: Officer " + name + " (" + rank + ") registered into Master Roll!");
       addPhotoDataUrl = null;
       closeAddModal();
@@ -4184,17 +4993,17 @@
 
       correctionRequests.unshift(req);
       logAuditEvent('CORRECTION_REQUESTED', 'FIELD', field, 'Correction requested for field ' + field + ' -> ' + proposed);
-      alert("Correction request submitted to Administrator for review!");
+      alert("Correction request submitted to Global Administrator for review!");
       closeCorrectionModal();
     }
 
     function exportToCsv() {
-      if (!['SUPER_ADMIN', 'RECORDS_ADMIN'].includes(currentUserRole)) {
-        alert("ACCESS DENIED: Exporting Master Roll requires Administrative permissions.");
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("ACCESS DENIED: Exporting Master Roll requires GLOBAL_ADMIN permissions.");
         return;
       }
 
-      let keys = ["sNo", "apNo", "rank", "name", "eduQual", "stateOfOrigin", "phone", "tribe", "dob", "geoPolZone", "lastPromDate", "calculatedRetirementDate", "retirementBasis", "commandServedLast", "dutyPost", "transferredDate", "gdSp", "enlistDate", "email", "mss"];
+      let keys = ["sNo", "apNo", "rank", "name", "currentBaseUnitName", "eduQual", "stateOfOrigin", "phone", "tribe", "dob", "geoPolZone", "lastPromDate", "calculatedRetirementDate", "retirementBasis", "commandServedLast", "dutyPost", "transferredDate", "gdSp", "enlistDate", "email", "mss"];
       if (currentRollMode === 'ADMIN_RESTRICTED') {
         keys = keys.concat(["gl", "bankName", "employeeCode", "ippisNo", "pfa", "penPin", "nhfNo"]);
       }
@@ -4219,13 +5028,19 @@
       logAuditEvent('EXPORT_CSV', 'DATABASE', currentView, 'Exported Master Roll CSV (' + dbPersonnel.length + ' rows)');
     }
 
-    // Bind event handlers to window object
+    // Bind event handlers
     window.switchView = switchView;
     window.changeUserRole = changeUserRole;
     window.setRollMode = setRollMode;
     window.openAddModal = openAddModal;
     window.closeAddModal = closeAddModal;
     window.handleAddOfficer = handleAddOfficer;
+    window.openTransferModal = openTransferModal;
+    window.closeTransferModal = closeTransferModal;
+    window.handleTransferSubmit = handleTransferSubmit;
+    window.openAddBaseModal = openAddBaseModal;
+    window.closeAddBaseModal = closeAddBaseModal;
+    window.handleAddBaseSubmit = handleAddBaseSubmit;
     window.previewAddPhoto = previewAddPhoto;
     window.forceResetApapaRoll = forceResetApapaRoll;
     window.handlePortalRegistration = handlePortalRegistration;
@@ -4240,8 +5055,6 @@
     window.handleCorrectionSubmit = handleCorrectionSubmit;
     window.approveRegistration = approveRegistration;
     window.rejectRegistration = rejectRegistration;
-    window.approvePhoto = approvePhoto;
-    window.rejectPhoto = rejectPhoto;
     window.openPolicyModal = openPolicyModal;
     window.closePolicyModal = closePolicyModal;
     window.handlePolicySubmit = handlePolicySubmit;
@@ -4253,10 +5066,9 @@
     window.runPresetReport = runPresetReport;
     window.exportToCsv = exportToCsv;
 
-    // Initialization on page load
     document.addEventListener('DOMContentLoaded', () => {
       loadSavedState();
-      renderModule();
+      changeUserRole('GLOBAL_ADMIN');
     });
   </script>
 </body>
