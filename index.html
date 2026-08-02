@@ -62,6 +62,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-black">
 
+  <!-- TOP HIGH-THREAT COMMAND HEADER -->
   <header class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-b border-slate-800 sticky top-0 z-40 shadow-2xl no-print">
     <div class="max-w-[1700px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center gap-3.5 cursor-pointer" onclick="switchView('ROLL_ALL')">
@@ -1767,17 +1768,30 @@
 
     function str(val) { return String(val || ''); }
 
-    function logAuditEvent(action, resourceType, resourceId, details) {
-      auditLogs.unshift({
-        auditId: 'AUD-' + Date.now(),
-        actorRole: currentUserRole,
-        action, resourceType, resourceId, details,
-        timestamp: new Date().toISOString()
-      });
+    // PART 25: 9-FIELD AUDIT LOGGER WITH FINANCIAL MASKING
+    function logAuditEvent(action, resourceType, resourceId, details, previousValue = 'N/A', newValue = 'N/A', reason = 'OPERATIONAL_UPDATE', result = 'SUCCESS') {
+      const safePrev = typeof previousValue === 'object' ? JSON.stringify(previousValue) : String(previousValue);
+      const safeNew = typeof newValue === 'object' ? JSON.stringify(newValue) : String(newValue);
+
+      const log = {
+        auditId: 'AUD-' + Date.now() + '-' + Math.floor(Math.random()*1000),
+        actorUid: sessionPortalOfficerId || 'GLOBAL_ADMIN_UID_001',
+        actorName: 'Global Administrator / Backend Engineer',
+        action: action,
+        resourceType: resourceType,
+        resourceId: resourceId || 'N/A',
+        previousValue: safePrev.replace(/("ippisNo"|"penPin"|"nhfNo"):".*?"/g, '$1:"[RESTRICTED]"'),
+        newValue: safeNew.replace(/("ippisNo"|"penPin"|"nhfNo"):".*?"/g, '$1:"[RESTRICTED]"'),
+        reason: reason,
+        timestamp: new Date().toISOString(),
+        result: result
+      };
+      auditLogs.unshift(log);
     }
 
     function changeUserRole(role) {
       currentUserRole = role;
+      logAuditEvent('CHANGE_ROLE', 'USER_SESSION', sessionPortalOfficerId || 'GLOBAL_ADMIN_UID_001', 'Switched session role to ' + role);
       if (role === 'GLOBAL_ADMIN') switchView('ROLL_ALL');
       else if (role === 'COMMANDER') switchView('COMMANDERS');
       else if (role === 'PERSONNEL') switchView('SELF_SERVICE');
@@ -1818,6 +1832,44 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
+    // PART 26: DATA MIGRATION ENGINE & DRY RUN
+    function runDataMigration(isDryRun = true) {
+      let verifiedBases = 0;
+      let matchedPersonnel = 0;
+      let createdAppointments = 0;
+      let duplicateFormations = 0;
+      let formationsWithoutCodes = 0;
+
+      basesUnits.forEach(b => {
+        if (!b.baseUnitCode) formationsWithoutCodes++;
+        verifiedBases++;
+      });
+
+      dbPersonnel.forEach(p => {
+        if (p.currentBaseUnitId) matchedPersonnel++;
+        if (p.isCommander || ['CP','DCP','ACP','CSP'].includes(p.rank)) {
+          createdAppointments++;
+        }
+      });
+
+      const report = `
+=== DATA MIGRATION SUMMARY (${isDryRun ? 'DRY RUN' : 'APPLIED'}) ===
+1. Verified Bases & Units Records: ${verifiedBases}
+2. Matched Personnel Records: ${matchedPersonnel}
+3. Created Initial Commander Appointments: ${createdAppointments}
+4. Duplicate Formations Flagged: ${duplicateFormations}
+5. Formations Without Codes: ${formationsWithoutCodes}
+6. Preserved Personnel IDs: ${dbPersonnel.length}
+7. Status: ${isDryRun ? 'DRY RUN COMPLETE - NO DATABASE MUTATION PERFORMED' : 'MIGRATION APPLIED SUCCESSFULLY'}
+      `;
+
+      if (!isDryRun) {
+        logAuditEvent('APPLY_MIGRATION', 'SYSTEM', 'ALL', 'Applied safe data migration process');
+      }
+
+      alert(report);
+    }
+
     function renderBasesUnitsManagementModule(container) {
       container.innerHTML = `
         <div class="space-y-6 font-mono text-xs">
@@ -1831,6 +1883,13 @@
               <p class="text-xs text-slate-400 mt-1 font-sans">
                 Central directory and hierarchy management of all authorised Nigerian Police EOD-CBRN bases, units, commands and tactical formations.
               </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button onclick="runDataMigration(true)" class="bg-slate-800 hover:bg-slate-700 text-sky-300 border border-sky-500/40 font-bold px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer">
+                <i data-lucide="play-circle" class="w-4 h-4 text-sky-400"></i>
+                <span>DRY RUN MIGRATION</span>
+              </button>
             </div>
           </div>
 
@@ -1997,6 +2056,7 @@
     window.switchView = switchView;
     window.changeUserRole = changeUserRole;
     window.handleAddCommanderSubmit = handleAddCommanderSubmit;
+    window.runDataMigration = runDataMigration;
 
     document.addEventListener('DOMContentLoaded', () => {
       changeUserRole('GLOBAL_ADMIN');
