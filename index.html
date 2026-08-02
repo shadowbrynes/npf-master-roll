@@ -99,12 +99,13 @@
           </select>
         </div>
 
+        <!-- CREATE AND MANAGE EOD CBRN BASES & UNITS BUTTON (PART 1) -->
         <button id="btn-nav-bases-mgmt" onclick="switchView('BASES_UNITS_MGMT')" class="bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 text-white font-black px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(2,132,199,0.4)] transition cursor-pointer uppercase tracking-wider">
           <i data-lucide="building-2" class="w-4.5 h-4.5 text-white"></i>
           <span>CREATE & MANAGE BASES & UNITS</span>
         </button>
 
-        <button id="btn-nav-commanders" onclick="switchView('COMMANDERS')" class="bg-amber-600/20 hover:bg-amber-600 text-amber-300 hover:text-black font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-amber-500/40 transition cursor-pointer">
+        <button id="btn-nav-commanders" onclick="switchView('COMMANDERS')" class="bg-amber-600/20 hover:bg-amber-600 text-amber-300 hover:text-black font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 border border-amber-500/40 transition cursor-pointer font-mono">
           <i data-lucide="crown" class="w-4 h-4 text-amber-400"></i>
           <span>COMMANDERS MASTER ROLL</span>
         </button>
@@ -1764,10 +1765,6 @@
       return 'CP_TO_DSP';
     }
 
-    function computeGeoZone(state) {
-      return 'SOUTH SOUTH';
-    }
-
     function str(val) { return String(val || ''); }
 
     function logAuditEvent(action, resourceType, resourceId, details) {
@@ -1822,11 +1819,99 @@
     }
 
     function renderBasesUnitsManagementModule(container) {
-      container.innerHTML = `<div class="bg-slate-900 border border-sky-500/40 p-6 rounded-3xl font-mono text-xs text-sky-400">EOD CBRN BASES & UNITS MANAGEMENT MODULE ACTIVE (${basesUnits.length} Formations)</div>`;
+      container.innerHTML = `
+        <div class="space-y-6 font-mono text-xs">
+          <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-sky-500/40 p-6 rounded-3xl shadow-2xl flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="building-2" class="w-6 h-6 text-sky-400"></i>
+                <h2 class="text-base sm:text-lg font-black text-white uppercase tracking-wider">EOD CBRN BASES AND UNITS MANAGEMENT</h2>
+                <span class="px-2.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-black text-[10px] border border-sky-500/40">GLOBAL ADMIN ONLY</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1 font-sans">
+                Central directory and hierarchy management of all authorised Nigerian Police EOD-CBRN bases, units, commands and tactical formations.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl space-y-4 shadow-2xl">
+            <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-3">
+              <i data-lucide="network" class="w-4.5 h-4.5 text-sky-400"></i>
+              <span>PART 5: NATIONAL EOD-CBRN COMMAND ORGANISATIONAL HIERARCHY TREE</span>
+            </h3>
+
+            <div class="space-y-3 font-mono text-xs">
+              ${basesUnits.map(b => `
+                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+                  <div>
+                    <h4 class="text-sm font-black text-white uppercase">${b.baseUnitName} (${b.baseUnitCode})</h4>
+                    <p class="text-[11px] text-slate-400">Type: <strong class="text-sky-300">${b.baseUnitType}</strong> &bull; Commander: <strong class="text-amber-300">${b.commanderName || 'UNASSIGNED'}</strong></p>
+                  </div>
+                  <span class="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-300 font-black text-[10px]">ACTIVE</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     function renderCommandersMasterRollModule(container) {
-      container.innerHTML = `<div class="bg-slate-900 border border-amber-500/40 p-6 rounded-3xl font-mono text-xs text-amber-300">BASE & UNIT COMMANDERS MASTER ROLL ACTIVE</div>`;
+      const approved = dbPersonnel.filter(p => p.registrationStatus === 'APPROVED' || !p.registrationStatus);
+      const commanders = approved.filter(p => p.isCommander || ['CP','DCP','ACP','CSP','SP','DSP'].includes(p.rank));
+
+      container.innerHTML = `
+        <div class="space-y-6 font-mono text-xs">
+          <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-amber-500/40 p-6 rounded-3xl shadow-2xl flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <i data-lucide="crown" class="w-6 h-6 text-amber-400"></i>
+                <h2 class="text-base sm:text-lg font-black text-white uppercase tracking-wider">BASE AND UNIT COMMANDERS MASTER ROLL</h2>
+                <span class="px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-black text-[10px] border border-amber-500/40">OFFICIAL COMMAND ROSTER</span>
+              </div>
+              <p class="text-xs text-slate-400 mt-1 font-sans">
+                Authorised Master Roll of Base Commanders, Unit Heads & Tactical Squadron Leaders displaying full 26 nominal roll headings plus command appointment fields.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+            <div class="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+              <h3 class="text-sm font-black text-white uppercase tracking-wider">BASE AND UNIT COMMANDERS TABLE (${commanders.length} COMMANDERS)</h3>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse whitespace-nowrap text-xs">
+                <thead class="bg-slate-950 text-slate-300 border-b border-slate-800 uppercase font-black text-[11px]">
+                  <tr>
+                    <th class="p-3 border-r border-slate-800 text-center">PHOTO</th>
+                    <th class="p-3 border-r border-slate-800 text-amber-400">1. S/NO</th>
+                    <th class="p-3 border-r border-slate-800 text-emerald-400">2. AP/F/NO</th>
+                    <th class="p-3 border-r border-slate-800 text-amber-300">3. RANK</th>
+                    <th class="p-3 border-r border-slate-800 text-white">4. NAME</th>
+                    <th class="p-3 border-r border-slate-800 text-sky-400">28. CURRENT BASE OR UNIT</th>
+                    <th class="p-3 border-r border-slate-800">31. APPOINTMENT TITLE</th>
+                    <th class="p-3">STATUS</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800 font-mono text-xs">
+                  ${commanders.map((c, i) => `
+                    <tr class="hover:bg-slate-800/50">
+                      <td class="p-2 border-r border-slate-800 text-center"><i data-lucide="user" class="w-4 h-4 mx-auto text-amber-400"></i></td>
+                      <td class="p-3 border-r border-slate-800 font-black text-amber-400 text-center">${i + 1}</td>
+                      <td class="p-3 border-r border-slate-800 font-black text-emerald-400">${c.apNo || c.serviceNo}</td>
+                      <td class="p-3 border-r border-slate-800 font-bold text-amber-300">${c.rank}</td>
+                      <td class="p-3 border-r border-slate-800 font-black text-white">${c.name}</td>
+                      <td class="p-3 border-r border-slate-800 text-sky-400 font-bold">${c.currentBaseUnitName || 'Apapa Sea Port EOD Base'}</td>
+                      <td class="p-3 border-r border-slate-800 text-amber-300 font-bold">${c.dutyPost || 'BASE COMMANDER'}</td>
+                      <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold text-[10px]">ACTIVE</span></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     function renderSelfServicePortal(container) {
@@ -1834,7 +1919,41 @@
     }
 
     function renderMasterRollTable(container) {
-      container.innerHTML = `<div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl font-mono text-xs text-white">ALL PERSONNEL MASTER ROLL (${dbPersonnel.length} Records)</div>`;
+      container.innerHTML = `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden font-mono text-xs">
+          <div class="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+            <h3 class="text-sm font-black text-white uppercase tracking-wider">ALL PERSONNEL MASTER ROLL (${dbPersonnel.length} RECORDS)</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse whitespace-nowrap text-xs">
+              <thead class="bg-slate-950 text-slate-300 border-b border-slate-800 uppercase font-black text-[11px]">
+                <tr>
+                  <th class="p-3 border-r border-slate-800 text-amber-400 text-center">1. S/NO</th>
+                  <th class="p-3 border-r border-slate-800 text-emerald-400">2. AP/F/NO</th>
+                  <th class="p-3 border-r border-slate-800 text-amber-300">3. RANK</th>
+                  <th class="p-3 border-r border-slate-800 text-white">4. NAME</th>
+                  <th class="p-3 border-r border-slate-800 text-sky-400">ASSIGNED BASE</th>
+                  <th class="p-3 border-r border-slate-800">STATE</th>
+                  <th class="p-3 border-r border-slate-800 text-emerald-400">PHONE</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800 font-mono text-xs">
+                ${dbPersonnel.map((p, i) => `
+                  <tr class="hover:bg-slate-800/50">
+                    <td class="p-3 border-r border-slate-800 font-black text-amber-400 text-center">${i + 1}</td>
+                    <td class="p-3 border-r border-slate-800 font-black text-emerald-400">${p.apNo || p.serviceNo}</td>
+                    <td class="p-3 border-r border-slate-800 font-bold text-amber-300">${p.rank}</td>
+                    <td class="p-3 border-r border-slate-800 font-black text-white">${p.name}</td>
+                    <td class="p-3 border-r border-slate-800 text-sky-400 font-bold">${p.currentBaseUnitName || 'Apapa EOD Base'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-300">${p.stateOfOrigin || 'EDO'}</td>
+                    <td class="p-3 border-r border-slate-800 text-emerald-400 font-bold">${p.phone || '08030000000'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
     }
 
     function handleAddCommanderSubmit(e) {
