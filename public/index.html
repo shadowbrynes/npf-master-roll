@@ -58,7 +58,7 @@
 
     /* HERO IMAGE GLOW & TRANSITION */
     .hero-image-glow {
-      box-shadow: 0 0 30px rgba(16, 185, 129, 0.2), 0 0 10px rgba(6, 182, 212, 0.15);
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.25), 0 0 10px rgba(6, 182, 212, 0.2);
     }
 
     @media print {
@@ -206,7 +206,7 @@
       <span class="px-2 py-0.5 rounded bg-amber-500/20 font-black text-[10px]">SECURITY POLICY ACTIVE</span>
     </div>
 
-    <!-- PROMINENT DASHBOARD HERO SECTION (PARTS 2-10: HERO IMAGE UPGRADE) -->
+    <!-- PROMINENT DASHBOARD HERO SECTION (PROPER IMAGE PATH /images/eod-dashboard-hero.webp) -->
     <section id="dashboard-hero-section" class="relative bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 overflow-hidden shadow-2xl no-print">
       <!-- AMBIENT TACTICAL BACKGROUND GLOW -->
       <div class="absolute -top-24 -left-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -265,28 +265,28 @@
 
         </div>
 
-        <!-- COLUMN 2: EOD HERO IMAGE CONTAINER (45% ON DESKTOP - PARTS 3-8) -->
+        <!-- COLUMN 2: EOD HERO IMAGE CONTAINER (CORRECT BROWSER PATH /images/eod-dashboard-hero.webp) -->
         <div class="lg:col-span-5 w-full flex justify-center">
-          <div class="relative w-full h-[260px] sm:h-[360px] lg:h-[440px] rounded-3xl overflow-hidden border-2 border-emerald-500/40 hero-image-glow bg-slate-950 group">
+          <div class="relative w-full h-[260px] sm:h-[340px] md:h-[400px] lg:h-[480px] min-h-[260px] sm:min-h-[320px] md:min-h-[400px] lg:min-h-[480px] rounded-3xl overflow-hidden border-2 border-emerald-500/40 hero-image-glow bg-slate-950 group shadow-2xl">
             
-            <!-- RESPONSIVE WEBP PICTURE ELEMENT WITH HIGH PRIORITY LOADING & ALT TEXT (PART 1 & 9) -->
+            <!-- RESPONSIVE WEBP PICTURE ELEMENT WITH CORRECT URL PATH (/images/eod-dashboard-hero.webp) -->
             <picture>
-              <source srcset="public/images/eod-dashboard-hero.webp" type="image/webp">
+              <source srcset="/images/eod-dashboard-hero.webp" type="image/webp">
               <img 
-                src="public/images/eod-dashboard-hero.jpg" 
-                alt="Nigeria Police EOD CBRN operational personnel and specialised equipment"
+                src="/images/eod-dashboard-hero.webp" 
+                alt="Nigeria Police EOD CBRN operational personnel and equipment"
                 loading="eager"
                 fetchpriority="high"
-                onerror="this.onerror=null; this.src='public/images/eod-dashboard-hero.webp'; this.nextElementSibling.classList.remove('hidden');"
+                onerror="console.error('Failed to load dashboard image:', '/images/eod-dashboard-hero.webp'); this.style.display='none'; this.nextElementSibling.classList.remove('hidden');"
                 class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
               >
             </picture>
 
-            <!-- TACTICAL DARK GRADIENT OVERLAY (PART 7) -->
+            <!-- TACTICAL DARK GRADIENT OVERLAY -->
             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent pointer-events-none"></div>
 
             <!-- TACTICAL OVERLAY CORNER BADGE -->
-            <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between font-mono text-[11px]">
+            <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between font-mono text-[11px] pointer-events-none">
               <div class="px-3 py-1.5 rounded-xl bg-slate-950/85 backdrop-blur-md border border-slate-800 text-emerald-400 font-black flex items-center gap-2 shadow-lg">
                 <i data-lucide="camera" class="w-3.5 h-3.5 text-emerald-400"></i>
                 <span>EOD-CBRN OPERATIONAL FIELD ASSETS</span>
@@ -296,11 +296,11 @@
               </div>
             </div>
 
-            <!-- FALLBACK CONTAINER IF IMAGE FAILS TO LOAD (PART 10) -->
-            <div class="hidden absolute inset-0 bg-slate-950 flex-col items-center justify-center p-6 text-center space-y-3 font-mono">
-              <i data-lucide="shield-alert" class="w-12 h-12 text-emerald-400 animate-pulse"></i>
-              <h4 class="text-sm font-black text-white uppercase">EOD CBRN COMMAND FIELD ASSETS</h4>
-              <p class="text-xs text-slate-400">Authorised Nigeria Police EOD CBRN Personnel Directory</p>
+            <!-- VISIBLE DIAGNOSTIC FALLBACK IF IMAGE FAILS TO LOAD (PART 7) -->
+            <div class="hidden absolute inset-0 bg-slate-950 flex flex-col items-center justify-center p-6 text-center space-y-3 font-mono border-2 border-rose-500/50 rounded-3xl">
+              <i data-lucide="alert-triangle" class="w-12 h-12 text-rose-500 animate-bounce"></i>
+              <h4 class="text-sm font-black text-rose-400 uppercase">EOD DASHBOARD IMAGE FAILED TO LOAD</h4>
+              <p class="text-[11px] text-slate-400">Target path: <code class="text-cyan-400 font-bold">/images/eod-dashboard-hero.webp</code></p>
             </div>
 
           </div>
