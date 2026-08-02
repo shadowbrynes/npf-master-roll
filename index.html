@@ -36,6 +36,7 @@
       font-family: 'Inter', sans-serif;
       background-color: #020617;
       color: #f8fafc;
+      overflow-x: hidden;
     }
     .font-mono {
       font-family: 'JetBrains Mono', monospace;
@@ -53,6 +54,11 @@
     }
     ::-webkit-scrollbar-thumb:hover {
       background: #334155;
+    }
+
+    /* HERO IMAGE GLOW & TRANSITION */
+    .hero-image-glow {
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.2), 0 0 10px rgba(6, 182, 212, 0.15);
     }
 
     @media print {
@@ -168,7 +174,7 @@
           <span>COMMANDERS DIRECTORY</span>
         </button>
 
-        <!-- GLOBAL ADMIN WRITE ACTIONS (HIDDEN FROM NON-GLOBAL_ADMIN) -->
+        <!-- GLOBAL ADMIN WRITE ACTIONS -->
         <button id="btn-nav-add-officer" onclick="openAddModal()" class="bg-emerald-600 hover:bg-emerald-500 text-black font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-[0_0_15px_rgba(16,185,129,0.3)] transition cursor-pointer">
           <i data-lucide="user-plus" class="w-4 h-4 text-black"></i>
           <span>+ ADD OFFICER</span>
@@ -200,27 +206,108 @@
       <span class="px-2 py-0.5 rounded bg-amber-500/20 font-black text-[10px]">SECURITY POLICY ACTIVE</span>
     </div>
 
-    <!-- HUD THREAT LEVEL & STATISTICAL TELEMETRY BANNER -->
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-wrap items-center justify-between gap-4 font-mono text-xs no-print">
-      <div class="flex items-center gap-3">
-        <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
-        <div>
-          <span class="text-slate-400 block font-bold">OPERATIONAL DISPATCH STATUS: <span class="text-emerald-400">READY</span> &bull; THREAT LEVEL: <span class="text-amber-400">DEFCON 4 / GUARDED</span></span>
-          <span class="text-[11px] text-slate-500">Real-time telemetry, statutory retirement engine, and central base/unit hierarchy active.</span>
-        </div>
-      </div>
+    <!-- PROMINENT DASHBOARD HERO SECTION (PARTS 2-10: HERO IMAGE UPGRADE) -->
+    <section id="dashboard-hero-section" class="relative bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 overflow-hidden shadow-2xl no-print">
+      <!-- AMBIENT TACTICAL BACKGROUND GLOW -->
+      <div class="absolute -top-24 -left-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -right-24 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div class="flex items-center gap-4 text-slate-300">
-        <div class="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 flex items-center gap-2">
-          <i data-lucide="building-2" class="w-4 h-4 text-sky-400"></i>
-          <span>ACTIVE BASES & UNITS: <strong id="hud-bases-count" class="text-sky-400 text-sm">8</strong></span>
+      <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center min-h-[340px] sm:min-h-[420px] lg:min-h-[480px]">
+        
+        <!-- COLUMN 1: DASHBOARD TITLE, SUBTITLE & IDENTIFICATION (55% ON DESKTOP) -->
+        <div class="lg:col-span-7 space-y-5 font-mono">
+          
+          <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-slate-950 border border-emerald-500/40 text-emerald-400 text-xs font-black tracking-wider uppercase shadow-inner">
+            <span class="relative flex h-2 w-2">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span>NIGERIA POLICE FORCE &bull; SPECIALISED TACTICAL FORMATION</span>
+          </div>
+
+          <div class="space-y-2">
+            <h1 class="text-2xl sm:text-4xl lg:text-5xl font-black text-white uppercase tracking-tight leading-tight">
+              EOD CBRN COMMAND
+            </h1>
+            <p class="text-sm sm:text-base lg:text-lg font-extrabold text-emerald-400 uppercase tracking-wide leading-snug">
+              AUTHORISED NIGERIA POLICE EOD CBRN PERSONNEL AND COMMAND DIRECTORY
+            </p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-300 font-sans leading-relaxed max-w-2xl">
+            Central authoritative management platform for explosive ordnance disposal, chemical, biological, radiological and nuclear counter-measures, personnel nominal rolls, base unit assignments, and statutory retirement tracking across all Nigerian State Commands, Seaports, Airports, and Formations.
+          </p>
+
+          <!-- QUICK TELEMETRY BADGES -->
+          <div class="flex flex-wrap items-center gap-3 pt-1 text-xs">
+            <div class="bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-xl flex items-center gap-2">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+              <span class="text-slate-300 font-bold">GRID LOCATION: <strong class="text-white">SECTOR 4 HQ</strong></span>
+            </div>
+            <div class="bg-slate-950 border border-slate-800 px-3.5 py-2 rounded-xl flex items-center gap-2">
+              <i data-lucide="layers" class="w-4 h-4 text-sky-400"></i>
+              <span class="text-slate-300 font-bold">STATUS: <strong class="text-emerald-400">DEFCON 4 / GUARDED</strong></span>
+            </div>
+          </div>
+
+          <!-- DASHBOARD QUICK ACTION BUTTONS -->
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            <button onclick="switchView('ROLL_ALL')" class="bg-emerald-600 hover:bg-emerald-500 text-black font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.3)] transition cursor-pointer uppercase tracking-wider">
+              <i data-lucide="layers" class="w-4 h-4 text-black"></i>
+              <span>EXPLORE MASTER ROLL</span>
+            </button>
+
+            <button onclick="switchView('BASES_UNITS')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer uppercase tracking-wider">
+              <i data-lucide="building-2" class="w-4 h-4 text-sky-400"></i>
+              <span>BASES & UNITS</span>
+            </button>
+          </div>
+
         </div>
-        <div class="bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 flex items-center gap-2">
-          <i data-lucide="users" class="w-4 h-4 text-emerald-400"></i>
-          <span>APPROVED RECORDS: <strong id="hud-total-count" class="text-emerald-400 text-sm">24</strong></span>
+
+        <!-- COLUMN 2: EOD HERO IMAGE CONTAINER (45% ON DESKTOP - PARTS 3-8) -->
+        <div class="lg:col-span-5 w-full flex justify-center">
+          <div class="relative w-full h-[260px] sm:h-[360px] lg:h-[440px] rounded-3xl overflow-hidden border-2 border-emerald-500/40 hero-image-glow bg-slate-950 group">
+            
+            <!-- RESPONSIVE WEBP PICTURE ELEMENT WITH HIGH PRIORITY LOADING & ALT TEXT (PART 1 & 9) -->
+            <picture>
+              <source srcset="public/images/eod-dashboard-hero.webp" type="image/webp">
+              <img 
+                src="public/images/eod-dashboard-hero.jpg" 
+                alt="Nigeria Police EOD CBRN operational personnel and specialised equipment"
+                loading="eager"
+                fetchpriority="high"
+                onerror="this.onerror=null; this.src='public/images/eod-dashboard-hero.webp'; this.nextElementSibling.classList.remove('hidden');"
+                class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+              >
+            </picture>
+
+            <!-- TACTICAL DARK GRADIENT OVERLAY (PART 7) -->
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent pointer-events-none"></div>
+
+            <!-- TACTICAL OVERLAY CORNER BADGE -->
+            <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between font-mono text-[11px]">
+              <div class="px-3 py-1.5 rounded-xl bg-slate-950/85 backdrop-blur-md border border-slate-800 text-emerald-400 font-black flex items-center gap-2 shadow-lg">
+                <i data-lucide="camera" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>EOD-CBRN OPERATIONAL FIELD ASSETS</span>
+              </div>
+              <div class="px-2.5 py-1.5 rounded-xl bg-slate-950/85 backdrop-blur-md border border-slate-800 text-slate-300 font-bold">
+                HIGH THREAT UNIT
+              </div>
+            </div>
+
+            <!-- FALLBACK CONTAINER IF IMAGE FAILS TO LOAD (PART 10) -->
+            <div class="hidden absolute inset-0 bg-slate-950 flex-col items-center justify-center p-6 text-center space-y-3 font-mono">
+              <i data-lucide="shield-alert" class="w-12 h-12 text-emerald-400 animate-pulse"></i>
+              <h4 class="text-sm font-black text-white uppercase">EOD CBRN COMMAND FIELD ASSETS</h4>
+              <p class="text-xs text-slate-400">Authorised Nigeria Police EOD CBRN Personnel Directory</p>
+            </div>
+
+          </div>
         </div>
+
       </div>
-    </div>
+    </section>
 
     <!-- RETIREMENT SUMMARY CARDS -->
     <div id="retirement-summary-cards" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 font-mono text-xs no-print">
@@ -356,7 +443,7 @@
     </div>
   </div>
 
-  <!-- MODAL: TRANSFER PERSONNEL BETWEEN BASES/UNITS (PART 12) -->
+  <!-- MODAL: TRANSFER PERSONNEL BETWEEN BASES/UNITS -->
   <div id="transfer-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md">
     <div class="bg-slate-900 border border-sky-500/50 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -409,7 +496,7 @@
     </div>
   </div>
 
-  <!-- MODAL: ADD BASE OR UNIT (PART 8) -->
+  <!-- MODAL: ADD BASE OR UNIT -->
   <div id="add-base-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md">
     <div class="bg-slate-900 border border-sky-500/50 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl font-mono text-xs">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -542,7 +629,7 @@
     </div>
   </div>
 
-  <!-- MODAL: ADD OFFICER (PART 13: INCLUDES BASE/UNIT SELECTION) -->
+  <!-- MODAL: ADD OFFICER -->
   <div id="add-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full p-6 space-y-6 my-8 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col font-mono text-xs">
       <div class="flex justify-between items-center border-b border-slate-800 pb-4 bg-slate-950 p-4 -m-6 mb-2">
@@ -564,7 +651,7 @@
 
       <form id="add-officer-form" onsubmit="handleAddOfficer(event)" class="space-y-6 overflow-y-auto pr-2 text-slate-200">
         
-        <!-- SECTION 0: COMPULSORY BASE OR UNIT ASSIGNMENT (PART 13) -->
+        <!-- COMPULSORY BASE OR UNIT ASSIGNMENT -->
         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
           <h4 class="text-xs font-black text-sky-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
             <i data-lucide="building-2" class="w-4 h-4"></i>
@@ -589,7 +676,7 @@
           </div>
         </div>
 
-        <!-- SECTION 0B: PROFILE PHOTO UPLOAD -->
+        <!-- PROFILE PHOTO UPLOAD -->
         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-wrap items-center gap-4">
           <div class="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-700 flex items-center justify-center overflow-hidden" id="add-photo-preview-container">
             <i data-lucide="user" class="w-8 h-8 text-slate-600" id="add-photo-icon-placeholder"></i>
@@ -2366,7 +2453,7 @@
     var commanderAssignments = [];
     var baseUnitAssignments = [];
 
-    // Central basesUnits Directory Collection (Part 8)
+    // Central basesUnits Directory Collection
     var basesUnits = [
       {
         baseUnitId: 'EOD-HQ-ABUJA',
@@ -2560,7 +2647,7 @@
     };
 
     var currentView = 'ROLL_ALL';
-    var currentUserRole = 'GLOBAL_ADMIN'; // PART 1: GLOBAL_ADMIN (Authoritative sole write role)
+    var currentUserRole = 'GLOBAL_ADMIN';
     var currentRollMode = 'STANDARD';
     var currentSearchQuery = '';
     var currentRankFilter = 'ALL';
@@ -2575,7 +2662,6 @@
     var unmaskSensitiveFields = false;
     var addPhotoDataUrl = null;
 
-    // Helper: Compute rankGroup
     function computeRankGroup(rank) {
       const r = (rank || '').toString().toUpperCase().trim();
       if (['CP', 'DCP', 'ACP', 'CSP', 'SP', 'DSP'].includes(r)) return 'CP_TO_DSP';
@@ -2584,7 +2670,6 @@
       return 'CP_TO_DSP';
     }
 
-    // Helper: Derive Geopolitical Zone from State
     function computeGeoZone(state) {
       const s = (state || '').toString().toUpperCase().trim();
       const zoneMap = {
@@ -2628,9 +2713,6 @@
       return y + '-' + m + '-' + d;
     }
 
-    // =========================================================================
-    // 2. AUTOMATED RETIREMENT CALCULATOR ENGINE
-    // =========================================================================
     function computeRetirementDetails(personnel, policy = systemConfig.retirementPolicy) {
       const dobStr = formatDateOnly(personnel.dob || personnel.dateOfBirth);
       const enlistStr = formatDateOnly(personnel.enlistDate || personnel.dateOfEnlistment);
@@ -2886,7 +2968,6 @@
         dbPersonnel = JSON.parse(JSON.stringify(INITIAL_APAPA_PERSONNEL));
       }
 
-      // Ensure baseUnit fields on all records
       dbPersonnel.forEach((p, idx) => {
         p.sNo = str(idx + 1);
         p.rankGroup = computeRankGroup(p.rank);
@@ -2908,13 +2989,11 @@
         }
       });
 
-      // Load saved bases & units
       try {
         const savedBases = localStorage.getItem('eod_bases_units_v1');
         if (savedBases) basesUnits = JSON.parse(savedBases);
       } catch(e) {}
 
-      // Build default commanderAssignments
       commanderAssignments = dbPersonnel
         .filter(p => p.isCommander || ['CP','DCP','ACP','CSP'].includes(p.rank) || (p.dutyPost || '').toUpperCase().includes('COMMANDER'))
         .map(p => ({
@@ -2995,9 +3074,6 @@
 
     function str(val) { return String(val || ''); }
 
-    // =========================================================================
-    // 3. DASHBOARD METRICS & RETIREMENT SUMMARY CARDS
-    // =========================================================================
     function calculateMetrics() {
       const approved = dbPersonnel.filter(p => p.registrationStatus === 'APPROVED' || !p.registrationStatus);
       const total = approved.length;
@@ -3021,8 +3097,6 @@
         if (el) el.innerText = txt;
       };
 
-      setVal('hud-total-count', total);
-      setVal('hud-bases-count', activeBasesCount);
       setVal('badge-count-all', total);
       setVal('badge-count-cp-dsp', cpToDsp);
       setVal('badge-count-asp-insp', aspToInsp);
@@ -3109,14 +3183,10 @@
       switchView('RETIREMENT_DASHBOARD');
     }
 
-    // =========================================================================
-    // 4. ROLE & VIEW SWITCHER HANDLERS (PART 4: LOGIN REDIRECTION & ROUTE ISOLATION)
-    // =========================================================================
     function changeUserRole(role) {
       currentUserRole = role;
       logAuditEvent('CHANGE_ROLE', 'USER_SESSION', sessionPortalOfficerId || 'ANONYMOUS', 'Switched session role to ' + role);
       
-      // Update DOM visibility of write buttons (Part 20)
       const noticeBanner = document.getElementById('read-only-notice-banner');
       const btnAddOff = document.getElementById('btn-nav-add-officer');
       const btnNavBases = document.getElementById('btn-nav-bases-units');
@@ -3137,7 +3207,6 @@
         if (btnNavBases) btnNavBases.classList.add('hidden');
         switchView('SELF_SERVICE');
       } else {
-        // RECORDS_ADMIN
         if (noticeBanner) noticeBanner.classList.remove('hidden');
         if (btnAddOff) btnAddOff.classList.add('hidden');
         if (btnNavBases) btnNavBases.classList.add('hidden');
@@ -3167,7 +3236,6 @@
     }
 
     function switchView(viewName) {
-      // PART 4: ROUTE ISOLATION & ROUTE GUARDS
       if (currentUserRole === 'PERSONNEL' && viewName !== 'SELF_SERVICE') {
         logAuditEvent('UNAUTHORISED_ROUTE_ATTEMPT', 'ROUTE_GUARD', viewName, 'Personnel attempted to access restricted route: ' + viewName);
         alert("403 ACCESS DENIED: Personnel users are restricted to their individual self-service portal (/portal).");
@@ -3205,7 +3273,6 @@
       renderModule();
     }
 
-    // Main Renderer
     function renderModule() {
       const container = document.getElementById('module-container');
       if (!container) return;
@@ -3232,9 +3299,6 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
-    // =========================================================================
-    // 5. MASTER ROLL TABLE RENDERER (PART 16: BASE/UNIT FILTERING)
-    // =========================================================================
     function renderMasterRollTable(container) {
       let dataset = dbPersonnel.filter(p => p.registrationStatus === 'APPROVED' || !p.registrationStatus);
 
@@ -3321,7 +3385,6 @@
               </div>
             </div>
 
-            <!-- BASE/UNIT FILTER (PART 16) -->
             <div>
               <label class="text-slate-400 text-[10px] font-bold block mb-1">FILTER BASE / UNIT:</label>
               <select onchange="currentBaseFilter = this.value; currentPage = 1; renderMasterRollTable(document.getElementById('module-container'));" class="w-full bg-slate-950 border border-slate-800 text-slate-200 rounded-xl px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none">
@@ -3498,9 +3561,6 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
-    // =========================================================================
-    // 6. ALL NIGERIA BASES & UNITS MANAGEMENT MODULE (PART 7 & 14 & 15)
-    // =========================================================================
     function renderBasesUnitsModule(container) {
       if (currentUserRole !== 'GLOBAL_ADMIN') {
         container.innerHTML = `<div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center font-mono text-xs text-rose-400 font-black">ACCESS DENIED: Central Bases & Units directory management is restricted to GLOBAL_ADMIN.</div>`;
@@ -3511,8 +3571,6 @@
 
       container.innerHTML = `
         <div class="space-y-6 font-mono text-xs">
-          
-          <!-- BANNER HEADER -->
           <div class="bg-slate-900 border border-sky-500/40 p-6 rounded-3xl space-y-2 shadow-2xl">
             <div class="flex flex-wrap items-center justify-between gap-4">
               <div>
@@ -3530,7 +3588,6 @@
             </div>
           </div>
 
-          <!-- SUMMARY CARDS (PART 14) -->
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1">
               <span class="text-slate-500 text-[10px] font-bold block uppercase">TOTAL ACTIVE FORMATIONS</span>
@@ -3550,7 +3607,6 @@
             </div>
           </div>
 
-          <!-- BASES & UNITS TABLE (PART 14) -->
           <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse text-xs whitespace-nowrap">
@@ -3601,9 +3657,6 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
-    // =========================================================================
-    // 7. RETIREMENT DASHBOARD MODULE
-    // =========================================================================
     function renderRetirementDashboard(container) {
       recalculateAllRetirements();
       const approved = dbPersonnel.filter(p => p.registrationStatus === 'APPROVED' || !p.registrationStatus);
@@ -3725,14 +3778,10 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
-    // =========================================================================
-    // 8. BASE & UNIT COMMANDERS DIRECTORY MODULE (PART 3: COMMANDER READ ONLY SCOPE)
-    // =========================================================================
     function renderCommandersModule(container) {
       const approved = dbPersonnel.filter(p => p.registrationStatus === 'APPROVED' || !p.registrationStatus);
       let commanders = approved.filter(p => p.isCommander || ['CP','DCP','ACP','CSP'].includes(p.rank) || (p.dutyPost || '').toUpperCase().includes('COMMANDER'));
 
-      // If COMMANDER role, scope strictly to their assigned command
       if (currentUserRole === 'COMMANDER') {
         commanders = commanders.filter(c => c.currentBaseUnitId === 'EOD-BASE-LAGOS');
       }
@@ -3806,9 +3855,6 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
-    // =========================================================================
-    // 9. PERSONNEL SELF-SERVICE PORTAL (PART 2 & 17: READ-ONLY DISPLAY)
-    // =========================================================================
     function renderSelfServicePortal(container) {
       saveState();
 
@@ -3825,8 +3871,6 @@
       if (loggedInOfficer) {
         container.innerHTML = `
           <div class="max-w-6xl mx-auto space-y-6 no-print font-mono text-xs">
-            
-            <!-- READ-ONLY NOTICE FOR PERSONNEL (PART 17) -->
             <div class="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex items-center justify-between gap-3 text-amber-300">
               <div class="flex items-center gap-2">
                 <i data-lucide="info" class="w-5 h-5 text-amber-400"></i>
@@ -3871,7 +3915,6 @@
         return;
       }
 
-      // UNAUTHENTICATED LOGIN & REGISTRATION PORTAL (PART 10: BASE SELECTION DROPDOWN)
       container.innerHTML = `
         <div class="max-w-5xl mx-auto space-y-6 font-mono text-xs">
           <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-6 rounded-3xl border border-slate-800 text-center space-y-2 shadow-2xl">
@@ -3936,7 +3979,6 @@
               </div>
 
               <form onsubmit="handlePortalRegistration(event)" class="space-y-6">
-                <!-- PART 10: SEARCHABLE CONTROLLED BASE/UNIT DROPDOWN -->
                 <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-4">
                   <h4 class="text-xs font-black text-sky-400 uppercase tracking-wider flex items-center gap-2 border-b border-slate-800 pb-2">
                     <i data-lucide="building-2" class="w-4 h-4"></i>
@@ -4035,7 +4077,6 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
-    // Portal Login Handler
     function handlePortalLogin(e) {
       e.preventDefault();
       const idInput = document.getElementById('login-identifier').value.trim();
@@ -4123,9 +4164,6 @@
       renderModule();
     }
 
-    // =========================================================================
-    // 10. ADMIN REGISTRATION REQUESTS REVIEW MODULE
-    // =========================================================================
     function renderAdminRegistrationsModule(container) {
       if (currentUserRole !== 'GLOBAL_ADMIN') {
         container.innerHTML = `
@@ -4291,9 +4329,6 @@
       renderModule();
     }
 
-    // =========================================================================
-    // 11. AUDIT LOGS MODULE (PART 21 & PART 24)
-    // =========================================================================
     function renderAuditLogsModule(container) {
       if (!['GLOBAL_ADMIN', 'RECORDS_ADMIN'].includes(currentUserRole)) {
         container.innerHTML = `<div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl text-center font-mono text-xs text-rose-400 font-black">ACCESS DENIED: Audit Logs require Administrative Privileges.</div>`;
@@ -4343,9 +4378,6 @@
       if (window.lucide) window.lucide.createIcons();
     }
 
-    // =========================================================================
-    // 12. REPORTS & ANALYTICS MODULE
-    // =========================================================================
     function renderReportsModule(container) {
       recalculateAllRetirements();
       const approved = dbPersonnel.filter(p => p.registrationStatus === 'APPROVED' || !p.registrationStatus);
@@ -4399,9 +4431,6 @@
       filterRetirementCategory(type);
     }
 
-    // =========================================================================
-    // 13. INDIVIDUAL DOSSIER DETAILS
-    // =========================================================================
     function openProfileModal(id) {
       const p = dbPersonnel.find(x => x.id === id || x.apNo === id || x.serviceNo === id);
       if (!p) return;
@@ -4601,7 +4630,6 @@
       printWin.document.close();
     }
 
-    // PART 12: TRANSFER MODAL HANDLERS
     function openTransferModal(id) {
       if (currentUserRole !== 'GLOBAL_ADMIN') {
         alert("ACCESS DENIED: Personnel transfers are restricted to GLOBAL_ADMIN.");
@@ -4651,7 +4679,6 @@
 
       const prevBaseName = p.currentBaseUnitName;
 
-      // Record assignment history
       baseUnitAssignments.unshift({
         assignmentId: 'ASSIGN-' + Date.now(),
         personnelId: p.id,
@@ -4672,7 +4699,6 @@
         createdAt: new Date().toISOString()
       });
 
-      // Update personnel current base
       p.currentBaseUnitId = targetBase.baseUnitId;
       p.currentBaseUnitCode = targetBase.baseUnitCode;
       p.currentBaseUnitName = targetBase.baseUnitName;
@@ -4689,7 +4715,6 @@
       renderModule();
     }
 
-    // PART 8: ADD BASE MODAL HANDLERS
     function openAddBaseModal() {
       if (currentUserRole !== 'GLOBAL_ADMIN') {
         alert("ACCESS DENIED: Creating bases and units is restricted to GLOBAL_ADMIN.");
