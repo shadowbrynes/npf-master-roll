@@ -3,9 +3,12 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shield, Lock, Mail, AlertTriangle } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
   const router = useRouter();
+  const supabase = createClient();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -17,17 +20,86 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // In production, authenticates via Supabase Auth
       if (!email || !password) {
         setError('Please provide your authorized official NPF email and password.');
         setLoading(false);
         return;
       }
 
-      // Simulate sign in
+      // Step 1: Validate credentials with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password
+      });
+
+      const user = authData?.user;
+
+      if (authError || !user) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[AUTH DEBUG - SIGN IN FAILED]', { user, authError });
+        }
+        setError(authError?.message || 'Invalid login credentials');
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: Query roles table for user permission
+      const { data: roleData, error: roleError } = await supabase
+        .from('roles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      // Step 3: Fallback query to profiles table if needed
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('[AUTH DEBUG - SUCCESS LOG]', {
+          user,
+          userId: user.id,
+          authError,
+          roleData,
+          roleError,
+          profileData,
+          profileError,
+          redirectDecision: roleData?.role || profileData?.role ? '/dashboard' : 'UNAUTHORIZED'
+        });
+      }
+
+      const assignedRole = roleData?.role || profileData?.role;
+
+      // Step 4: Check user permission & role authorization
+      if (!assignedRole) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn('[AUTH DEBUG - UNAUTHORIZED ROLE]', { userId: user.id });
+        }
+        setError('Your account exists but has not been authorised for this portal. Contact a Global Administrator.');
+        setLoading(false);
+        return;
+      }
+
+      // Standardized role check: global_admin, base_admin, unit_admin, personnel_officer, viewer
+      const validRoles = ['global_admin', 'base_admin', 'unit_admin', 'personnel_officer', 'viewer', 'super_admin'];
+      const normalizedRole = assignedRole.toLowerCase();
+
+      if (!validRoles.includes(normalizedRole)) {
+        setError('Your account exists but has not been authorised for this portal. Contact a Global Administrator.');
+        setLoading(false);
+        return;
+      }
+
+      // Step 5: Successful Auth & Authorization -> Load Dashboard
       router.push('/dashboard');
+      router.refresh();
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Authentication failed.';
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('[AUTH DEBUG - EXCEPTION]', err);
+      }
       setError(errorMessage);
     } finally {
       setLoading(false);
