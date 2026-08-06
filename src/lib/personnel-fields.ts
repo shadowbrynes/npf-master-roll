@@ -41,3 +41,42 @@ export const PERSONNEL_26_HEADINGS: PersonnelFieldConfig[] = [
   { key: 'nhfNumber', dbKeyPrivate: 'nhf_number', label: '25. NHF NUMBER', section: 'C', category: 'Financial', isRestricted: true },
   { key: 'assignedUnitId', dbKeyPersonnel: 'unit_id', label: '26. ASSIGNED UNIT / BASE', section: 'D', category: 'Deployment' },
 ];
+
+export const NPF_RANKS = [
+  'PC',
+  'Corporal',
+  'Sergeant',
+  'Inspector',
+  'ASP',
+  'DSP',
+  'SP',
+  'CSP',
+  'ACP',
+  'DCP',
+  'CP',
+  'AIG',
+  'DIG',
+  'IGP'
+] as const;
+
+export function getRankCategory(rank: string): 'PC_INSPECTOR' | 'ASP_SP' | 'CSP_CP' {
+  const r = (rank || '').toUpperCase().trim();
+  if (['CSP', 'ACP', 'DCP', 'CP', 'AIG', 'DIG', 'IGP', 'CHIEF SUPERINTENDENT', 'ASSISTANT COMMISSIONER', 'DEPUTY COMMISSIONER', 'COMMISSIONER OF POLICE'].includes(r) || r.includes('CSP') || r.includes('COMMISSIONER') || r.includes('CHIEF SUPERINTENDENT')) {
+    return 'CSP_CP';
+  }
+  if (['ASP', 'ASP I', 'ASP II', 'DSP', 'SP', 'SUPERINTENDENT', 'ASSISTANT SUPERINTENDENT', 'DEPUTY SUPERINTENDENT'].includes(r) || r.includes('ASP') || r.includes('DSP') || r.includes('SUPERINTENDENT')) {
+    return 'ASP_SP';
+  }
+  return 'PC_INSPECTOR';
+}
+
+export function getRankCategoryLabel(category: 'PC_INSPECTOR' | 'ASP_SP' | 'CSP_CP'): string {
+  switch (category) {
+    case 'PC_INSPECTOR':
+      return 'POLICE CONSTABLE TO INSPECTOR (PC - INSPECTOR)';
+    case 'ASP_SP':
+      return 'ASSISTANT SUPERINTENDENT TO SUPERINTENDENT (ASP - SP)';
+    case 'CSP_CP':
+      return 'CHIEF SUPERINTENDENT TO COMMISSIONER (CSP - CP)';
+  }
+}

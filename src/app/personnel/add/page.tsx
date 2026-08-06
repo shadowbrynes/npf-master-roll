@@ -239,18 +239,38 @@ export default function AddPersonnelPage() {
                   required
                   value={formData.rank}
                   onChange={handleChange}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-cyan-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-cyan-500 font-bold"
                 >
-                  <option value="">-- Select Rank --</option>
-                  <option value="CSP">CSP</option>
-                  <option value="SP">SP</option>
-                  <option value="DSP">DSP</option>
-                  <option value="ASP">ASP</option>
-                  <option value="INSPR">INSPR</option>
-                  <option value="SGT">SGT</option>
-                  <option value="CPL">CPL</option>
-                  <option value="PC">PC</option>
+                  <option value="">-- Select Standard NPF Rank --</option>
+                  <optgroup label="Inspectorate &amp; Rank and File (PC - Inspector)">
+                    <option value="PC">Police Constable (PC)</option>
+                    <option value="CPL">Corporal (CPL)</option>
+                    <option value="SGT">Sergeant (SGT)</option>
+                    <option value="INSPR">Inspector (INSPR)</option>
+                  </optgroup>
+                  <optgroup label="Superintendent Cadre (ASP - SP)">
+                    <option value="ASP">Assistant Superintendent of Police (ASP)</option>
+                    <option value="DSP">Deputy Superintendent of Police (DSP)</option>
+                    <option value="SP">Superintendent of Police (SP)</option>
+                  </optgroup>
+                  <optgroup label="Command &amp; Senior Officer Cadre (CSP - CP)">
+                    <option value="CSP">Chief Superintendent of Police (CSP)</option>
+                    <option value="ACP">Assistant Commissioner of Police (ACP)</option>
+                    <option value="DCP">Deputy Commissioner of Police (DCP)</option>
+                    <option value="CP">Commissioner of Police (CP)</option>
+                  </optgroup>
                 </select>
+                {formData.rank && (
+                  <span className="text-[10px] text-cyan-400 font-bold mt-1 block uppercase">
+                    Auto-Classified Segment: {
+                      formData.rank === 'CSP' || formData.rank === 'ACP' || formData.rank === 'DCP' || formData.rank === 'CP'
+                        ? 'CSP - CP (Chief Superintendent to Commissioner)'
+                        : formData.rank === 'ASP' || formData.rank === 'DSP' || formData.rank === 'SP'
+                        ? 'ASP - SP (Assistant Superintendent to Superintendent)'
+                        : 'PC - INSPECTOR (Police Constable to Inspector)'
+                    }
+                  </span>
+                )}
               </div>
 
               <div className="md:col-span-2">
