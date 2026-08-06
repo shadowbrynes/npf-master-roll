@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Building,
+  Award,
   Sliders
 } from 'lucide-react';
 import { UserRole } from '@/types';
@@ -64,6 +65,8 @@ export default function Shell({ children }: ShellProps) {
     { href: '/personnel/state-roll', label: 'State Nominal Roll (36 States)', icon: Building, roles: ['global_admin', 'state_admin', 'auditor'] },
     { href: '/personnel/add', label: 'Add Personnel (26 Headings)', icon: UserPlus, roles: ['global_admin', 'state_admin'] },
     { href: '/equipment', label: 'CBRN Equipment Inventory', icon: Radio, roles: ['global_admin', 'state_admin', 'unit_admin', 'equipment_officer'] },
+    { href: '/training', label: 'Training & Certs', icon: Award, roles: ['global_admin', 'state_admin', 'unit_admin', 'personnel_officer'] },
+    { href: '/reports', label: 'Command Reports & Intelligence', icon: FileText, roles: ['global_admin', 'state_admin', 'auditor'] },
     { href: '/retirement', label: 'Retirement Warning Roster', icon: Clock, roles: ['global_admin', 'state_admin', 'unit_admin', 'personnel'] },
     { href: '/birthdays', label: 'Birthday Automation Roster', icon: Cake, roles: ['global_admin', 'state_admin', 'unit_admin'] },
     { href: '/gen60', label: 'Gen.60 Form Dossier', icon: FileText, roles: ['global_admin', 'state_admin', 'unit_admin', 'personnel'] },

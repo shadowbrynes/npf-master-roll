@@ -5,6 +5,7 @@ import Shell from '@/components/layout/Shell';
 import { Users, Search, Download, Shield, Eye, RefreshCw, ChevronDown, ChevronUp, Printer, Filter } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { getRankCategory, getRankCategoryLabel } from '@/lib/personnel-fields';
+import Link from 'next/link';
 
 interface MasterRollRecord {
   id: string;
@@ -374,7 +375,11 @@ export default function PersonnelPage() {
                         <tr key={p.id} className="hover:bg-slate-800/40 transition">
                           <td className="p-3 border-r border-slate-800/60 font-bold text-cyan-300">{p.apfNo}</td>
                           <td className="p-3 border-r border-slate-800/60 font-bold text-emerald-400">{p.rank}</td>
-                          <td className="p-3 border-r border-slate-800/60 font-bold text-white">{p.fullName}</td>
+                          <td className="p-3 border-r border-slate-800/60 font-bold text-white">
+                            <Link href={`/personnel/${p.id}`} className="hover:text-cyan-400 underline decoration-dashed transition">
+                              {p.fullName}
+                            </Link>
+                          </td>
                           <td className="p-3 border-r border-slate-800/60 text-slate-300">{p.stateOfOrigin}</td>
                           <td className="p-3 border-r border-slate-800/60 text-slate-300">{p.dutyPost}</td>
                           <td className="p-3 border-r border-slate-800/60 text-slate-400">{p.dateOfEnlistment}</td>
@@ -456,7 +461,11 @@ export default function PersonnelPage() {
                         <tr key={p.id} className="hover:bg-slate-800/40 transition">
                           <td className="p-3 border-r border-slate-800/60 font-bold text-cyan-300">{p.apfNo}</td>
                           <td className="p-3 border-r border-slate-800/60 font-bold text-amber-400">{p.rank}</td>
-                          <td className="p-3 border-r border-slate-800/60 font-bold text-white">{p.fullName}</td>
+                          <td className="p-3 border-r border-slate-800/60 font-bold text-white">
+                            <Link href={`/personnel/${p.id}`} className="hover:text-cyan-400 underline decoration-dashed transition">
+                              {p.fullName}
+                            </Link>
+                          </td>
                           <td className="p-3 border-r border-slate-800/60 text-slate-300">{p.stateOfOrigin}</td>
                           <td className="p-3 border-r border-slate-800/60 text-slate-300">{p.dutyPost}</td>
                           <td className="p-3 border-r border-slate-800/60 text-slate-400">{p.dateOfEnlistment}</td>
@@ -538,7 +547,11 @@ export default function PersonnelPage() {
                         <tr key={p.id} className="hover:bg-slate-800/40 transition">
                           <td className="p-3 border-r border-slate-800/60 font-bold text-cyan-300">{p.apfNo}</td>
                           <td className="p-3 border-r border-slate-800/60 font-bold text-indigo-400">{p.rank}</td>
-                          <td className="p-3 border-r border-slate-800/60 font-bold text-white">{p.fullName}</td>
+                          <td className="p-3 border-r border-slate-800/60 font-bold text-white">
+                            <Link href={`/personnel/${p.id}`} className="hover:text-cyan-400 underline decoration-dashed transition">
+                              {p.fullName}
+                            </Link>
+                          </td>
                           <td className="p-3 border-r border-slate-800/60 text-slate-300">{p.stateOfOrigin}</td>
                           <td className="p-3 border-r border-slate-800/60 text-slate-300">{p.dutyPost}</td>
                           <td className="p-3 border-r border-slate-800/60 text-slate-400">{p.dateOfEnlistment}</td>
