@@ -3,8 +3,37 @@
   "version": "1.0.0",
   "description": "Nigeria Police Force - EOD-CBRN National Master Nominal Roll and Tactical Command C2 System",
   "main": "index.html",
+  "type": "module",
   "scripts": {
-    "start": "py -m http.server 8080"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.7.1",
+    "@playwright/test": "^1.62.1",
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.1",
+    "@tanstack/react-table": "^9.0.0",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "autoprefixer": "^10.5.4",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.28.0",
+    "next": "^16.3.0",
+    "postcss": "^8.5.26",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-hook-form": "^7.84.0",
+    "recharts": "^3.10.1",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10",
+    "zod": "^4.4.3"
   },
   "keywords": [
     "npf",
@@ -15,5 +44,8 @@
     "c2-command"
   ],
   "author": "Nigeria Police Force EOD-CBRN Command",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "supabase": "^2.111.0"
+  }
 }

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
-  <title>EOD-CBRN Command National Personnel Directory | GEN. NOMONAL ROLL EOD APAPA</title>
+  <title>EOD-CBRN Command National Personnel Directory | EOD-CBRN COMMAND NOMINAL ROLL</title>
   
   <!-- TAILWIND CSS, LUCIDE ICONS & SHEETJS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -60,6 +60,164 @@
       box-shadow: 0 0 30px rgba(16, 185, 129, 0.25), 0 0 10px rgba(6, 182, 212, 0.2);
     }
   </style>
+<script>
+        async function handleRegistrationSubmit(event) {
+          if (event) event.preventDefault();
+          const nameInput = document.getElementById('reg-name') || document.getElementById('register-name');
+          const emailInput = document.getElementById('reg-email') || document.getElementById('register-email');
+          const passInput = document.getElementById('reg-password') || document.getElementById('register-password');
+          const confirmPassInput = document.getElementById('reg-confirm-password') || document.getElementById('register-confirm-password');
+          const apfInput = document.getElementById('reg-apf-no') || document.getElementById('register-apf-no');
+          const btn = document.getElementById('btn-register-submit') || document.querySelector('#register-modal button[type="submit"]');
+
+          if (!emailInput || !passInput) return;
+
+          const fullName = nameInput ? nameInput.value.trim() : '';
+          const email = emailInput.value.trim();
+          const password = passInput.value;
+          const confirmPassword = confirmPassInput ? confirmPassInput.value : '';
+          const apfNo = apfInput ? apfInput.value.trim() : '';
+
+          if (btn) {
+            btn.disabled = true;
+            btn.dataset.origText = btn.innerText;
+            btn.innerText = 'Registering...';
+          }
+
+          try {
+            const resp = await fetch('/api/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ fullName, email, password, confirmPassword, apfNo })
+            });
+
+            const resData = await resp.json();
+            if (resp.ok && resData.success) {
+              if (typeof showToast === 'function') showToast('Registration successful! You can now sign in.', 'success');
+              const modal = document.getElementById('register-modal');
+              if (modal) modal.classList.add('hidden');
+              if (event.target && typeof event.target.reset === 'function') event.target.reset();
+            } else {
+              const errMsg = resData.message || (resData.errors ? Object.values(resData.errors).join(' ') : 'Registration failed.');
+              if (typeof showToast === 'function') showToast(errMsg, 'error');
+              else alert(errMsg);
+            }
+          } catch (err) {
+            console.error('Registration Exception:', err);
+            if (typeof showToast === 'function') showToast('Network error during registration.', 'error');
+          } finally {
+            if (btn) {
+              btn.disabled = false;
+              btn.innerText = btn.dataset.origText || 'Register Account';
+            }
+          }
+        }
+        </script>
+
+    <script>
+    async function handleCreateBaseSubmit(e) {
+      if (e) e.preventDefault();
+      const codeEl = document.getElementById('base-code') || document.getElementById('form-baseCode');
+      const nameEl = document.getElementById('base-name') || document.getElementById('form-baseName');
+      const submitBtn = document.getElementById('btn-submit-base') || document.getElementById('btn-save-base');
+
+      const baseCode = codeEl ? codeEl.value.trim() : '';
+      const baseName = nameEl ? nameEl.value.trim() : '';
+
+      if (!baseCode || !baseName) {
+        if (typeof showToast === 'function') showToast('Base Code and Base Name are required.', 'error');
+        else alert('Base Code and Base Name are required.');
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.dataset.origText = submitBtn.innerText;
+        submitBtn.innerText = 'Saving Base...';
+      }
+
+      try {
+        const res = await fetch('/api/bases', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-user-role': 'GLOBAL_ADMIN' },
+          body: JSON.stringify({ baseCode, baseName })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          if (typeof showToast === 'function') showToast('Base added successfully!', 'success');
+          await fetchBasesFromAPI();
+          const modal = document.getElementById('add-base-modal') || document.getElementById('modal-create-base');
+          if (modal) modal.classList.add('hidden');
+          if (e.target && typeof e.target.reset === 'function') e.target.reset();
+        } else {
+          const errMsg = data.message || (data.errors ? Object.values(data.errors).join(' ') : 'Base creation failed.');
+          if (typeof showToast === 'function') showToast(errMsg, 'error');
+          else alert(errMsg);
+        }
+      } catch (err) {
+        console.error('Base creation exception:', err);
+        if (typeof showToast === 'function') showToast('Network error while saving base.', 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = submitBtn.dataset.origText || 'Save Base';
+        }
+      }
+    }
+
+    async function handleCreateUnitSubmit(e) {
+      if (e) e.preventDefault();
+      const codeEl = document.getElementById('unit-code') || document.getElementById('form-unitCode');
+      const nameEl = document.getElementById('unit-name') || document.getElementById('form-unitName');
+      const baseSelect = document.getElementById('unit-base-id') || document.getElementById('ap-base-id');
+      const submitBtn = document.getElementById('btn-submit-unit') || document.getElementById('btn-save-unit');
+
+      const unitCode = codeEl ? codeEl.value.trim() : '';
+      const unitName = nameEl ? nameEl.value.trim() : '';
+      const baseId = baseSelect ? baseSelect.value : '';
+
+      if (!unitCode || !unitName || !baseId) {
+        if (typeof showToast === 'function') showToast('Unit Code, Unit Name, and Parent Base are required.', 'error');
+        else alert('Unit Code, Unit Name, and Parent Base are required.');
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.dataset.origText = submitBtn.innerText;
+        submitBtn.innerText = 'Saving Unit...';
+      }
+
+      try {
+        const res = await fetch('/api/units', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-user-role': 'GLOBAL_ADMIN' },
+          body: JSON.stringify({ unitCode, unitName, baseId })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          if (typeof showToast === 'function') showToast('Unit added successfully!', 'success');
+          await fetchUnitsFromAPI();
+          const modal = document.getElementById('add-unit-modal') || document.getElementById('modal-create-unit');
+          if (modal) modal.classList.add('hidden');
+          if (e.target && typeof e.target.reset === 'function') e.target.reset();
+        } else {
+          const errMsg = data.message || (data.errors ? Object.values(data.errors).join(' ') : 'Unit creation failed.');
+          if (typeof showToast === 'function') showToast(errMsg, 'error');
+          else alert(errMsg);
+        }
+      } catch (err) {
+        console.error('Unit creation exception:', err);
+        if (typeof showToast === 'function') showToast('Network error while saving unit.', 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = submitBtn.dataset.origText || 'Save Unit';
+        }
+      }
+    }
+    </script>
+    
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-black">
 
@@ -77,7 +235,7 @@
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-base font-black text-white tracking-wider uppercase font-mono">EOD-CBRN COMMAND NATIONAL DIRECTORY</h1>
-            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">GEN. NOMONAL ROLL EOD APAPA</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">EOD-CBRN COMMAND NOMINAL ROLL</span>
           </div>
           <p class="text-xs text-slate-400 font-mono">AUTHORISED NIGERIA POLICE EOD-CBRN PERSONNEL MASTER ROLL</p>
         </div>
@@ -108,31 +266,31 @@
         </div>
 
         <!-- PART 3: PROMINENT RESTORED ADD PERSONNEL BUTTON (GLOBAL ADMIN ONLY) -->
-        <button id="btn-nav-add-personnel" onclick="openAddPersonnelModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-black font-black px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition cursor-pointer uppercase tracking-wider">
+        <button type="button" id="btn-nav-add-personnel" onclick="openAddPersonnelModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-black font-black px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition cursor-pointer uppercase tracking-wider">
           <i data-lucide="user-plus" class="w-4.5 h-4.5 text-black"></i>
           <span>ADD PERSONNEL</span>
         </button>
 
         <!-- RECONCILIATION REPORT BUTTON -->
-        <button onclick="openReconciliationModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer font-mono">
+        <button type="button" onclick="openReconciliationModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer font-mono">
           <i data-lucide="file-check" class="w-3.5 h-3.5 text-cyan-400"></i>
           <span>RECONCILIATION REPORT</span>
         </button>
 
         <!-- PUBLIC PERSONNEL LOGIN BUTTON -->
-        <button id="btn-public-login" onclick="openPersonnelLoginModal()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition cursor-pointer uppercase tracking-wider">
+        <button type="button" id="btn-public-login" onclick="openPersonnelLoginModal()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition cursor-pointer uppercase tracking-wider">
           <i data-lucide="key-round" class="w-4 h-4 text-white"></i>
           <span>LOGIN</span>
         </button>
 
         <!-- PUBLIC PERSONNEL REGISTRATION BUTTON -->
-        <button id="btn-public-register" onclick="openPersonnelRegisterModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer uppercase tracking-wider">
+        <button type="button" id="btn-public-register" onclick="openPersonnelRegisterModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer uppercase tracking-wider">
           <i data-lucide="user-check" class="w-4 h-4 text-cyan-400"></i>
           <span>REGISTER</span>
         </button>
 
         <!-- ROLLBACK EOD APAPA REPLACEMENT BUTTON -->
-        <button id="btn-rollback-apapa" onclick="rollbackApapaMasterRollReplacement()" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-500/40 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer font-mono">
+        <button type="button" id="btn-rollback-apapa" onclick="rollbackApapaMasterRollReplacement()" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-500/40 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer font-mono">
           <i data-lucide="undo-2" class="w-3.5 h-3.5 text-rose-400"></i>
           <span>ROLLBACK IMPORT</span>
         </button>
@@ -156,24 +314,24 @@
         <div class="lg:col-span-7 space-y-5 font-mono">
           <div class="flex items-center gap-2">
             <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-black uppercase">
-              DATASET AUTHORITATIVE: GEN. NOMONAL ROLL EOD APAPA.xlsx
+              DATASET AUTHORITATIVE: Supabase Production PostgreSQL Database
             </span>
           </div>
           <h1 class="text-3xl sm:text-4xl font-black text-white uppercase">EOD CBRN COMMAND</h1>
           <p class="text-sm font-extrabold text-emerald-400 uppercase">AUTHORISED NIGERIA POLICE EOD CBRN APAPA FORMATION MASTER ROLL</p>
           <p class="text-xs text-slate-300 font-sans leading-relaxed">
-            Directly imported 24 personnel records from verified source file <strong class="text-emerald-400 font-mono">C:\Users\GODWIN\Music\GEN. NOMONAL ROLL EOD APAPA.xlsx</strong>. Displaying full 26 nominal roll headings with statutory retirement dates.
+            Dataset synchronized directly from Supabase PostgreSQL database.<strong class="text-emerald-400 font-mono">Initial Dataset Imported into Supabase</strong>. Displaying full 26 nominal roll headings with statutory retirement dates.
           </p>
           <div class="flex flex-wrap items-center gap-3 pt-2">
-            <button id="btn-hero-add-personnel" onclick="openAddPersonnelModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-black font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition cursor-pointer uppercase tracking-wider">
+            <button type="button" id="btn-hero-add-personnel" onclick="openAddPersonnelModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-black font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition cursor-pointer uppercase tracking-wider">
               <i data-lucide="user-plus" class="w-4.5 h-4.5 text-black"></i>
               <span>ADD PERSONNEL</span>
             </button>
-            <button onclick="openReconciliationModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer uppercase tracking-wider">
+            <button type="button" onclick="openReconciliationModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer uppercase tracking-wider">
               <i data-lucide="file-check" class="w-4.5 h-4.5 text-cyan-400"></i>
               <span>RECONCILIATION REPORT</span>
             </button>
-            <button onclick="openAddCommanderModal()" class="bg-amber-600 hover:bg-amber-500 text-black font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer uppercase tracking-wider">
+            <button type="button" onclick="openAddCommanderModal()" class="bg-amber-600 hover:bg-amber-500 text-black font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer uppercase tracking-wider">
               <i data-lucide="crown" class="w-4.5 h-4.5 text-black"></i>
               <span>COMMANDERS</span>
             </button>
@@ -237,10 +395,16 @@
         <div class="text-[9px] text-slate-400">Add / Appoint</div>
       </div>
 
+      
+      <div onclick="openAddUnitModal()" class="nav-card bg-slate-900 hover:bg-slate-850 border border-teal-500/40 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-teal-400"><i data-lucide="layers" class="w-4 h-4"></i><span id="badge-count-units" class="font-black text-sm">2</span></div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-teal-400 transition">ADD UNIT</div>
+        <div class="text-[9px] text-slate-400">Command Sub-Unit</div>
+      </div>
       <div onclick="openAddBaseModal()" class="nav-card bg-slate-900 hover:bg-slate-850 border border-sky-500/40 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
         <div class="flex justify-between items-center text-sky-400"><i data-lucide="building-2" class="w-4 h-4"></i><span id="badge-count-bases" class="font-black text-sm">2</span></div>
         <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-sky-400 transition">ADD BASE</div>
-        <div class="text-[9px] text-slate-400">Create Base</div>
+        <div class="text-[9px] text-slate-400">Add Base</div>
       </div>
 
       <div onclick="switchView('RETIREMENT_DASHBOARD')" id="card-RETIREMENT_DASHBOARD" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
@@ -265,7 +429,7 @@
           <i data-lucide="user-plus" class="w-5 h-5 text-emerald-400"></i>
           <h3 class="text-sm font-black text-white uppercase tracking-wider">ADD PERSONNEL TO MASTER ROLL (26 HEADINGS)</h3>
         </div>
-        <button onclick="closeAddPersonnelModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <button type="button" onclick="closeAddPersonnelModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
 
       <form onsubmit="handleAddPersonnelSubmit(event)" class="space-y-6 overflow-y-auto pr-1">
@@ -317,11 +481,17 @@
         </div>
 
         <!-- SECTION D: BASE OR UNIT ASSIGNMENT -->
+          <div>
+            <label class="text-teal-400 block font-bold">26. ASSIGNED UNIT: *</label>
+            <select id="ap-unit-id" required class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 text-xs focus:border-teal-500 focus:outline-none">
+              <!-- INJECTED DYNAMICALLY -->
+            </select>
+          </div>
         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
           <h4 class="text-xs font-black text-sky-400 uppercase border-b border-slate-800 pb-2">SECTION D: VERIFIED BASE OR UNIT ASSIGNMENT</h4>
           <div>
             <label class="text-sky-400 block font-bold">SELECT VERIFIED BASE OR UNIT: *</label>
-            <select id="ap-base-id" required class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 text-xs focus:border-sky-500 focus:outline-none">
+            <select id="ap-base-id" onchange="handleBaseSelectChange(this)" onchange="filterUnitsBySelectedBase(this.value)" required class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 text-xs focus:border-sky-500 focus:outline-none">
               <!-- INJECTED DYNAMICALLY -->
             </select>
           </div>
@@ -342,12 +512,12 @@
           <i data-lucide="file-check" class="w-5 h-5 text-cyan-400"></i>
           <h3 class="text-sm font-black text-white uppercase tracking-wider">ROW-BY-ROW SOURCE TO DATABASE RECONCILIATION REPORT</h3>
         </div>
-        <button onclick="closeReconciliationModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <button type="button" onclick="closeReconciliationModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
 
       <div class="overflow-y-auto pr-1 space-y-4">
         <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-          <p class="text-emerald-400 font-bold">SOURCE FILE: C:\Users\GODWIN\Music\GEN. NOMONAL ROLL EOD APAPA.xlsx</p>
+          <p class="text-emerald-400 font-bold">SOURCE FILE: Initial Dataset Imported into Supabase</p>
           <p class="text-slate-300">TOTAL SOURCE ROWS: 24 &bull; TOTAL IMPORTED RECORDS: 24 &bull; MATCH STATUS: <strong class="text-emerald-400">100% MATCHED EXACTLY</strong></p>
         </div>
 
@@ -375,7 +545,7 @@
     <div class="bg-slate-900 border border-cyan-500/50 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <h3 class="text-sm font-black text-white uppercase">OFFICER PORTAL LOGIN</h3>
-        <button onclick="closePersonnelLoginModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <button type="button" onclick="closePersonnelLoginModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
       <form onsubmit="handlePersonnelLoginSubmit(event)" class="space-y-3">
         <div><label class="text-cyan-400 block font-bold">EMAIL OR AP/F/NO:</label><input type="text" id="login-identifier" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></div>
@@ -389,13 +559,32 @@
     <div class="bg-slate-900 border border-cyan-500/50 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <h3 class="text-sm font-black text-white uppercase">OFFICER SELF-REGISTRATION</h3>
-        <button onclick="closePersonnelRegisterModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <button type="button" onclick="closePersonnelRegisterModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
       <form onsubmit="handlePersonnelRegisterSubmit(event)" class="space-y-3">
-        <div><label class="text-emerald-400 block font-bold">AP/F/NO:</label><input type="text" id="reg-serviceno" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></div>
-        <div><label class="text-white block font-bold">FULL NAME:</label><input type="text" id="reg-fullname" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></div>
-        <div><label class="text-cyan-400 block font-bold">EMAIL:</label><input type="email" id="reg-email" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></div>
-        <button type="submit" class="w-full bg-cyan-600 text-white font-black py-2.5 rounded-xl uppercase">SUBMIT REGISTRATION</button>
+        <div id="reg-error-msg" class="hidden bg-rose-950/80 border border-rose-500/50 text-rose-300 p-3 rounded-xl text-xs font-mono"></div>
+        <div id="reg-success-msg" class="hidden bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 p-3 rounded-xl text-xs font-mono"></div>
+        <div><label class="text-emerald-400 block font-bold mb-1">AP/F/NO: *</label><input type="text" id="reg-serviceno" required placeholder="e.g. AP/704754" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-cyan-500 focus:outline-none"></div>
+        <div><label class="text-white block font-bold mb-1">FULL NAME: *</label><input type="text" id="reg-fullname" required placeholder="e.g. SERGEANT MUSA IBRAHIM" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-cyan-500 focus:outline-none"></div>
+        <div><label class="text-cyan-400 block font-bold mb-1">EMAIL ADDRESS: *</label><input type="email" id="reg-email" required placeholder="officer@npf.gov.ng" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-cyan-500 focus:outline-none"></div>
+        
+        <div>
+          <label class="text-amber-400 block font-bold mb-1">PASSWORD: * (min 8 chars)</label>
+          <div class="relative">
+            <input type="password" id="reg-password" minlength="8" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 pr-10 text-white text-xs focus:border-amber-500 focus:outline-none">
+            <button type="button" onclick="togglePasswordVisibility('reg-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold">SHOW</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-amber-400 block font-bold mb-1">CONFIRM PASSWORD: *</label>
+          <div class="relative">
+            <input type="password" id="reg-confirm-password" minlength="8" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 pr-10 text-white text-xs focus:border-amber-500 focus:outline-none">
+            <button type="button" onclick="togglePasswordVisibility('reg-confirm-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold">SHOW</button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-submit-register" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-2.5 rounded-xl uppercase transition cursor-pointer shadow-lg shadow-cyan-950/50">SUBMIT REGISTRATION</button>
       </form>
     </div>
   </div>
@@ -404,22 +593,86 @@
     <div class="bg-slate-900 border border-amber-500/50 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <h3 class="text-sm font-black text-white uppercase">ADD / APPOINT COMMANDER</h3>
-        <button onclick="closeAddCommanderModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <button type="button" onclick="closeAddCommanderModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
-      <button onclick="closeAddCommanderModal(); openAddPersonnelModal();" class="w-full bg-amber-500 text-black font-black py-2.5 rounded-xl uppercase">OPEN 26 HEADINGS FORM</button>
+      <button type="button" onclick="closeAddCommanderModal(); openAddPersonnelModal();" class="w-full bg-amber-500 text-black font-black py-2.5 rounded-xl uppercase">OPEN 26 HEADINGS FORM</button>
+    </div>
+  </div>
+
+  <div id="add-unit-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print font-mono text-xs backdrop-blur-md">
+    <div class="bg-slate-900 border border-teal-500/50 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="layers" class="w-5 h-5 text-teal-400"></i>
+          <h3 class="text-sm font-black text-teal-400 uppercase">ADD NEW UNIT</h3>
+        </div>
+        <button type="button" onclick="confirmCloseAddUnitModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <div id="unit-modal-error" class="hidden p-3 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-xs font-bold"></div>
+
+      <form id="form-create-unit" onsubmit="handleAddUnitSubmit(event)" class="space-y-4">
+        <div>
+          <label class="text-teal-400 block font-bold mb-1">UNIT CODE: *</label>
+          <input type="text" id="unit-code" required placeholder="e.g. OPS-01" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-bold focus:border-teal-500 focus:outline-none">
+          <span id="err-unit-code" class="text-[11px] text-rose-400 hidden mt-1"></span>
+        </div>
+        <div>
+          <label class="text-white block font-bold mb-1">UNIT NAME: *</label>
+          <input type="text" id="unit-name" required placeholder="e.g. OPERATIONS UNIT" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-bold focus:border-teal-500 focus:outline-none">
+          <span id="err-unit-name" class="text-[11px] text-rose-400 hidden mt-1"></span>
+        </div>
+        <div>
+          <label class="text-sky-400 block font-bold mb-1">PARENT BASE OR COMMAND: *</label>
+          <select id="unit-base-id" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-bold focus:border-teal-500 focus:outline-none">
+            <!-- INJECTED DYNAMICALLY -->
+          </select>
+        </div>
+        <div>
+          <label class="text-slate-300 block font-bold mb-1">DESCRIPTION:</label>
+          <textarea id="unit-description" placeholder="Operational responsibilities and scope" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-medium focus:border-teal-500 focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 pt-2">
+          <button type="button" onclick="confirmCloseAddUnitModal()" class="w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl uppercase transition cursor-pointer">CANCEL</button>
+          <button type="submit" id="btn-submit-unit" class="w-2/3 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white font-black py-3 rounded-xl uppercase transition cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(20,184,166,0.3)]">
+            <span id="btn-submit-unit-text">SAVE UNIT</span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
   <div id="add-base-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print font-mono text-xs backdrop-blur-md">
     <div class="bg-slate-900 border border-sky-500/50 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-        <h3 class="text-sm font-black text-sky-400 uppercase">ADD NEW BASE</h3>
-        <button onclick="closeAddBaseModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+        <div class="flex items-center gap-2">
+          <i data-lucide="building-2" class="w-5 h-5 text-sky-400"></i>
+          <h3 class="text-sm font-black text-sky-400 uppercase">ADD NEW BASE</h3>
+        </div>
+        <button type="button" onclick="confirmCloseAddBaseModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
-      <form onsubmit="handleAddBaseSubmit(event)" class="space-y-3">
-        <div><label class="text-sky-400 block font-bold">BASE CODE:</label><input type="text" id="base-code" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></div>
-        <div><label class="text-white block font-bold">BASE NAME:</label><input type="text" id="base-name" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></div>
-        <button type="submit" class="w-full bg-sky-600 text-white font-black py-2.5 rounded-xl uppercase">CREATE BASE</button>
+
+      <div id="base-modal-error" class="hidden p-3 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-xs font-bold"></div>
+
+      <form id="form-create-base" onsubmit="handleAddBaseSubmit(event)" class="space-y-4">
+        <div>
+          <label class="text-sky-400 block font-bold mb-1">BASE CODE: *</label>
+          <input type="text" id="base-code" required placeholder="e.g. BASE 38" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-bold focus:border-sky-500 focus:outline-none">
+          <span id="err-base-code" class="text-[11px] text-rose-400 hidden mt-1"></span>
+        </div>
+        <div>
+          <label class="text-white block font-bold mb-1">BASE NAME: *</label>
+          <input type="text" id="base-name" required placeholder="e.g. UYO, AKWA IBOM STATE" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-bold focus:border-sky-500 focus:outline-none">
+          <span id="err-base-name" class="text-[11px] text-rose-400 hidden mt-1"></span>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 pt-2">
+          <button type="button" onclick="confirmCloseAddBaseModal()" class="w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl uppercase transition cursor-pointer">CANCEL</button>
+          <button type="submit" id="btn-submit-base" class="w-2/3 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-black py-3 rounded-xl uppercase transition cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(14,165,233,0.3)]">
+            <span id="btn-submit-base-text">SAVE BASE</span>
+          </button>
+        </div>
       </form>
     </div>
   </div>
@@ -462,7 +715,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -500,7 +753,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -538,7 +791,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -576,7 +829,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -614,7 +867,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -652,7 +905,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -690,7 +943,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -728,7 +981,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -766,7 +1019,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -804,7 +1057,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -842,7 +1095,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -880,7 +1133,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -918,7 +1171,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -956,7 +1209,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -994,7 +1247,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -1032,7 +1285,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -1070,7 +1323,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -1108,7 +1361,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -1146,7 +1399,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -1184,7 +1437,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -1222,7 +1475,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -1260,7 +1513,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -1298,7 +1551,7 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   },
   {
@@ -1336,14 +1589,14 @@
     "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
     "registrationStatus": "APPROVED",
     "employmentStatus": "ACTIVE",
-    "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
     "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
   }
 ];
     const eodApapaSchema = {
   "schemaId": "eodApapaSchemaV1",
-  "schemaName": "GEN. NOMONAL ROLL EOD APAPA Schema",
-  "sourceFileName": "GEN. NOMONAL ROLL EOD APAPA.xlsx",
+  "schemaName": "EOD-CBRN COMMAND NOMINAL ROLL Schema",
+  "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
   "sourceFileType": "xlsx",
   "sourceWorksheetNames": [
     "Sheet4"
@@ -1754,12 +2007,12 @@
           <div class="p-4 bg-slate-950 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2">
               <i data-lucide="layers" class="w-4.5 h-4.5 text-emerald-400"></i>
-              <h3 class="text-sm font-black text-white uppercase tracking-wider">GEN. NOMONAL ROLL EOD APAPA MASTER ROLL (${list.length} RECORDS)</h3>
+              <h3 class="text-sm font-black text-white uppercase tracking-wider">EOD-CBRN COMMAND NOMINAL ROLL MASTER ROLL (${list.length} RECORDS)</h3>
             </div>
             <div class="flex items-center gap-2">
-              <button onclick="openReconciliationModal()" class="bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 px-3 py-1.5 rounded-xl font-bold">RECONCILIATION</button>
+              <button type="button" onclick="openReconciliationModal()" class="bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 px-3 py-1.5 rounded-xl font-bold">RECONCILIATION</button>
               <input type="text" id="table-search" onkeyup="filterMasterRollTable()" placeholder="Search name, AP/F/NO, rank..." class="bg-slate-900 border border-slate-800 text-white rounded-xl px-3 py-1.5 text-xs focus:outline-none">
-              <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-xl font-bold border border-slate-700 cursor-pointer">PRINT</button>
+              <button type="button" onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-xl font-bold border border-slate-700 cursor-pointer">PRINT</button>
             </div>
           </div>
 
@@ -1871,65 +2124,94 @@
       if (modal) modal.classList.add('hidden');
     }
 
-    function handleAddPersonnelSubmit(e) {
-      e.preventDefault();
-      if (currentUserRole !== 'GLOBAL_ADMIN') return;
+    async function handleAddPersonnelSubmit(e) {
+      if (e) e.preventDefault();
 
-      const apNo = document.getElementById('ap-serviceno').value.trim();
-      const rank = document.getElementById('ap-rank').value;
-      const name = document.getElementById('ap-name').value.trim();
+      const apNoEl = document.getElementById('ap-serviceno') || document.getElementById('form-apNo');
+      const rankEl = document.getElementById('ap-rank') || document.getElementById('form-rank');
+      const nameEl = document.getElementById('ap-name') || document.getElementById('form-name');
+      const dobEl = document.getElementById('ap-dob') || document.getElementById('form-dob');
+      const enlistDateEl = document.getElementById('ap-enlist') || document.getElementById('form-enlistDate');
 
-      const exists = dbPersonnel.some(p => (p.apNo || p.serviceNo || '').toUpperCase() === apNo.toUpperCase());
-      if (exists) {
-        alert("ERROR: AP/F/NO " + apNo + " already exists in the Master Roll!");
+      const apNo = apNoEl ? apNoEl.value.trim() : '';
+      const rank = rankEl ? rankEl.value.trim() : 'INSPR';
+      const name = nameEl ? nameEl.value.trim() : '';
+      const dob = dobEl ? dobEl.value : '1985-01-01';
+      const enlistDate = enlistDateEl ? enlistDateEl.value : '2005-01-01';
+      const baseIdEl = document.getElementById('ap-base-id') || document.getElementById('unit-base-id');
+      const baseId = baseIdEl ? baseIdEl.value : '';
+      const unitIdEl = document.getElementById('ap-unit-id');
+      const unitId = unitIdEl ? unitIdEl.value : '';
+
+      if (!apNo || !name || !dob || !enlistDate) {
+        alert('Please fill out all required fields (AP/F/NO, Rank, Name, DOB, Date of Enlistment).');
         return;
       }
 
-      const baseId = document.getElementById('ap-base-id').value;
-      const targetBase = basesUnits.find(b => b.baseUnitId === baseId) || basesUnits[1];
+      const submitBtn = document.getElementById('btn-submit-personnel') || document.querySelector('#personnel-form button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Saving to Database...';
+      }
 
-      const newPersonnel = {
-        id: 'POL-NEW-' + Date.now(),
-        personnelId: 'POL-NEW-' + Date.now(),
-        apNo: apNo,
-        serviceNo: apNo,
+      const payload = {
+        apfNo: apNo,
         rank: rank,
-        rankGroup: computeRankGroup(rank),
-        name: name,
-        eduQual: document.getElementById('ap-edu').value || 'BSC POLICE SCIENCE',
-        stateOfOrigin: document.getElementById('ap-state').value || 'EDO',
-        phone: document.getElementById('ap-phone').value || '08034268620',
-        tribe: document.getElementById('ap-tribe').value || 'ORAH',
-        dob: document.getElementById('ap-dob').value || '1985-01-01',
-        geoPolZone: document.getElementById('ap-zone').value || 'SOUTH SOUTH',
-        lastPromDate: document.getElementById('ap-lastprom').value || '2020-01-01',
-        retireDate: '2035-01-01',
-        commandServedLast: document.getElementById('ap-lastcommand').value || targetBase.baseUnitName,
-        dutyPost: document.getElementById('ap-duty').value || 'EOD OPERATIVE',
-        transferredDate: document.getElementById('ap-transferdate').value || '2023-01-01',
-        gdSp: document.getElementById('ap-gdsp').value || 'EOD TECH',
-        enlistDate: document.getElementById('ap-enlist').value || '2005-01-01',
-        email: document.getElementById('ap-email').value || 'officer@npf.gov.ng',
-        gl: document.getElementById('ap-gl').value || '10',
-        bankName: document.getElementById('ap-bank').value || 'POLICE MORTGAGE BANK',
-        employeeCode: document.getElementById('ap-empcode').value || 'PF012964',
-        ippisNo: document.getElementById('ap-ippis').value || '100060086275',
-        pfa: document.getElementById('ap-pfa').value || 'NPF PENSION',
-        penPin: document.getElementById('ap-penpin').value || '131696142-8',
-        nhfNo: document.getElementById('ap-nhf').value || 'NHF-117369',
-        mss: document.getElementById('ap-mss').value || 'APAPA BASE LAGOS',
-        currentBaseUnitId: targetBase.baseUnitId,
-        currentBaseUnitCode: targetBase.baseUnitCode,
-        currentBaseUnitName: targetBase.baseUnitName,
-        registrationStatus: 'APPROVED',
-        employmentStatus: 'ACTIVE'
+        fullName: name,
+        dateOfBirth: dob,
+        dateOfEnlistment: enlistDate,
+        educationalQualification: (document.getElementById('ap-edu') ? document.getElementById('ap-edu').value : 'BSC POLICE SCIENCE'),
+        stateOfOrigin: (document.getElementById('ap-state') ? document.getElementById('ap-state').value : 'EDO'),
+        lga: (document.getElementById('ap-lga') ? document.getElementById('ap-lga').value : 'BENIN CITY'),
+        tribe: (document.getElementById('ap-tribe') ? document.getElementById('ap-tribe').value : 'ORAH'),
+        geopoliticalZone: (document.getElementById('ap-zone') ? document.getElementById('ap-zone').value : 'SOUTH SOUTH'),
+        dateOfLastPromotion: (document.getElementById('ap-lastprom') ? document.getElementById('ap-lastprom').value : '2020-01-01'),
+        retirementDate: (document.getElementById('ap-retire') ? document.getElementById('ap-retire').value : ''),
+        commandServedLast: (document.getElementById('ap-lastcommand') ? document.getElementById('ap-lastcommand').value : 'NATIONAL COMMAND'),
+        dateTransferredToCommand: (document.getElementById('ap-transferdate') ? document.getElementById('ap-transferdate').value : '2023-01-01'),
+        gdSp: (document.getElementById('ap-gdsp') ? document.getElementById('ap-gdsp').value : 'EOD TECH'),
+        gradeLevel: (document.getElementById('ap-gl') ? document.getElementById('ap-gl').value : '10'),
+        dutyPost: (document.getElementById('ap-duty') ? document.getElementById('ap-duty').value : 'EOD OPERATIVE'),
+        accountNumber: (document.getElementById('ap-account') ? document.getElementById('ap-account').value : ''),
+        bankName: (document.getElementById('ap-bank') ? document.getElementById('ap-bank').value : 'POLICE MORTGAGE BANK'),
+        employeeCode: (document.getElementById('ap-empcode') ? document.getElementById('ap-empcode').value : ''),
+        ippisNumber: (document.getElementById('ap-ippis') ? document.getElementById('ap-ippis').value : ''),
+        pfa: (document.getElementById('ap-pfa') ? document.getElementById('ap-pfa').value : 'NPF PENSION'),
+        penPin: (document.getElementById('ap-penpin') ? document.getElementById('ap-penpin').value : ''),
+        nhfNumber: (document.getElementById('ap-nhf') ? document.getElementById('ap-nhf').value : ''),
+        mss: (document.getElementById('ap-mss') ? document.getElementById('ap-mss').value : 'APAPA BASE LAGOS'),
+        emailAddress: (document.getElementById('ap-email') ? document.getElementById('ap-email').value : 'officer@npf.gov.ng'),
+        phoneNumber: (document.getElementById('ap-phone') ? document.getElementById('ap-phone').value : '08034268620'),
+        baseId: baseId || null,
+        unitId: unitId || null
       };
 
-      dbPersonnel.push(newPersonnel);
-      logAuditEvent('ADD_PERSONNEL', 'PERSONNEL', newPersonnel.id, 'Manually added officer ' + name + ' (' + apNo + ')');
-      alert("Personnel record added successfully.");
-      closeAddPersonnelModal();
-      renderModule();
+      try {
+        const res = await fetch('/api/personnel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-user-role': currentUserRole || 'GLOBAL_ADMIN' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert('Personnel record saved permanently to Supabase!');
+          if (typeof fetchPersonnelFromAPI === 'function') await fetchPersonnelFromAPI();
+          if (typeof closeAddPersonnelModal === 'function') closeAddPersonnelModal();
+          if (e.target && typeof e.target.reset === 'function') e.target.reset();
+        } else {
+          const msg = data.message || (data.errors ? Object.values(data.errors).join(' ') : 'Failed to save personnel.');
+          alert('Error saving personnel: ' + msg);
+        }
+      } catch (err) {
+        console.error('Add Personnel API Exception:', err);
+        alert('Network error saving personnel to database.');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'SAVE PERSONNEL';
+        }
+      }
     }
 
     function rollbackApapaMasterRollReplacement() {
@@ -1948,7 +2230,7 @@
       }
     }
 
-    function populateBaseDropdowns() {
+    populateBaseDropdowns = function(bases) {
       const options = basesUnits.map(b => `<option value="${b.baseUnitId}">${b.baseUnitName} (${b.baseUnitCode})</option>`).join('');
       ['ap-base-id'].forEach(id => {
         const el = document.getElementById(id);
@@ -1962,12 +2244,199 @@
     function closePersonnelRegisterModal() { document.getElementById('personnel-register-modal').classList.add('hidden'); }
     function openAddCommanderModal() { openAddPersonnelModal(); }
     function closeAddCommanderModal() { document.getElementById('add-commander-modal').classList.add('hidden'); }
-    function openAddBaseModal() { document.getElementById('add-base-modal').classList.remove('hidden'); }
-    function closeAddBaseModal() { document.getElementById('add-base-modal').classList.add('hidden'); }
 
     function handlePersonnelLoginSubmit(e) { e.preventDefault(); alert("Redirecting to Officer Portal..."); }
     function handlePersonnelRegisterSubmit(e) { e.preventDefault(); alert("Registration submitted!"); }
-    function handleAddBaseSubmit(e) { e.preventDefault(); alert("Base created!"); }
+    
+    
+    function normalizeBaseCode(code) {
+      return (code || '').toString().trim().replace(/\s+/g, ' ').toUpperCase();
+    }
+
+    function normalizeBaseName(name) {
+      return (name || '').toString().trim().replace(/\s+/g, ' ').toUpperCase();
+    }
+
+    function openAddBaseModal() {
+      if (currentUserRole !== 'GLOBAL_ADMIN' && currentUserRole !== 'SUPER_ADMIN' && currentUserRole !== 'RECORDS_ADMIN') {
+        alert("403 ACCESS DENIED: You do not have permission to add a base.");
+        return;
+      }
+      const modal = document.getElementById('add-base-modal');
+      const errBanner = document.getElementById('base-modal-error');
+      if (errBanner) { errBanner.classList.add('hidden'); errBanner.textContent = ''; }
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function confirmCloseAddBaseModal() {
+      const code = document.getElementById('base-code').value.trim();
+      const name = document.getElementById('base-name').value.trim();
+      if (code || name) {
+        if (!confirm("Are you sure you want to cancel? Any unsaved base information will be lost.")) {
+          return;
+        }
+      }
+      closeAddBaseModal();
+    }
+
+    function closeAddBaseModal() {
+      const modal = document.getElementById('add-base-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async 
+    async function handleAddBaseSubmit(e) {
+      if (e) e.preventDefault();
+
+      const codeEl = document.getElementById('base-code') || document.getElementById('form-baseCode');
+      const nameEl = document.getElementById('base-name') || document.getElementById('form-baseName');
+      const submitBtn = document.getElementById('btn-submit-base') || document.getElementById('btn-save-base') || (e.target ? e.target.querySelector('button[type="submit"]') : null);
+      const errCodeEl = document.getElementById('err-base-code');
+      const errNameEl = document.getElementById('err-base-name');
+
+      if (errCodeEl) { errCodeEl.classList.add('hidden'); errCodeEl.textContent = ''; }
+      if (errNameEl) { errNameEl.classList.add('hidden'); errNameEl.textContent = ''; }
+
+      const rawCode = codeEl ? codeEl.value.trim() : '';
+      const rawName = nameEl ? nameEl.value.trim() : '';
+
+      if (!rawCode) {
+        if (errCodeEl) { errCodeEl.textContent = 'Base Code is required.'; errCodeEl.classList.remove('hidden'); }
+        else alert('Base Code is required.');
+        return;
+      }
+
+      if (!rawName) {
+        if (errNameEl) { errNameEl.textContent = 'Base Name is required.'; errNameEl.classList.remove('hidden'); }
+        else alert('Base Name is required.');
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.dataset.origText = submitBtn.textContent || submitBtn.innerText;
+        if (submitBtn.querySelector('span')) {
+          submitBtn.querySelector('span').textContent = 'SAVING BASE...';
+        } else {
+          submitBtn.textContent = 'SAVING BASE...';
+        }
+      }
+
+      try {
+        const res = await fetch('/api/bases', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-role': window.currentUserRole || 'GLOBAL_ADMIN'
+          },
+          body: JSON.stringify({ baseCode: rawCode, baseName: rawName })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          if (typeof showToast === 'function') showToast(data.message || 'Base added successfully!', 'success');
+          else alert(data.message || 'Base added successfully!');
+
+          const modal = document.getElementById('add-base-modal') || document.getElementById('modal-create-base');
+          if (modal) modal.classList.add('hidden');
+
+          if (e.target && typeof e.target.reset === 'function') e.target.reset();
+
+          if (typeof fetchBasesFromAPI === 'function') await fetchBasesFromAPI();
+          if (typeof populateBaseDropdowns === 'function') await populateBaseDropdowns();
+
+        } else {
+          const errMsg = data.message || (data.errors ? Object.values(data.errors).join(' ') : 'The base could not be saved to the database.');
+          
+          if (data.errors && data.errors.baseCode && errCodeEl) {
+            errCodeEl.textContent = data.errors.baseCode;
+            errCodeEl.classList.remove('hidden');
+          } else if (data.errors && data.errors.baseName && errNameEl) {
+            errNameEl.textContent = data.errors.baseName;
+            errNameEl.classList.remove('hidden');
+          } else if (errCodeEl) {
+            errCodeEl.textContent = errMsg;
+            errCodeEl.classList.remove('hidden');
+          }
+
+          if (typeof showToast === 'function') showToast(errMsg, 'error');
+          else alert(errMsg);
+        }
+      } catch (err) {
+        console.error('Base creation exception:', err);
+        const netMsg = 'Network error while saving base.';
+        if (errCodeEl) { errCodeEl.textContent = netMsg; errCodeEl.classList.remove('hidden'); }
+        if (typeof showToast === 'function') showToast(netMsg, 'error');
+        else alert(netMsg);
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          const origText = submitBtn.dataset.origText || 'SAVE BASE';
+          if (submitBtn.querySelector('span')) {
+            submitBtn.querySelector('span').textContent = origText;
+          } else {
+            submitBtn.textContent = origText;
+          }
+        }
+      }
+    }
+
+    async function handleCreateBaseSubmit(e) {
+      return handleAddBaseSubmit(e);
+    }
+
+    window.handleAddBaseSubmit = handleAddBaseSubmit;
+    window.handleCreateBaseSubmit = handleCreateBaseSubmit;
+    
+    window.openAddUnitModal = openAddUnitModal;
+    window.closeAddUnitModal = closeAddUnitModal;
+    window.confirmCloseAddUnitModal = confirmCloseAddUnitModal;
+    async function handleAddUnitSubmit(e) {
+      if (e) e.preventDefault();
+
+      const unitCode = document.getElementById('unit-code') ? document.getElementById('unit-code').value.trim() : '';
+      const unitName = document.getElementById('unit-name') ? document.getElementById('unit-name').value.trim() : '';
+      const baseId = document.getElementById('unit-base-id') ? document.getElementById('unit-base-id').value : '';
+      const description = document.getElementById('unit-description') ? document.getElementById('unit-description').value.trim() : '';
+
+      if (!unitCode || !unitName || !baseId) {
+        alert('Unit Code, Unit Name, and Parent Base are required.');
+        return;
+      }
+
+      const submitBtn = document.getElementById('btn-submit-unit');
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/units', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-user-role': currentUserRole || 'GLOBAL_ADMIN' },
+          body: JSON.stringify({ unitCode, unitName, baseId, description })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert('Unit added successfully!');
+          if (typeof fetchUnitsFromAPI === 'function') await fetchUnitsFromAPI();
+          if (typeof closeAddUnitModal === 'function') closeAddUnitModal();
+          if (e.target && typeof e.target.reset === 'function') e.target.reset();
+        } else {
+          alert('Error adding unit: ' + (data.message || 'Failed to save unit.'));
+        }
+      } catch (err) {
+        console.error('Add Unit API Exception:', err);
+        alert('Network error saving unit to database.');
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    }
+
+    window.handleAddUnitSubmit = handleAddUnitSubmit;
+    window.filterUnitsBySelectedBase = filterUnitsBySelectedBase;
+    window.confirmCloseAddBaseModal = confirmCloseAddBaseModal;
+    window.toggleBaseStatus = toggleBaseStatus;
+    window.normalizeBaseCode = normalizeBaseCode;
+
 
     window.switchView = switchView;
     window.changeUserRole = changeUserRole;
@@ -1986,7 +2455,356 @@
       archivedMasterRolls.push(JSON.parse(JSON.stringify(INITIAL_APAPA_PERSONNEL)));
       populateBaseDropdowns();
       changeUserRole('GLOBAL_ADMIN');
+      fetchPersonnelFromAPI();
+      fetchBasesFromAPI();
+      fetchUnitsFromAPI();
     });
-  </script>
+  
+
+    // --- SUPABASE API FETCH & MUTATION HELPERS ---
+    async function fetchPersonnelFromAPI() {
+      try {
+        const res = await fetch('/api/personnel');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data)) {
+            dbPersonnel = json.data;
+            window.dbPersonnel = dbPersonnel;
+            if (typeof renderModule === 'function') renderModule();
+            if (typeof renderAllComponents === 'function') renderAllComponents();
+          }
+        }
+      } catch (err) {
+        console.warn('GET /api/personnel warning:', err.message);
+      }
+    }
+
+    async function fetchBasesFromAPI() {
+      try {
+        const res = await fetch('/api/bases');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data)) {
+            basesUnits = json.data;
+            window.basesUnits = basesUnits;
+            if (typeof populateBaseDropdowns === 'function') populateBaseDropdowns();
+          }
+        }
+      } catch (err) {
+        console.warn('GET /api/bases warning:', err.message);
+      }
+    }
+
+    async function fetchUnitsFromAPI() {
+      try {
+        const res = await fetch('/api/units');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data)) {
+            if (typeof dbUnits !== 'undefined') dbUnits = json.data;
+            window.dbUnits = json.data;
+            if (typeof populateUnitDropdowns === 'function') populateUnitDropdowns();
+          }
+        }
+      } catch (err) {
+        console.warn('GET /api/units warning:', err.message);
+      }
+    }
+
+    function filterMasterRollTable() {
+      const q = (document.getElementById('search-input') || document.getElementById('search-personnel-input') || { value: '' }).value.toLowerCase();
+      const st = (document.getElementById('filter-state') || document.getElementById('filter-state-select') || { value: '' }).value.toLowerCase();
+      
+      const rows = document.querySelectorAll('#master-roll-table-body tr, #personnel-table-body tr');
+      rows.forEach(r => {
+        const txt = r.textContent.toLowerCase();
+        const matchesQ = !q || txt.includes(q);
+        const matchesSt = !st || txt.includes(st);
+        r.style.display = (matchesQ && matchesSt) ? '' : 'none';
+      });
+    }
+
+    async function handleEditPersonnel(id) {
+      alert("Editing officer ID: " + id);
+    }
+
+    async function handleDeletePersonnel(id) {
+      if (!confirm("Are you sure you want to delete this officer record?")) return;
+      try {
+        const res = await fetch(`/api/personnel?id=${id}`, { method: 'DELETE', headers: { 'x-user-role': window.currentUserRole || 'GLOBAL_ADMIN' } });
+        if (res.ok) {
+          alert("Officer record deleted successfully.");
+          await fetchPersonnelFromAPI();
+        } else {
+          alert("Could not delete officer record.");
+        }
+      } catch (e) {
+        console.error("Delete personnel error:", e);
+      }
+    }
+
+    async function handleEditBase(id) {
+      alert("Editing Base ID: " + id);
+    }
+
+    async function handleDeleteBase(id) {
+      if (!confirm("Are you sure you want to delete this Base?")) return;
+      try {
+        const res = await fetch(`/api/bases?id=${id}`, { method: 'DELETE', headers: { 'x-user-role': window.currentUserRole || 'GLOBAL_ADMIN' } });
+        if (res.ok) {
+          alert("Base deleted successfully.");
+          await fetchBasesFromAPI();
+        } else {
+          alert("Could not delete Base.");
+        }
+      } catch (e) {
+        console.error("Delete base error:", e);
+      }
+    }
+
+    async function handleEditUnit(id) {
+      alert("Editing Unit ID: " + id);
+    }
+
+    async function handleDeleteUnit(id) {
+      if (!confirm("Are you sure you want to delete this Unit?")) return;
+      try {
+        const res = await fetch(`/api/units?id=${id}`, { method: 'DELETE', headers: { 'x-user-role': window.currentUserRole || 'GLOBAL_ADMIN' } });
+        if (res.ok) {
+          alert("Unit deleted successfully.");
+          await fetchUnitsFromAPI();
+        } else {
+          alert("Could not delete Unit.");
+        }
+      } catch (e) {
+        console.error("Delete unit error:", e);
+      }
+    }
+
+    async function handleImportDataset() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,.csv';
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const text = await file.text();
+        try {
+          const records = JSON.parse(text);
+          const res = await fetch('/api/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-user-role': 'SUPER_ADMIN' },
+            body: JSON.stringify({ records })
+          });
+          const data = await res.json();
+          alert(data.message || "Import completed.");
+          await fetchPersonnelFromAPI();
+        } catch (err) {
+          alert("Invalid dataset file format.");
+        }
+      };
+      input.click();
+    }
+
+    function handleLogout() {
+      if (confirm("Sign out of EOD-CBRN Personnel System?")) {
+        window.location.reload();
+      }
+    }
+
+    window.fetchPersonnelFromAPI = fetchPersonnelFromAPI;
+    window.fetchBasesFromAPI = fetchBasesFromAPI;
+    window.fetchUnitsFromAPI = fetchUnitsFromAPI;
+    window.filterMasterRollTable = filterMasterRollTable;
+    window.handleEditPersonnel = handleEditPersonnel;
+    window.handleDeletePersonnel = handleDeletePersonnel;
+    window.handleEditBase = handleEditBase;
+    window.handleDeleteBase = handleDeleteBase;
+    window.handleEditUnit = handleEditUnit;
+    window.handleDeleteUnit = handleDeleteUnit;
+    window.handleImportDataset = handleImportDataset;
+    window.handleLogout = handleLogout;
+
+
+
+    populateBaseDropdowns = async function(bases) {
+      const bList = bases || window.basesUnits || [];
+      const selectors = ['#ap-base-id', '#form-base', '#base-select-filter', '#unit-base-id', '#filter-base-select'];
+      selectors.forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) {
+          const currVal = el.value;
+          el.innerHTML = '<option value="">-- Select Command / Base --</option>';
+          bList.forEach(b => {
+            const bId = b.id || b.baseUnitId || '';
+            const bCode = b.base_code || b.baseCode || '';
+            const bName = b.base_name || b.baseName || '';
+            const opt = document.createElement('option');
+            opt.value = bId;
+            opt.textContent = `${bCode} - ${bName}`;
+            el.appendChild(opt);
+          });
+          if (currVal) el.value = currVal;
+        }
+      });
+    }
+
+    populateUnitDropdowns = async function(units) {
+      const uList = units || window.dbUnits || [];
+      const selectors = ['#ap-unit-id', '#form-unit-id', '#unit-select-filter'];
+      selectors.forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) {
+          const currVal = el.value;
+          el.innerHTML = '<option value="">-- Select Assigned Unit --</option>';
+          uList.forEach(u => {
+            const uId = u.id || u.unitId || '';
+            const uCode = u.unit_code || u.unitCode || '';
+            const uName = u.unit_name || u.unitName || '';
+            const opt = document.createElement('option');
+            opt.value = uId;
+            opt.textContent = `${uCode} - ${uName}`;
+            el.appendChild(opt);
+          });
+          if (currVal) el.value = currVal;
+        }
+      });
+    }
+
+    function filterUnitsBySelectedBase() {
+      const baseEl = document.getElementById('ap-base-id') || document.getElementById('form-base');
+      const unitEl = document.getElementById('ap-unit-id') || document.getElementById('form-unit-id');
+      if (!baseEl || !unitEl) return;
+
+      const selectedBaseId = baseEl.value;
+      const allUnits = window.dbUnits || [];
+      
+      unitEl.innerHTML = '<option value="">-- Select Assigned Unit --</option>';
+      const filtered = selectedBaseId ? allUnits.filter(u => (u.base_id === selectedBaseId || u.baseId === selectedBaseId)) : allUnits;
+
+      filtered.forEach(u => {
+        const uId = u.id || u.unitId || '';
+        const uCode = u.unit_code || u.unitCode || '';
+        const uName = u.unit_name || u.unitName || '';
+        const opt = document.createElement('option');
+        opt.value = uId;
+        opt.textContent = `${uCode} - ${uName}`;
+        unitEl.appendChild(opt);
+      });
+    }
+
+    window.populateBaseDropdowns = populateBaseDropdowns;
+    window.populateUnitDropdowns = populateUnitDropdowns;
+    window.filterUnitsBySelectedBase = filterUnitsBySelectedBase;
+    
+
+
+    // --- DYNAMIC BASE AND UNIT DROPDOWN CONTROLLERS ---
+    populateBaseDropdowns = async function(bases) {
+      try {
+        let bList = bases;
+        if (!bList || !bList.length) {
+          const res = await fetch('/api/bases');
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) bList = json.data;
+          }
+        }
+        bList = bList || window.basesUnits || [];
+        window.basesUnits = bList;
+
+        const baseSelectors = ['#ap-base-id', '#form-base', '#base-select-filter', '#unit-base-id', '#filter-base-select'];
+        baseSelectors.forEach(sel => {
+          const el = document.querySelector(sel);
+          if (el) {
+            const currVal = el.value;
+            el.innerHTML = '<option value="">-- Select Base --</option>';
+            bList.forEach(b => {
+              const bId = b.id || b.baseUnitId || '';
+              const bCode = b.base_code || b.baseCode || '';
+              const bName = b.base_name || b.baseName || '';
+              const opt = document.createElement('option');
+              opt.value = bId;
+              opt.textContent = bCode ? `${bCode} - ${bName}` : bName;
+              el.appendChild(opt);
+            });
+            if (currVal && Array.from(el.options).some(o => o.value === currVal)) {
+              el.value = currVal;
+            }
+          }
+        });
+
+        // Initialize unit dropdown state
+        const unitEl = document.getElementById('ap-unit-id') || document.getElementById('form-unit-id');
+        const baseEl = document.getElementById('ap-base-id') || document.getElementById('form-base');
+        if (unitEl) {
+          if (baseEl && baseEl.value) {
+            await handleBaseSelectChange(baseEl);
+          } else {
+            unitEl.innerHTML = '<option value="">-- Select Base First --</option>';
+            unitEl.disabled = true;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to populate bases:', err);
+      }
+    }
+
+    async function handleBaseSelectChange(baseSelectEl) {
+      const baseId = baseSelectEl ? baseSelectEl.value : '';
+      const unitEl = document.getElementById('ap-unit-id') || document.getElementById('form-unit-id');
+      if (!unitEl) return;
+
+      if (!baseId) {
+        unitEl.innerHTML = '<option value="">-- Select Base First --</option>';
+        unitEl.disabled = true;
+        return;
+      }
+
+      unitEl.disabled = true;
+      unitEl.innerHTML = '<option value="">Loading Units...</option>';
+
+      try {
+        const res = await fetch(`/api/units?baseId=${encodeURIComponent(baseId)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        
+        unitEl.innerHTML = '<option value="">-- Select Assigned Unit --</option>';
+        
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          json.data.forEach(u => {
+            const uId = u.id || u.unitId || '';
+            const uCode = u.unit_code || u.unitCode || '';
+            const uName = u.unit_name || u.unitName || '';
+            const opt = document.createElement('option');
+            opt.value = uId;
+            opt.textContent = uCode ? `${uCode} - ${uName}` : uName;
+            unitEl.appendChild(opt);
+          });
+          unitEl.disabled = false;
+        } else {
+          unitEl.innerHTML = '<option value="">No units available for this base</option>';
+          unitEl.disabled = true;
+        }
+      } catch (err) {
+        console.error('Failed to fetch units for base:', err);
+        unitEl.innerHTML = '<option value="">Error loading units</option>';
+        unitEl.disabled = true;
+      }
+    }
+
+    populateUnitDropdowns = async function(units) {
+      const unitEl = document.getElementById('ap-unit-id') || document.getElementById('form-unit-id');
+      const baseEl = document.getElementById('ap-base-id') || document.getElementById('form-base');
+      if (baseEl && baseEl.value) {
+        await handleBaseSelectChange(baseEl);
+      }
+    }
+
+    window.populateBaseDropdowns = populateBaseDropdowns;
+    window.handleBaseSelectChange = handleBaseSelectChange;
+    window.populateUnitDropdowns = populateUnitDropdowns;
+    
+</script>
 </body>
 </html>

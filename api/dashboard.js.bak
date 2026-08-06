@@ -1,0 +1,63 @@
+import { supabase } from './_supabase.js';
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Role');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'GET') {
+    return res.status(405).json({ success: false, message: 'Method Not Allowed' });
+  }
+
+  try {
+    const [pRes, bRes, uRes] = await Promise.all([
+      supabase.from('personnel').select('id, retirement_date, rank, base_id, employment_status'),
+      supabase.from('bases').select('id, status'),
+      supabase.from('units').select('id, status')
+    ]);
+
+    const personnelList = pRes.data || [];
+    const basesList = bRes.data || [];
+    const unitsList = uRes.data || [];
+
+    const totalPersonnel = personnelList.length;
+    const totalBases = basesList.filter(b => b.status === 'ACTIVE').length;
+    const totalUnits = unitsList.filter(u => u.status === 'ACTIVE').length;
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const twoMonthsLater = new Date();
+    twoMonthsLater.setMonth(twoMonthsLater.getMonth() + 2);
+    const twoMonthsStr = twoMonthsLater.toISOString().split('T')[0];
+
+    const retiringNextTwoMonths = personnelList.filter(p => {
+      const r = p.retirement_date || '';
+      return r >= todayStr && r <= twoMonthsStr;
+    }).length;
+
+    const dueOrOverdue = personnelList.filter(p => {
+      const r = p.retirement_date || '';
+      return r && r < todayStr;
+    }).length;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalPersonnel,
+        totalBases,
+        totalUnits,
+        retiringNextTwoMonths,
+        dueOrOverdue,
+        activeOfficers: personnelList.filter(p => (p.employment_status || 'ACTIVE') === 'ACTIVE').length,
+        source: 'SUPABASE'
+      }
+    });
+
+  } catch (err) {
+    console.error('[GET /api/dashboard EXCEPTION]', err);
+    return res.status(500).json({ success: false, message: 'Dashboard statistics could not be loaded.' });
+  }
+}

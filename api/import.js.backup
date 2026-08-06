@@ -1,0 +1,158 @@
+import { supabase } from './_supabase.js';
+import crypto from 'crypto';
+
+function normalizeCode(val) {
+  return (val || '').toString().trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+function normalizeName(val) {
+  return (val || '').toString().trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Role');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, message: 'Method Not Allowed' });
+  }
+
+  try {
+    const userRole = req.headers['x-user-role'] || (req.body && req.body.userRole) || 'GLOBAL_ADMIN';
+    const superAdminRoles = ['GLOBAL_ADMIN', 'SUPER_ADMIN', 'super_admin', 'SYSTEM_ADMINISTRATOR', 'system_admin'];
+
+    if (!superAdminRoles.includes(userRole)) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only Super Administrators can perform dataset imports.'
+      });
+    }
+
+    const body = req.body || {};
+    const records = Array.isArray(body.records) ? body.records : (Array.isArray(body.data) ? body.data : []);
+
+    if (records.length === 0) {
+      return res.status(400).json({ success: false, message: 'No valid records provided for import.' });
+    }
+
+    let importedCount = 0;
+    let duplicateCount = 0;
+    let invalidCount = 0;
+    const errors = [];
+
+    for (const item of records) {
+      const apfRaw = item.apfNo || item.apNo || item["AP/F/NO"] || item.serviceNo || '';
+      const rankRaw = item.rank || item["RANK"] || '';
+      const nameRaw = item.fullName || item.name || item["NAME"] || '';
+      const dobStr = item.dateOfBirth || item.dob || item["DATE OF BIRTH"] || '1985-01-01';
+      const enlistStr = item.dateOfEnlistment || item.enlistDate || item["DATE OF ENLIST"] || '2005-01-01';
+
+      const normApf = normalizeCode(apfRaw);
+      const normName = normalizeName(nameRaw);
+
+      if (!normApf || !normName) {
+        invalidCount++;
+        errors.push(`Row missing AP/F/NO or Name: ${normApf || 'UNKNOWN'}`);
+        continue;
+      }
+
+      // Check duplicate AP/F/NO in Supabase
+      const { data: existing } = await supabase.from('personnel').select('id').eq('apf_no', normApf).maybeSingle();
+      if (existing) {
+        duplicateCount++;
+        continue;
+      }
+
+      const newId = crypto.randomUUID();
+      const empCode = normalizeCode(item.employeeCode || item["EMPLOYEE CODE"] || ('PF' + Date.now().toString().slice(-6)));
+
+      const generalPayload = {
+        id: newId,
+        apf_no: normApf,
+        rank: (rankRaw || 'INSPR').toUpperCase(),
+        full_name: normName,
+        educational_qualification: (item.educationalQualification || item.eduQual || item["EDU. QUALIFICATION"] || 'BSC POLICE SCIENCE').toUpperCase(),
+        state_of_origin: (item.stateOfOrigin || item["STATE OF ORIGIN"] || 'EDO').toUpperCase(),
+        lga: (item.lga || item["LGA"] || 'BENIN CITY').toUpperCase(),
+        tribe: (item.tribe || item["TRIBE"] || 'ORAH').toUpperCase(),
+        geopolitical_zone: (item.geopoliticalZone || item.geoPolZone || item["GEO POL ZONE"] || 'SOUTH SOUTH').toUpperCase(),
+        date_of_birth: dobStr,
+        date_of_enlistment: enlistStr,
+        date_of_last_promotion: item.dateOfLastPromotion || item.lastPromDate || item["DATE OF LAST PROM."] || '2020-01-01',
+        retirement_date: item.retirementDate || item.retireDate || item["DATE OF RETIREMENT"] || '2045-01-01',
+        calculated_retirement_date: item.calculatedRetirementDate || '2045-01-01',
+        command_served_last: (item.commandServedLast || item["COMMAND SERVED LAST"] || 'NATIONAL EOD-CBRN COMMAND').toUpperCase(),
+        date_transferred_to_command: item.dateTransferredToCommand || item.transferredDate || item["DATE TRANSFERRED TO COMMAND"] || '2023-01-01',
+        gd_sp: (item.gdSp || item["GD/SP"] || 'EOD TECH').toUpperCase(),
+        grade_level: (item.gradeLevel || item.gl || item["G/L"] || '10').toString(),
+        duty_post: (item.dutyPost || item["DUTY POST"] || 'EOD OPERATIVE').toUpperCase(),
+        employee_code: empCode,
+        base_id: item.baseId || null,
+        unit_id: item.unitId || null,
+        status: 'active'
+      };
+
+      const { error: pErr } = await supabase.from('personnel').insert(generalPayload);
+      if (pErr) {
+        console.warn('[IMPORT PERSONNEL ERROR]', pErr.message);
+        invalidCount++;
+        continue;
+      }
+
+      const privatePayload = {
+        personnel_id: newId,
+        account_number: item.accountNumber || item["ACCOUNT NUMBER"] || '',
+        bank_name: (item.bankName || item["BANK NAME"] || 'POLICE MORTGAGE BANK').toUpperCase(),
+        ippis_number: (item.ippisNumber || item["IPPIS NUMBER"] || ('1000' + Date.now().toString().slice(-6))),
+        pfa: (item.pfa || item["PFA"] || 'NPF PENSION').toUpperCase(),
+        pen_pin: item.penPin || item["PEN PIN"] || ('PEN-' + normApf),
+        nhf_number: item.nhfNumber || item["NHF NUMBER"] || ('NHF-' + normApf),
+        mss: (item.mss || item["MSS"] || 'APAPA BASE LAGOS').toUpperCase(),
+        email_address: item.emailAddress || item["E-MAIL ADDRESS"] || 'officer@npf.gov.ng',
+        phone_number: item.phoneNumber || item["PHONE NUMBER"] || '08034268620'
+      };
+
+      try {
+        await supabase.from('personnel_private').insert(privatePayload);
+      } catch (privErr) {
+        console.warn('[IMPORT PRIVATE DATA WARNING]', privErr.message);
+      }
+
+      importedCount++;
+    }
+
+    // Audit Log
+    try {
+      await supabase.from('audit_logs').insert({
+        id: crypto.randomUUID(),
+        actor: userRole,
+        action: 'DATASET_IMPORT',
+        category: 'IMPORT',
+        details: `Imported ${importedCount} records into Supabase (${duplicateCount} skipped duplicates, ${invalidCount} invalid)`,
+        timestamp: new Date().toISOString()
+      });
+    } catch (aErr) {
+      console.warn('[AUDIT LOG WARNING]', aErr.message);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Initial dataset imported successfully into Supabase. (${importedCount} imported, ${duplicateCount} duplicates skipped)`,
+      data: {
+        importedCount,
+        duplicateCount,
+        invalidCount,
+        errors
+      }
+    });
+
+  } catch (err) {
+    console.error('[POST /api/import EXCEPTION]', err);
+    return res.status(500).json({ success: false, message: 'Dataset import failed due to a server error.' });
+  }
+}

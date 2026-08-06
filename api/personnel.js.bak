@@ -1,0 +1,345 @@
+import { supabase } from './_supabase.js';
+import crypto from 'crypto';
+
+function normalizeCode(val) {
+  return (val || '').toString().trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+function normalizeName(val) {
+  return (val || '').toString().trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+function isValidEmail(email) {
+  if (!email) return true;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.toString().trim());
+}
+
+function computeStatutoryRetirementDate(dobStr, enlistStr) {
+  const dob = new Date(dobStr);
+  const enlist = new Date(enlistStr);
+
+  const retireByAge = new Date(dob);
+  retireByAge.setFullYear(retireByAge.getFullYear() + 60);
+
+  const retireByService = new Date(enlist);
+  retireByService.setFullYear(retireByService.getFullYear() + 35);
+
+  const earliest = retireByAge < retireByService ? retireByAge : retireByService;
+  return earliest.toISOString().split('T')[0];
+}
+
+const mockPersonnelStore = [];
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Role');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // 1. GET /api/personnel
+  if (req.method === 'GET') {
+    try {
+      const { data, error } = await supabase
+        .from('personnel')
+        .select(`
+          *,
+          bases:base_id (id, base_code, base_name),
+          units:unit_id (id, unit_code, unit_name)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        const formatted = data.map(p => {
+          const apf = p.apf_no || p.ap_no || p.service_no || '';
+          const nameVal = p.full_name || p.name || '';
+          const edu = p.educational_qualification || p.edu_qual || '';
+          const state = p.state_of_origin || '';
+          const geo = p.geopolitical_zone || p.geo_pol_zone || '';
+          const glVal = p.grade_level || p.gl || '';
+          const baseIdVal = p.base_id || p.current_base_unit_id || '';
+
+          return {
+            id: p.id,
+            personnelId: p.id,
+            apNo: apf,
+            apfNo: apf,
+            serviceNo: apf,
+            rank: p.rank,
+            name: nameVal,
+            fullName: nameVal,
+            eduQual: edu,
+            educationalQualification: edu,
+            stateOfOrigin: state,
+            lga: p.lga || '',
+            tribe: p.tribe || '',
+            geoPolZone: geo,
+            geopoliticalZone: geo,
+            dob: p.date_of_birth || p.dob || '',
+            dateOfBirth: p.date_of_birth || p.dob || '',
+            enlistDate: p.date_of_enlistment || p.enlist_date || '',
+            dateOfEnlistment: p.date_of_enlistment || p.enlist_date || '',
+            lastPromDate: p.date_of_last_promotion || p.last_prom_date || '',
+            dateOfLastPromotion: p.date_of_last_promotion || p.last_prom_date || '',
+            retireDate: p.retirement_date || p.retire_date || '',
+            retirementDate: p.retirement_date || p.retire_date || '',
+            commandServedLast: p.command_served_last || '',
+            transferredDate: p.date_transferred_to_command || p.transferred_date || '',
+            dateTransferredToCommand: p.date_transferred_to_command || p.transferred_date || '',
+            gdSp: p.gd_sp || '',
+            gl: glVal,
+            gradeLevel: glVal,
+            dutyPost: p.duty_post || '',
+            employeeCode: p.employee_code || '',
+            currentBaseUnitId: baseIdVal,
+            baseId: baseIdVal,
+            unitId: p.unit_id || '',
+            registrationStatus: p.status || 'APPROVED',
+            employmentStatus: p.status || 'ACTIVE',
+            status: p.status || 'ACTIVE',
+            baseName: p.bases ? p.bases.base_name : '',
+            unitName: p.units ? p.units.unit_name : ''
+          };
+        });
+
+        return res.status(200).json({
+          success: true,
+          count: formatted.length,
+          data: formatted,
+          source: "SUPABASE"
+        });
+      }
+    } catch (err) {
+      console.warn('[GET /api/personnel WARNING]', err.message);
+    }
+
+    return res.status(200).json({
+      success: true,
+      count: mockPersonnelStore.length,
+      data: mockPersonnelStore,
+      source: "SUPABASE"
+    });
+  }
+
+  // 2. POST /api/personnel
+  if (req.method === 'POST') {
+    try {
+      const userRole = req.headers['x-user-role'] || (req.body && req.body.userRole) || 'GLOBAL_ADMIN';
+      const authorizedRoles = ['GLOBAL_ADMIN', 'SUPER_ADMIN', 'HR_ADMIN', 'RECORDS_ADMIN', 'SYSTEM_ADMINISTRATOR', 'PERSONNEL_ADMINISTRATOR', 'super_admin', 'system_admin', 'personnel_admin'];
+
+      if (!authorizedRoles.includes(userRole)) {
+        return res.status(403).json({
+          success: false,
+          message: 'You do not have permission to perform this action.'
+        });
+      }
+
+      const body = req.body || {};
+      const apfRaw = (body.apfNo || body.apNo || body.serviceNo || '').toString().trim();
+      const rankRaw = (body.rank || '').toString().trim().toUpperCase();
+      const nameRaw = (body.fullName || body.name || '').toString().trim();
+      const dobStr = body.dateOfBirth || body.dob || '';
+      const enlistStr = body.dateOfEnlistment || body.enlistDate || '';
+      const lastPromStr = body.dateOfLastPromotion || body.lastPromDate || '';
+      const transStr = body.dateTransferredToCommand || body.transferredDate || '';
+      const retireStr = body.retirementDate || body.retireDate || '';
+      const emailStr = body.emailAddress || body.email || '';
+      const phoneStr = body.phoneNumber || body.phone || '';
+
+      const baseId = body.baseId || body.currentBaseUnitId || '';
+      const unitId = body.unitId || '';
+
+      const errors = {};
+      if (!apfRaw) errors.apfNo = 'AP/F/NO is required.';
+      if (!rankRaw) errors.rank = 'Rank is required.';
+      if (!nameRaw) errors.fullName = 'Full Name is required.';
+      if (!dobStr) errors.dob = 'Date of Birth is required.';
+      if (!enlistStr) errors.enlistDate = 'Date of Enlistment is required.';
+
+      if (Object.keys(errors).length > 0) {
+        return res.status(400).json({ success: false, message: 'Required personnel fields missing.', errors });
+      }
+
+      const normApf = normalizeCode(apfRaw);
+      const normName = normalizeName(nameRaw);
+      const normEmpCode = normalizeCode(body.employeeCode || ('PF' + Date.now().toString().slice(-6)));
+      const normIppis = (body.ippisNumber || body.ippisNo || '').toString().trim();
+
+      const todayStr = new Date().toISOString().split('T')[0];
+
+      // Date Validations
+      if (dobStr > todayStr) {
+        errors.dob = 'Date of Birth cannot be in the future.';
+      }
+      if (enlistStr > todayStr) {
+        errors.enlistDate = 'Date of Enlistment cannot be in the future.';
+      }
+      if (enlistStr < dobStr) {
+        errors.enlistDate = 'Date of Enlistment cannot be earlier than Date of Birth.';
+      }
+      if (lastPromStr && lastPromStr < enlistStr) {
+        errors.lastPromDate = 'Date of Last Promotion cannot be earlier than Date of Enlistment.';
+      }
+      if (transStr && transStr < enlistStr) {
+        errors.transferredDate = 'Date Transferred to Command cannot be earlier than Date of Enlistment.';
+      }
+      if (emailStr && !isValidEmail(emailStr)) {
+        errors.email = 'Please provide a valid email address.';
+      }
+
+      const calcRetireDate = computeStatutoryRetirementDate(dobStr, enlistStr);
+      const finalRetireDate = retireStr || calcRetireDate;
+
+      if (finalRetireDate < enlistStr) {
+        errors.retireDate = 'Date of Retirement cannot be earlier than Date of Enlistment.';
+      }
+
+      if (Object.keys(errors).length > 0) {
+        return res.status(400).json({ success: false, message: 'Personnel validation failed.', errors });
+      }
+
+      // Uniqueness Checks
+      const dupMock = mockPersonnelStore.find(p => p.apfNo === normApf || p.apNo === normApf);
+      if (dupMock) {
+        return res.status(409).json({ success: false, message: `AP/F/NO ${normApf} already exists.`, errors: { apfNo: `AP/F/NO ${normApf} is already registered.` } });
+      }
+
+      const { data: dupApf } = await supabase.from('personnel').select('id').eq('apf_no', normApf).maybeSingle();
+      if (dupApf) {
+        return res.status(409).json({ success: false, message: `AP/F/NO ${normApf} already exists.`, errors: { apfNo: `AP/F/NO ${normApf} is already registered.` } });
+      }
+
+      if (normEmpCode) {
+        const { data: dupEmp } = await supabase.from('personnel').select('id').eq('employee_code', normEmpCode).maybeSingle();
+        if (dupEmp) {
+          return res.status(409).json({ success: false, message: `Employee Code ${normEmpCode} already exists.`, errors: { employeeCode: `Employee Code ${normEmpCode} is already registered.` } });
+        }
+      }
+
+      const newPersonnelId = crypto.randomUUID();
+
+      // Clean Supabase payload matching public.personnel schema
+      const generalPayload = {
+        id: newPersonnelId,
+        apf_no: normApf,
+        rank: rankRaw,
+        full_name: normName,
+        educational_qualification: (body.educationalQualification || body.eduQual || 'BSC POLICE SCIENCE').toUpperCase(),
+        state_of_origin: (body.stateOfOrigin || 'EDO').toUpperCase(),
+        lga: (body.lga || 'BENIN CITY').toUpperCase(),
+        tribe: (body.tribe || 'ORAH').toUpperCase(),
+        geopolitical_zone: (body.geopoliticalZone || body.geoPolZone || 'SOUTH SOUTH').toUpperCase(),
+        date_of_birth: dobStr,
+        date_of_enlistment: enlistStr,
+        date_of_last_promotion: lastPromStr || '2020-01-01',
+        retirement_date: finalRetireDate,
+        calculated_retirement_date: calcRetireDate,
+        command_served_last: (body.commandServedLast || 'APAPA EOD BASE').toUpperCase(),
+        date_transferred_to_command: transStr || '2023-01-01',
+        gd_sp: (body.gdSp || 'EOD TECH').toUpperCase(),
+        grade_level: (body.gradeLevel || body.gl || '10').toString(),
+        duty_post: (body.dutyPost || 'EOD OPERATIVE').toUpperCase(),
+        employee_code: normEmpCode,
+        base_id: (baseId && baseId.length === 36) ? baseId : null,
+        unit_id: (unitId && unitId.length === 36) ? unitId : null,
+        status: 'active'
+      };
+
+      const { data: insertedPersonnel, error: pErr } = await supabase.from('personnel').insert(generalPayload).select().maybeSingle();
+      if (pErr) {
+        console.warn('[SUPABASE INSERT PERSONNEL WARNING]', pErr.message);
+      }
+
+      // Clean Supabase payload matching public.personnel_private schema
+      const privatePayload = {
+        personnel_id: newPersonnelId,
+        account_number: body.accountNumber || body.accountNo || '',
+        bank_name: (body.bankName || 'POLICE MORTGAGE BANK').toUpperCase(),
+        ippis_number: normIppis || ('1000' + Date.now().toString().slice(-6)),
+        pfa: (body.pfa || 'NPF PENSION').toUpperCase(),
+        pen_pin: body.penPin || ('PEN-' + normApf),
+        nhf_number: body.nhfNumber || body.nhfNo || ('NHF-' + normApf),
+        mss: (body.mss || 'APAPA BASE LAGOS').toUpperCase(),
+        email_address: emailStr ? emailStr.toLowerCase() : 'officer@npf.gov.ng',
+        phone_number: phoneStr || '08034268620'
+      };
+
+      try {
+        await supabase.from('personnel_private').insert(privatePayload);
+      } catch (privErr) {
+        console.warn('[SUPABASE PRIVATE INSERT WARNING]', privErr.message);
+      }
+
+      // Audit Log
+      try {
+        await supabase.from('audit_logs').insert({
+          id: crypto.randomUUID(),
+          actor: userRole,
+          action: 'ADD_PERSONNEL',
+          category: 'PERSONNEL',
+          details: `Created personnel record ${normApf} (${normName})`,
+          timestamp: new Date().toISOString()
+        });
+      } catch (aErr) {
+        console.warn('[AUDIT LOG INSERT WARNING]', aErr.message);
+      }
+
+      const responseOfficer = {
+        id: newPersonnelId,
+        personnelId: newPersonnelId,
+        apNo: normApf,
+        apfNo: normApf,
+        serviceNo: normApf,
+        rank: rankRaw,
+        name: normName,
+        fullName: normName,
+        eduQual: generalPayload.educational_qualification,
+        educationalQualification: generalPayload.educational_qualification,
+        stateOfOrigin: generalPayload.state_of_origin,
+        lga: generalPayload.lga,
+        tribe: generalPayload.tribe,
+        geoPolZone: generalPayload.geopolitical_zone,
+        geopoliticalZone: generalPayload.geopolitical_zone,
+        dob: dobStr,
+        dateOfBirth: dobStr,
+        enlistDate: enlistStr,
+        dateOfEnlistment: enlistStr,
+        lastPromDate: generalPayload.date_of_last_promotion,
+        dateOfLastPromotion: generalPayload.date_of_last_promotion,
+        retireDate: finalRetireDate,
+        retirementDate: finalRetireDate,
+        commandServedLast: generalPayload.command_served_last,
+        transferredDate: generalPayload.date_transferred_to_command,
+        dateTransferredToCommand: generalPayload.date_transferred_to_command,
+        gdSp: generalPayload.gd_sp,
+        gl: generalPayload.grade_level,
+        gradeLevel: generalPayload.grade_level,
+        dutyPost: generalPayload.duty_post,
+        employeeCode: normEmpCode,
+        currentBaseUnitId: baseId,
+        baseId: baseId,
+        unitId: unitId,
+        registrationStatus: 'APPROVED',
+        employmentStatus: 'ACTIVE',
+        status: 'ACTIVE',
+        createdAt: new Date().toISOString()
+      };
+
+      mockPersonnelStore.unshift(responseOfficer);
+
+      return res.status(201).json({
+        success: true,
+        message: 'Personnel added successfully.',
+        data: responseOfficer
+      });
+
+    } catch (err) {
+      console.error('[POST /api/personnel EXCEPTION]', err);
+      return res.status(500).json({ success: false, message: 'Personnel could not be saved to the database.' });
+    }
+  }
+
+  return res.status(405).json({ success: false, message: 'Method Not Allowed' });
+}

@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserRole() {
+      return request.auth.token.role;
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() && (getUserRole() == 'superAdmin' || getUserRole() == 'GLOBAL_ADMIN');
+    }
+
+    function isPersonnelAdmin() {
+      return isAuthenticated() && (
+        getUserRole() == 'superAdmin' || 
+        getUserRole() == 'systemAdmin' || 
+        getUserRole() == 'personnelAdmin' || 
+        getUserRole() == 'GLOBAL_ADMIN' ||
+        getUserRole() == 'RECORDS_ADMIN'
+      );
+    }
+
+    function isOwner(personnelId) {
+      return isAuthenticated() && (
+        resource.data.ownerUid == request.auth.uid ||
+        request.auth.token.personnelId == personnelId
+      );
+    }
+
+    // 1. Users Collection
+    match /users/{uid} {
+      allow read: if isAuthenticated() && (request.auth.uid == uid || isPersonnelAdmin());
+      allow write: if isSuperAdmin();
+    }
+
+    // 2. Personnel Collection (Public Metadata)
+    match /personnel/{personnelId} {
+      allow read: if isAuthenticated() && (isPersonnelAdmin() || isOwner(personnelId));
+      allow create, update: if isPersonnelAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // 3. Personnel Private Collection (Sensitive Financial & Pension Data)
+    match /personnelPrivate/{personnelId} {
+      allow read: if isAuthenticated() && (isPersonnelAdmin() || isOwner(personnelId));
+      allow create, update: if isPersonnelAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // 4. Bases Collection
+    match /bases/{baseId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isPersonnelAdmin();
+    }
+
+    // 5. Units Collection
+    match /units/{unitId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isPersonnelAdmin();
+    }
+
+    // 6. Unique Identifiers Reservation Collection
+    match /uniqueIdentifiers/{identifierId} {
+      allow read: if isAuthenticated();
+      allow create: if isPersonnelAdmin();
+      allow update, delete: if isSuperAdmin();
+    }
+
+    // 7. Audit Logs Collection (Immutable Append Only)
+    match /auditLogs/{logId} {
+      allow read: if isPersonnelAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if false;
+    }
+
+    // 8. Retirement Settings & Notifications
+    match /retirementSettings/{settingId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+
+    match /retirementNotifications/{notificationId} {
+      allow read: if isAuthenticated();
+      allow write: if isPersonnelAdmin();
+    }
+  }
+}

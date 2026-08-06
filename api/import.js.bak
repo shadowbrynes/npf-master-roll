@@ -1,0 +1,599 @@
+import { supabase } from './_supabase.js';
+import { randomUUID } from 'node:crypto';
+
+const IMPORT_ROLES = new Set([
+  'GLOBAL_ADMIN',
+  'SUPER_ADMIN',
+  'SYSTEM_ADMINISTRATOR',
+  'SYSTEM_ADMIN'
+]);
+
+function normalizeCode(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toUpperCase();
+}
+
+function normalizeName(value) {
+  return String(value ?? '')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toUpperCase();
+}
+
+function optionalText(value) {
+  const text = String(value ?? '').trim();
+  return text || null;
+}
+
+function getRequestBody(req) {
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return {};
+    }
+  }
+
+  return req.body || {};
+}
+
+function addYears(dateString, years) {
+  const date = new Date(`${dateString}T00:00:00Z`);
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  date.setUTCFullYear(date.getUTCFullYear() + years);
+  return date.toISOString().slice(0, 10);
+}
+
+async function resolveOrganisationIds(item) {
+  let baseId = optionalText(
+    item.baseId ||
+    item.base_id
+  );
+
+  let unitId = optionalText(
+    item.unitId ||
+    item.unit_id
+  );
+
+  if (unitId) {
+    const {
+      data: unit,
+      error: unitError
+    } = await supabase
+      .from('units')
+      .select('id, base_id')
+      .eq('id', unitId)
+      .maybeSingle();
+
+    if (unitError) {
+      throw new Error(
+        `Unit lookup failed: ${unitError.message}`
+      );
+    }
+
+    if (!unit) {
+      throw new Error(
+        `Unit ID ${unitId} does not exist.`
+      );
+    }
+
+    if (baseId && unit.base_id !== baseId) {
+      throw new Error(
+        `Unit ID ${unitId} does not belong to Base ID ${baseId}.`
+      );
+    }
+
+    baseId = baseId || unit.base_id || null;
+  }
+
+  if (baseId) {
+    const {
+      data: base,
+      error: baseError
+    } = await supabase
+      .from('bases')
+      .select('id')
+      .eq('id', baseId)
+      .maybeSingle();
+
+    if (baseError) {
+      throw new Error(
+        `Base lookup failed: ${baseError.message}`
+      );
+    }
+
+    if (!base) {
+      throw new Error(
+        `Base ID ${baseId} does not exist.`
+      );
+    }
+  }
+
+  return {
+    baseId,
+    unitId
+  };
+}
+
+export default async function handler(req, res) {
+  res.setHeader(
+    'Access-Control-Allow-Origin',
+    '*'
+  );
+
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'POST, OPTIONS'
+  );
+
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, X-User-Role'
+  );
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+
+    return res.status(405).json({
+      success: false,
+      message: 'Method Not Allowed'
+    });
+  }
+
+  try {
+    const body = getRequestBody(req);
+
+    const userRole = normalizeCode(
+      req.headers?.['x-user-role'] ||
+      body.userRole ||
+      ''
+    );
+
+    if (!IMPORT_ROLES.has(userRole)) {
+      return res.status(403).json({
+        success: false,
+        message:
+          'Only authorised Super Administrators can perform dataset imports.'
+      });
+    }
+
+    const records = Array.isArray(body.records)
+      ? body.records
+      : Array.isArray(body.data)
+        ? body.data
+        : [];
+
+    if (records.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'No valid records were provided for import.'
+      });
+    }
+
+    let importedCount = 0;
+    let duplicateCount = 0;
+    let invalidCount = 0;
+
+    const errors = [];
+
+    for (let index = 0; index < records.length; index++) {
+      const item = records[index] || {};
+
+      const apfRaw =
+        item.apfNo ||
+        item.apNo ||
+        item['AP/F/NO'] ||
+        item.serviceNo ||
+        '';
+
+      const rankRaw =
+        item.rank ||
+        item.RANK ||
+        '';
+
+      const nameRaw =
+        item.fullName ||
+        item.name ||
+        item.NAME ||
+        '';
+
+      const normApf = normalizeCode(apfRaw);
+      const normName = normalizeName(nameRaw);
+
+      if (!normApf || !normName) {
+        invalidCount++;
+
+        errors.push({
+          row: index + 1,
+          apfNo: normApf || null,
+          stage: 'validation',
+          message:
+            'AP/F/NO and Full Name are required.'
+        });
+
+        continue;
+      }
+
+      const {
+        data: existingPersonnel,
+        error: duplicateLookupError
+      } = await supabase
+        .from('personnel')
+        .select('id')
+        .eq('apf_no', normApf)
+        .maybeSingle();
+
+      if (duplicateLookupError) {
+        invalidCount++;
+
+        errors.push({
+          row: index + 1,
+          apfNo: normApf,
+          stage: 'duplicate-check',
+          message: duplicateLookupError.message
+        });
+
+        continue;
+      }
+
+      if (existingPersonnel) {
+        duplicateCount++;
+        continue;
+      }
+
+      let organisationIds;
+
+      try {
+        organisationIds =
+          await resolveOrganisationIds(item);
+      } catch (organisationError) {
+        invalidCount++;
+
+        errors.push({
+          row: index + 1,
+          apfNo: normApf,
+          stage: 'organisation',
+          message: organisationError.message
+        });
+
+        continue;
+      }
+
+      const newId = randomUUID();
+      const uniqueSuffix =
+        randomUUID()
+          .replace(/-/g, '')
+          .slice(0, 12)
+          .toUpperCase();
+
+      const dobStr =
+        optionalText(
+          item.dateOfBirth ||
+          item.dob ||
+          item['DATE OF BIRTH']
+        ) ||
+        '1985-01-01';
+
+      const enlistStr =
+        optionalText(
+          item.dateOfEnlistment ||
+          item.enlistDate ||
+          item['DATE OF ENLIST']
+        ) ||
+        '2005-01-01';
+
+      const calculatedRetirementDate =
+        optionalText(
+          item.calculatedRetirementDate
+        ) ||
+        addYears(enlistStr, 35) ||
+        '2040-01-01';
+
+      const retirementDate =
+        optionalText(
+          item.retirementDate ||
+          item.retireDate ||
+          item['DATE OF RETIREMENT']
+        ) ||
+        calculatedRetirementDate;
+
+      const promotionDate =
+        optionalText(
+          item.dateOfLastPromotion ||
+          item.lastPromDate ||
+          item['DATE OF LAST PROM.']
+        ) ||
+        enlistStr;
+
+      const transferDate =
+        optionalText(
+          item.dateTransferredToCommand ||
+          item.transferredDate ||
+          item['DATE TRANSFERRED TO COMMAND']
+        ) ||
+        enlistStr;
+
+      const employeeCode =
+        normalizeCode(
+          item.employeeCode ||
+          item['EMPLOYEE CODE']
+        ) ||
+        `PF-${uniqueSuffix}`;
+
+      const generalPayload = {
+        id: newId,
+        apf_no: normApf,
+        rank: normalizeCode(rankRaw || 'INSPR'),
+        full_name: normName,
+
+        educational_qualification:
+          normalizeName(
+            item.educationalQualification ||
+            item.eduQual ||
+            item['EDU. QUALIFICATION'] ||
+            'NOT PROVIDED'
+          ),
+
+        state_of_origin:
+          normalizeName(
+            item.stateOfOrigin ||
+            item['STATE OF ORIGIN'] ||
+            'NOT PROVIDED'
+          ),
+
+        lga:
+          normalizeName(
+            item.lga ||
+            item.LGA ||
+            'NOT PROVIDED'
+          ),
+
+        tribe:
+          normalizeName(
+            item.tribe ||
+            item.TRIBE ||
+            'NOT PROVIDED'
+          ),
+
+        geopolitical_zone:
+          normalizeName(
+            item.geopoliticalZone ||
+            item.geoPolZone ||
+            item['GEO POL ZONE'] ||
+            'NOT PROVIDED'
+          ),
+
+        date_of_birth: dobStr,
+        date_of_enlistment: enlistStr,
+        date_of_last_promotion: promotionDate,
+        retirement_date: retirementDate,
+
+        calculated_retirement_date:
+          calculatedRetirementDate,
+
+        command_served_last:
+          normalizeName(
+            item.commandServedLast ||
+            item['COMMAND SERVED LAST'] ||
+            'NATIONAL EOD-CBRN COMMAND'
+          ),
+
+        date_transferred_to_command:
+          transferDate,
+
+        gd_sp:
+          normalizeName(
+            item.gdSp ||
+            item['GD/SP'] ||
+            'EOD TECH'
+          ),
+
+        grade_level:
+          String(
+            item.gradeLevel ||
+            item.gl ||
+            item['G/L'] ||
+            '10'
+          ).trim(),
+
+        duty_post:
+          normalizeName(
+            item.dutyPost ||
+            item['DUTY POST'] ||
+            'EOD OPERATIVE'
+          ),
+
+        employee_code: employeeCode,
+        base_id: organisationIds.baseId,
+        unit_id: organisationIds.unitId,
+        status: 'active'
+      };
+
+      const {
+        error: personnelError
+      } = await supabase
+        .from('personnel')
+        .insert(generalPayload);
+
+      if (personnelError) {
+        console.error(
+          '[IMPORT PERSONNEL ERROR]',
+          personnelError.message
+        );
+
+        invalidCount++;
+
+        errors.push({
+          row: index + 1,
+          apfNo: normApf,
+          stage: 'personnel',
+          message: personnelError.message
+        });
+
+        continue;
+      }
+
+      const privatePayload = {
+        personnel_id: newId,
+
+        account_number:
+          optionalText(
+            item.accountNumber ||
+            item['ACCOUNT NUMBER']
+          ) ||
+          `IMPORT-${uniqueSuffix}`,
+
+        bank_name:
+          normalizeName(
+            item.bankName ||
+            item['BANK NAME'] ||
+            'NOT PROVIDED'
+          ),
+
+        ippis_number:
+          normalizeCode(
+            item.ippisNumber ||
+            item['IPPIS NUMBER']
+          ) ||
+          `IMP-${uniqueSuffix}`,
+
+        pfa:
+          normalizeName(
+            item.pfa ||
+            item.PFA ||
+            'NOT PROVIDED'
+          ),
+
+        pen_pin:
+          optionalText(
+            item.penPin ||
+            item['PEN PIN']
+          ) ||
+          `PEN-${uniqueSuffix}`,
+
+        nhf_number:
+          optionalText(
+            item.nhfNumber ||
+            item['NHF NUMBER']
+          ) ||
+          `NHF-${uniqueSuffix}`,
+
+        mss:
+          normalizeName(
+            item.mss ||
+            item.MSS ||
+            'NOT PROVIDED'
+          ),
+
+        email_address:
+          optionalText(
+            item.emailAddress ||
+            item['E-MAIL ADDRESS']
+          ) ||
+          `import-${uniqueSuffix.toLowerCase()}@npf.gov.ng`,
+
+        phone_number:
+          optionalText(
+            item.phoneNumber ||
+            item['PHONE NUMBER']
+          ) ||
+          '00000000000'
+      };
+
+      const {
+        error: privateError
+      } = await supabase
+        .from('personnel_private')
+        .insert(privatePayload);
+
+      if (privateError) {
+        console.error(
+          '[IMPORT PRIVATE DATA ERROR]',
+          privateError.message
+        );
+
+        const {
+          error: rollbackError
+        } = await supabase
+          .from('personnel')
+          .delete()
+          .eq('id', newId);
+
+        if (rollbackError) {
+          console.error(
+            '[IMPORT ROLLBACK ERROR]',
+            rollbackError.message
+          );
+        }
+
+        invalidCount++;
+
+        errors.push({
+          row: index + 1,
+          apfNo: normApf,
+          stage: 'personnel_private',
+          message: privateError.message
+        });
+
+        continue;
+      }
+
+      importedCount++;
+    }
+
+    if (
+      importedCount === 0 &&
+      invalidCount > 0
+    ) {
+      return res.status(422).json({
+        success: false,
+        message:
+          'No personnel records were imported because all attempted records failed.',
+        data: {
+          importedCount,
+          duplicateCount,
+          invalidCount,
+          errors
+        }
+      });
+    }
+
+    const message =
+      importedCount > 0
+        ? `Dataset import completed. ${importedCount} record(s) imported, ${duplicateCount} duplicate(s) skipped and ${invalidCount} invalid record(s) rejected.`
+        : `No new records were imported. ${duplicateCount} duplicate record(s) were skipped.`;
+
+    return res.status(200).json({
+      success: true,
+      message,
+      data: {
+        importedCount,
+        duplicateCount,
+        invalidCount,
+        errors
+      }
+    });
+  } catch (error) {
+    console.error(
+      '[POST /api/import EXCEPTION]',
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        'Dataset import failed due to a server error.'
+    });
+  }
+}

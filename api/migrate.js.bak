@@ -1,0 +1,71 @@
+import { supabase } from './_supabase.js';
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Role');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    return res.status(405).json({ success: false, message: 'Method Not Allowed' });
+  }
+
+  const userRole = req.headers['x-user-role'] || (req.body && req.body.userRole) || '';
+  if (userRole !== 'GLOBAL_ADMIN' && userRole !== 'SUPER_ADMIN' && userRole !== 'super_admin') {
+    return res.status(403).json({ success: false, message: 'Only Super Administrators can execute database seed migration.' });
+  }
+
+  const body = req.body || {};
+  if (body.confirm !== true && body.confirm !== 'true') {
+    return res.status(400).json({ success: false, message: 'Explicit confirmation required. Send { confirm: true }.' });
+  }
+
+  try {
+    let insertedCount = 0;
+
+    // Seed Bases
+    const basesData = [
+      { id: 'EOD-HQ-ABUJA', base_code: 'EOD-HQ-00', base_name: 'NATIONAL EOD-CBRN COMMAND HEADQUARTERS, ABUJA', location: 'ABUJA', state: 'FCT', status: 'ACTIVE' },
+      { id: 'EOD-BASE-LAGOS', base_code: 'EOD-BASE-01', base_name: 'APAPA SEA PORT EOD-CBRN TACTICAL BASE', location: 'LAGOS', state: 'LAGOS', status: 'ACTIVE' }
+    ];
+
+    for (const b of basesData) {
+      await supabase.from('bases').upsert(b, { onConflict: 'id' });
+      insertedCount++;
+    }
+
+    // Seed Units
+    const unitsData = [
+      { id: 'UNIT-OPS-01', unit_code: 'OPS-01', unit_name: 'OPERATIONS UNIT', base_id: 'EOD-BASE-LAGOS', command_name: 'NATIONAL COMMAND', location: 'LAGOS', description: 'Tactical EOD response unit', status: 'ACTIVE' },
+      { id: 'UNIT-INT-02', unit_code: 'INT-02', unit_name: 'INTELLIGENCE & ANALYSIS UNIT', base_id: 'EOD-HQ-ABUJA', command_name: 'NATIONAL COMMAND', location: 'ABUJA', description: 'Chemical intelligence unit', status: 'ACTIVE' }
+    ];
+
+    for (const u of unitsData) {
+      await supabase.from('units').upsert(u, { onConflict: 'id' });
+      insertedCount++;
+    }
+
+    // Audit Log
+    await supabase.from('audit_logs').insert({
+      id: 'AUD-' + Date.now(),
+      actor: userRole,
+      action: 'EXECUTE_MIGRATION',
+      category: 'DATABASE',
+      details: `Admin seeded ${insertedCount} base and unit records into Supabase PostgreSQL`,
+      timestamp: new Date().toISOString()
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Supabase database seed migration completed successfully.',
+      migratedCount: insertedCount
+    });
+
+  } catch (err) {
+    console.error('[SUPABASE MIGRATION ERROR]', err);
+    return res.status(500).json({ success: false, message: 'Migration failed: ' + err.message });
+  }
+}

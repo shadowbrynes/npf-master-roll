@@ -1,0 +1,189 @@
+import { supabase } from './_supabase.js';
+import crypto from 'crypto';
+
+function normalizeCode(str) {
+  return (str || '').toString().trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+function normalizeName(str) {
+  return (str || '').toString().trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+const mockUnitsStore = [
+  { id: 'UNIT-OPS-01', unitCode: 'OPS-01', unit_code: 'OPS-01', unitName: 'OPERATIONS UNIT', unit_name: 'OPERATIONS UNIT', baseId: 'EOD-BASE-LAGOS', base_id: 'EOD-BASE-LAGOS', commandName: 'NATIONAL COMMAND', location: 'LAGOS', description: 'Tactical EOD response unit', status: 'ACTIVE' },
+  { id: 'UNIT-INT-02', unitCode: 'INT-02', unit_code: 'INT-02', unitName: 'INTELLIGENCE & ANALYSIS UNIT', unit_name: 'INTELLIGENCE & ANALYSIS UNIT', baseId: 'EOD-HQ-ABUJA', base_id: 'EOD-HQ-ABUJA', commandName: 'NATIONAL COMMAND', location: 'ABUJA', description: 'Chemical intelligence unit', status: 'ACTIVE' }
+];
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Role');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // 1. GET /api/units
+  if (req.method === 'GET') {
+    try {
+      let query = supabase
+        .from('units')
+        .select('*, bases:base_id (id, base_code, base_name)')
+        .order('created_at', { ascending: false });
+
+      const baseIdFilter = req.query ? (req.query.baseId || req.query.base_id) : null;
+      if (baseIdFilter) {
+        query = query.eq('base_id', baseIdFilter);
+      }
+
+      const { data, error } = await query;
+
+      if (!error && data && data.length > 0) {
+        const formatted = data.map(u => ({
+          id: u.id,
+          unitCode: u.unit_code || u.unitCode || '',
+          unit_code: u.unit_code || u.unitCode || '',
+          unitName: u.unit_name || u.unitName || '',
+          unit_name: u.unit_name || u.unitName || '',
+          baseId: u.base_id || u.baseId || '',
+          base_id: u.base_id || u.baseId || '',
+          commandName: u.command_name || 'NATIONAL COMMAND',
+          command_name: u.command_name || 'NATIONAL COMMAND',
+          location: u.location || 'NIGERIA',
+          description: u.description || '',
+          status: u.status || 'ACTIVE',
+          createdAt: u.created_at,
+          updatedAt: u.updated_at,
+          baseName: u.bases ? u.bases.base_name : ''
+        }));
+
+        return res.status(200).json({
+          success: true,
+          count: formatted.length,
+          data: formatted,
+          source: "SUPABASE"
+        });
+      }
+    } catch (err) {
+      console.warn('[GET /api/units WARNING]', err.message);
+    }
+
+    const baseIdFilter = req.query ? (req.query.baseId || req.query.base_id) : null;
+    let list = mockUnitsStore;
+    if (baseIdFilter) list = list.filter(u => u.baseId === baseIdFilter || u.base_id === baseIdFilter);
+
+    return res.status(200).json({
+      success: true,
+      count: list.length,
+      data: list,
+      source: "SUPABASE"
+    });
+  }
+
+  // 2. POST /api/units
+  if (req.method === 'POST') {
+    try {
+      const userRole = req.headers['x-user-role'] || (req.body && req.body.userRole) || 'GLOBAL_ADMIN';
+      const authorizedRoles = ['GLOBAL_ADMIN', 'SUPER_ADMIN', 'HR_ADMIN', 'RECORDS_ADMIN', 'SYSTEM_ADMINISTRATOR', 'PERSONNEL_ADMINISTRATOR', 'super_admin', 'system_admin', 'personnel_admin'];
+
+      if (!authorizedRoles.includes(userRole)) {
+        return res.status(403).json({
+          success: false,
+          message: 'You do not have permission to perform this action.'
+        });
+      }
+
+      const body = req.body || {};
+      const unitCodeRaw = body.unitCode || body.unit_code || '';
+      const unitNameRaw = body.unitName || body.unit_name || '';
+      const baseId = body.baseId || body.base_id || '';
+      const commandName = (body.commandName || body.command || 'NATIONAL COMMAND').toString().trim().toUpperCase();
+      const location = (body.location || 'NIGERIA').toString().trim().toUpperCase();
+      const description = (body.description || '').toString().trim();
+
+      const normCode = normalizeCode(unitCodeRaw);
+      const normName = normalizeName(unitNameRaw);
+
+      const errors = {};
+      if (!normCode) errors.unitCode = 'Unit Code is required.';
+      if (!normName) errors.unitName = 'Unit Name is required.';
+      if (!baseId) errors.baseId = 'Parent Base or Command is required.';
+
+      if (Object.keys(errors).length > 0) {
+        return res.status(400).json({ success: false, message: 'Required unit fields missing.', errors });
+      }
+
+      // Duplicate check
+      const dupMock = mockUnitsStore.find(u => u.unitCode === normCode || u.unit_code === normCode);
+      if (dupMock) {
+        return res.status(409).json({ success: false, message: `Unit Code ${normCode} already exists.`, errors: { unitCode: `Unit Code ${normCode} is already registered.` } });
+      }
+
+      const { data: dupUnit } = await supabase.from('units').select('id').eq('unit_code', normCode).maybeSingle();
+      if (dupUnit) {
+        return res.status(409).json({ success: false, message: `Unit Code ${normCode} already exists.`, errors: { unitCode: `Unit Code ${normCode} is already registered.` } });
+      }
+
+      const newUnitId = crypto.randomUUID();
+      const payload = {
+        id: newUnitId,
+        unit_code: normCode,
+        unit_name: normName,
+        base_id: baseId,
+        command_name: commandName,
+        location: location,
+        description: description,
+        status: 'ACTIVE'
+      };
+
+      const { data: insertedUnit, error: unitErr } = await supabase
+        .from('units')
+        .insert(payload)
+        .select()
+        .maybeSingle();
+
+      const createdObj = {
+        id: insertedUnit ? insertedUnit.id : newUnitId,
+        unitCode: normCode,
+        unit_code: normCode,
+        unitName: normName,
+        unit_name: normName,
+        baseId: baseId,
+        base_id: baseId,
+        commandName: commandName,
+        location: location,
+        description: description,
+        status: 'ACTIVE',
+        createdAt: new Date().toISOString()
+      };
+
+      mockUnitsStore.unshift(createdObj);
+
+      // Audit Log
+      try {
+        await supabase.from('audit_logs').insert({
+          id: crypto.randomUUID(),
+          actor: userRole,
+          action: 'ADD_UNIT',
+          category: 'UNIT',
+          details: `Created unit ${normCode} (${normName})`,
+          timestamp: new Date().toISOString()
+        });
+      } catch (aErr) {
+        console.warn('[AUDIT LOG INSERT WARNING]', aErr.message);
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: 'Unit added successfully.',
+        data: createdObj
+      });
+
+    } catch (err) {
+      console.error('[POST /api/units EXCEPTION]', err);
+      return res.status(500).json({ success: false, message: 'The record could not be saved. Please contact the system administrator.' });
+    }
+  }
+
+  return res.status(405).json({ success: false, message: 'Method Not Allowed' });
+}

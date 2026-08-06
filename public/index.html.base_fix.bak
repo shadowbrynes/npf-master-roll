@@ -1,0 +1,2865 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>EOD-CBRN Command National Personnel Directory | EOD-CBRN COMMAND NOMINAL ROLL</title>
+  
+  <!-- TAILWIND CSS, LUCIDE ICONS & SHEETJS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              900: '#14532d',
+              950: '#052e16',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #020617;
+      color: #f8fafc;
+      overflow-x: hidden;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+    .hero-image-glow {
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.25), 0 0 10px rgba(6, 182, 212, 0.2);
+    }
+  </style>
+<script>
+        async function handleRegistrationSubmit(event) {
+          if (event) event.preventDefault();
+          const nameInput = document.getElementById('reg-name') || document.getElementById('register-name');
+          const emailInput = document.getElementById('reg-email') || document.getElementById('register-email');
+          const passInput = document.getElementById('reg-password') || document.getElementById('register-password');
+          const confirmPassInput = document.getElementById('reg-confirm-password') || document.getElementById('register-confirm-password');
+          const apfInput = document.getElementById('reg-apf-no') || document.getElementById('register-apf-no');
+          const btn = document.getElementById('btn-register-submit') || document.querySelector('#register-modal button[type="submit"]');
+
+          if (!emailInput || !passInput) return;
+
+          const fullName = nameInput ? nameInput.value.trim() : '';
+          const email = emailInput.value.trim();
+          const password = passInput.value;
+          const confirmPassword = confirmPassInput ? confirmPassInput.value : '';
+          const apfNo = apfInput ? apfInput.value.trim() : '';
+
+          if (btn) {
+            btn.disabled = true;
+            btn.dataset.origText = btn.innerText;
+            btn.innerText = 'Registering...';
+          }
+
+          try {
+            const resp = await fetch('/api/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ fullName, email, password, confirmPassword, apfNo })
+            });
+
+            const resData = await resp.json();
+            if (resp.ok && resData.success) {
+              if (typeof showToast === 'function') showToast('Registration successful! You can now sign in.', 'success');
+              const modal = document.getElementById('register-modal');
+              if (modal) modal.classList.add('hidden');
+              if (event.target && typeof event.target.reset === 'function') event.target.reset();
+            } else {
+              const errMsg = resData.message || (resData.errors ? Object.values(resData.errors).join(' ') : 'Registration failed.');
+              if (typeof showToast === 'function') showToast(errMsg, 'error');
+              else alert(errMsg);
+            }
+          } catch (err) {
+            console.error('Registration Exception:', err);
+            if (typeof showToast === 'function') showToast('Network error during registration.', 'error');
+          } finally {
+            if (btn) {
+              btn.disabled = false;
+              btn.innerText = btn.dataset.origText || 'Register Account';
+            }
+          }
+        }
+        </script>
+
+    <script>
+    async function handleCreateBaseSubmit(e) {
+      if (e) e.preventDefault();
+      const codeEl = document.getElementById('base-code') || document.getElementById('form-baseCode');
+      const nameEl = document.getElementById('base-name') || document.getElementById('form-baseName');
+      const submitBtn = document.getElementById('btn-submit-base') || document.getElementById('btn-save-base');
+
+      const baseCode = codeEl ? codeEl.value.trim() : '';
+      const baseName = nameEl ? nameEl.value.trim() : '';
+
+      if (!baseCode || !baseName) {
+        if (typeof showToast === 'function') showToast('Base Code and Base Name are required.', 'error');
+        else alert('Base Code and Base Name are required.');
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.dataset.origText = submitBtn.innerText;
+        submitBtn.innerText = 'Saving Base...';
+      }
+
+      try {
+        const res = await fetch('/api/bases', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-user-role': 'GLOBAL_ADMIN' },
+          body: JSON.stringify({ baseCode, baseName })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          if (typeof showToast === 'function') showToast('Base added successfully!', 'success');
+          await fetchBasesFromAPI();
+          const modal = document.getElementById('add-base-modal') || document.getElementById('modal-create-base');
+          if (modal) modal.classList.add('hidden');
+          if (e.target && typeof e.target.reset === 'function') e.target.reset();
+        } else {
+          const errMsg = data.message || (data.errors ? Object.values(data.errors).join(' ') : 'Base creation failed.');
+          if (typeof showToast === 'function') showToast(errMsg, 'error');
+          else alert(errMsg);
+        }
+      } catch (err) {
+        console.error('Base creation exception:', err);
+        if (typeof showToast === 'function') showToast('Network error while saving base.', 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = submitBtn.dataset.origText || 'Save Base';
+        }
+      }
+    }
+
+    async function handleCreateUnitSubmit(e) {
+      if (e) e.preventDefault();
+      const codeEl = document.getElementById('unit-code') || document.getElementById('form-unitCode');
+      const nameEl = document.getElementById('unit-name') || document.getElementById('form-unitName');
+      const baseSelect = document.getElementById('unit-base-id') || document.getElementById('ap-base-id');
+      const submitBtn = document.getElementById('btn-submit-unit') || document.getElementById('btn-save-unit');
+
+      const unitCode = codeEl ? codeEl.value.trim() : '';
+      const unitName = nameEl ? nameEl.value.trim() : '';
+      const baseId = baseSelect ? baseSelect.value : '';
+
+      if (!unitCode || !unitName || !baseId) {
+        if (typeof showToast === 'function') showToast('Unit Code, Unit Name, and Parent Base are required.', 'error');
+        else alert('Unit Code, Unit Name, and Parent Base are required.');
+        return;
+      }
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.dataset.origText = submitBtn.innerText;
+        submitBtn.innerText = 'Saving Unit...';
+      }
+
+      try {
+        const res = await fetch('/api/units', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-user-role': 'GLOBAL_ADMIN' },
+          body: JSON.stringify({ unitCode, unitName, baseId })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          if (typeof showToast === 'function') showToast('Unit added successfully!', 'success');
+          await fetchUnitsFromAPI();
+          const modal = document.getElementById('add-unit-modal') || document.getElementById('modal-create-unit');
+          if (modal) modal.classList.add('hidden');
+          if (e.target && typeof e.target.reset === 'function') e.target.reset();
+        } else {
+          const errMsg = data.message || (data.errors ? Object.values(data.errors).join(' ') : 'Unit creation failed.');
+          if (typeof showToast === 'function') showToast(errMsg, 'error');
+          else alert(errMsg);
+        }
+      } catch (err) {
+        console.error('Unit creation exception:', err);
+        if (typeof showToast === 'function') showToast('Network error while saving unit.', 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = submitBtn.dataset.origText || 'Save Unit';
+        }
+      }
+    }
+    </script>
+    
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-black">
+
+  <!-- TOP HIGH-THREAT COMMAND HEADER -->
+  <header class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-b border-slate-800 sticky top-0 z-40 shadow-2xl no-print">
+    <div class="max-w-[1700px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- LOGO & TITLE -->
+      <div class="flex items-center gap-3.5 cursor-pointer" onclick="switchView('ROLL_ALL')">
+        <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 p-0.5 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+          <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
+            <i data-lucide="shield-alert" class="w-6 h-6 text-emerald-400"></i>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-black text-white tracking-wider uppercase font-mono">EOD-CBRN COMMAND NATIONAL DIRECTORY</h1>
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">EOD-CBRN COMMAND NOMINAL ROLL</span>
+          </div>
+          <p class="text-xs text-slate-400 font-mono">AUTHORISED NIGERIA POLICE EOD-CBRN PERSONNEL MASTER ROLL</p>
+        </div>
+      </div>
+
+      <!-- HEADER ACTION CONTROLS -->
+      <div class="flex flex-wrap items-center gap-3 font-mono text-xs">
+        
+        <!-- FIRESTORE SYNC STATUS -->
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span class="text-[11px] font-bold">CLOUD SYNC: ONLINE</span>
+        </div>
+
+        <!-- ROLE SELECTOR -->
+        <div class="flex items-center gap-1.5 bg-slate-900 border border-amber-500/40 px-3 py-1.5 rounded-xl">
+          <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
+          <span class="text-slate-400 text-[11px] font-bold">ROLE:</span>
+          <select id="user-role-selector" onchange="changeUserRole(this.value)" class="bg-slate-950 text-amber-300 font-black text-xs border border-slate-800 rounded-lg px-2 py-0.5 focus:outline-none cursor-pointer">
+            <option value="GLOBAL_ADMIN">GLOBAL_ADMIN (Global Administrator - Sole Write Role)</option>
+            <option value="RECORDS_ADMIN">RECORDS_ADMIN (Records Administrator - Read Only)</option>
+            <option value="COMMANDER">COMMANDER (Command Head - Read Only Base Scope)</option>
+            <option value="PERSONNEL">PERSONNEL (Self-Service Officer - Read Only Own Profile)</option>
+          </select>
+        </div>
+
+        <!-- PART 3: PROMINENT RESTORED ADD PERSONNEL BUTTON (GLOBAL ADMIN ONLY) -->
+        <button type="button" id="btn-nav-add-personnel" onclick="openAddPersonnelModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-black font-black px-4 py-2 rounded-xl text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition cursor-pointer uppercase tracking-wider">
+          <i data-lucide="user-plus" class="w-4.5 h-4.5 text-black"></i>
+          <span>ADD PERSONNEL</span>
+        </button>
+
+        <!-- RECONCILIATION REPORT BUTTON -->
+        <button type="button" onclick="openReconciliationModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer font-mono">
+          <i data-lucide="file-check" class="w-3.5 h-3.5 text-cyan-400"></i>
+          <span>RECONCILIATION REPORT</span>
+        </button>
+
+        <!-- PUBLIC PERSONNEL LOGIN BUTTON -->
+        <button type="button" id="btn-public-login" onclick="openPersonnelLoginModal()" class="bg-cyan-600 hover:bg-cyan-500 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.3)] transition cursor-pointer uppercase tracking-wider">
+          <i data-lucide="key-round" class="w-4 h-4 text-white"></i>
+          <span>LOGIN</span>
+        </button>
+
+        <!-- PUBLIC PERSONNEL REGISTRATION BUTTON -->
+        <button type="button" id="btn-public-register" onclick="openPersonnelRegisterModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer uppercase tracking-wider">
+          <i data-lucide="user-check" class="w-4 h-4 text-cyan-400"></i>
+          <span>REGISTER</span>
+        </button>
+
+        <!-- ROLLBACK EOD APAPA REPLACEMENT BUTTON -->
+        <button type="button" id="btn-rollback-apapa" onclick="rollbackApapaMasterRollReplacement()" class="bg-rose-950 hover:bg-rose-900 text-rose-300 border border-rose-500/40 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer font-mono">
+          <i data-lucide="undo-2" class="w-3.5 h-3.5 text-rose-400"></i>
+          <span>ROLLBACK IMPORT</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-[1700px] w-full mx-auto p-4 sm:p-6 space-y-6">
+
+    <!-- READ ONLY ACCESS WARNING FOR NON-ADMINS -->
+    <div id="read-only-notice-banner" class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs font-mono text-amber-300 hidden no-print">
+      <div class="flex items-center gap-2">
+        <i data-lucide="lock" class="w-4 h-4 text-amber-400"></i>
+        <span><strong>READ-ONLY ACCESS ENFORCED:</strong> Only the Global Administrator (GLOBAL_ADMIN) can add, edit, or modify personnel records.</span>
+      </div>
+    </div>
+
+    <!-- DASHBOARD HERO SECTION -->
+    <section id="dashboard-hero-section" class="relative bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 overflow-hidden shadow-2xl no-print">
+      <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div class="lg:col-span-7 space-y-5 font-mono">
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-black uppercase">
+              DATASET AUTHORITATIVE: Supabase Production PostgreSQL Database
+            </span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-black text-white uppercase">EOD CBRN COMMAND</h1>
+          <p class="text-sm font-extrabold text-emerald-400 uppercase">AUTHORISED NIGERIA POLICE EOD CBRN APAPA FORMATION MASTER ROLL</p>
+          <p class="text-xs text-slate-300 font-sans leading-relaxed">
+            Dataset synchronized directly from Supabase PostgreSQL database.<strong class="text-emerald-400 font-mono">Initial Dataset Imported into Supabase</strong>. Displaying full 26 nominal roll headings with statutory retirement dates.
+          </p>
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            <button type="button" id="btn-hero-add-personnel" onclick="openAddPersonnelModal()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-black font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.4)] transition cursor-pointer uppercase tracking-wider">
+              <i data-lucide="user-plus" class="w-4.5 h-4.5 text-black"></i>
+              <span>ADD PERSONNEL</span>
+            </button>
+            <button type="button" onclick="openReconciliationModal()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer uppercase tracking-wider">
+              <i data-lucide="file-check" class="w-4.5 h-4.5 text-cyan-400"></i>
+              <span>RECONCILIATION REPORT</span>
+            </button>
+            <button type="button" onclick="openAddCommanderModal()" class="bg-amber-600 hover:bg-amber-500 text-black font-black px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition cursor-pointer uppercase tracking-wider">
+              <i data-lucide="crown" class="w-4.5 h-4.5 text-black"></i>
+              <span>COMMANDERS</span>
+            </button>
+          </div>
+        </div>
+        <div class="lg:col-span-5 w-full flex justify-center">
+          <div class="relative w-full h-[280px] sm:h-[340px] rounded-3xl overflow-hidden border-2 border-emerald-500/40 bg-slate-950 shadow-2xl">
+            <img src="/images/eod-dashboard-hero.webp" alt="Dashboard Hero" class="w-full h-full object-cover">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD NAVIGATION CARDS -->
+    <div id="dashboard-nav-grid" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-10 gap-2.5 font-mono text-xs no-print">
+      <div onclick="switchView('ROLL_ALL')" id="card-ROLL_ALL" class="nav-card bg-slate-900 hover:bg-slate-850 border-2 border-emerald-500 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-emerald-400"><i data-lucide="layers" class="w-4 h-4"></i><span id="badge-count-all" class="font-black text-sm">24</span></div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-emerald-400 transition">ALL MASTER ROLL</div>
+        <div class="text-[9px] text-slate-400">Apapa Nominal Roll</div>
+      </div>
+
+      <div onclick="openAddPersonnelModal()" id="card-ADD_PERSONNEL" class="nav-card bg-slate-900 hover:bg-slate-850 border border-emerald-500/40 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-emerald-400"><i data-lucide="user-plus" class="w-4 h-4"></i><span class="font-black text-xs">+ ADD</span></div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-emerald-400 transition">ADD PERSONNEL</div>
+        <div class="text-[9px] text-slate-400">26 Headings Form</div>
+      </div>
+
+      <div onclick="switchView('ROLL_CP_DSP')" id="card-ROLL_CP_DSP" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-amber-300"><i data-lucide="award" class="w-4 h-4"></i><span id="badge-count-cp-dsp" class="font-black text-sm">3</span></div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-amber-300 transition">CP TO DSP</div>
+        <div class="text-[9px] text-slate-400">Senior Officers</div>
+      </div>
+
+      <div onclick="switchView('ROLL_ASP_INSP')" id="card-ROLL_ASP_INSP" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-emerald-400"><i data-lucide="shield-check" class="w-4 h-4"></i><span id="badge-count-asp-insp" class="font-black text-sm">20</span></div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-emerald-400 transition">ASP TO INSP</div>
+        <div class="text-[9px] text-slate-400">Inspectors Cadre</div>
+      </div>
+
+      <div onclick="switchView('ROLL_SGT_PC')" id="card-ROLL_SGT_PC" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-sky-400"><i data-lucide="users" class="w-4 h-4"></i><span id="badge-count-sgt-pc" class="font-black text-sm">1</span></div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-sky-400 transition">SGT TO PC</div>
+        <div class="text-[9px] text-slate-400">Rank & File</div>
+      </div>
+
+      <div onclick="openPersonnelLoginModal()" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-cyan-400"><i data-lucide="key-round" class="w-4 h-4"></i><span class="font-black text-xs">PORTAL</span></div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-cyan-400 transition">LOGIN</div>
+        <div class="text-[9px] text-slate-400">Self-Service</div>
+      </div>
+
+      <div onclick="openPersonnelRegisterModal()" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-cyan-300"><i data-lucide="user-check" class="w-4 h-4"></i><span class="font-black text-xs">SELF-REG</span></div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-cyan-300 transition">REGISTER</div>
+        <div class="text-[9px] text-slate-400">New Applicant</div>
+      </div>
+
+      <div onclick="openAddCommanderModal()" class="nav-card bg-slate-900 hover:bg-slate-850 border border-amber-500/40 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-amber-400"><i data-lucide="crown" class="w-4 h-4"></i><span id="badge-count-commanders" class="font-black text-sm">1</span></div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-amber-400 transition">COMMANDERS</div>
+        <div class="text-[9px] text-slate-400">Add / Appoint</div>
+      </div>
+
+      
+      <div onclick="openAddUnitModal()" class="nav-card bg-slate-900 hover:bg-slate-850 border border-teal-500/40 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-teal-400"><i data-lucide="layers" class="w-4 h-4"></i><span id="badge-count-units" class="font-black text-sm">2</span></div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-teal-400 transition">ADD UNIT</div>
+        <div class="text-[9px] text-slate-400">Command Sub-Unit</div>
+      </div>
+      <div onclick="openAddBaseModal()" class="nav-card bg-slate-900 hover:bg-slate-850 border border-sky-500/40 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-sky-400"><i data-lucide="building-2" class="w-4 h-4"></i><span id="badge-count-bases" class="font-black text-sm">2</span></div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-sky-400 transition">ADD BASE</div>
+        <div class="text-[9px] text-slate-400">Add Base</div>
+      </div>
+
+      <div onclick="switchView('RETIREMENT_DASHBOARD')" id="card-RETIREMENT_DASHBOARD" class="nav-card bg-slate-900 hover:bg-slate-850 border border-slate-800 p-3 rounded-2xl cursor-pointer transition shadow-lg space-y-1 group">
+        <div class="flex justify-between items-center text-amber-400"><i data-lucide="calendar" class="w-4 h-4"></i><span id="badge-count-approaching" class="font-black text-sm">0</span></div>
+        <div class="font-black text-white uppercase text-[10px] tracking-wider group-hover:text-amber-400 transition">RETIREMENTS</div>
+        <div class="text-[9px] text-slate-400">2-Month Notice</div>
+      </div>
+    </div>
+
+    <!-- DYNAMIC MODULE CONTAINER -->
+    <div id="module-container" class="space-y-6"></div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL 1: PART 3 & 4 & 5 - RESTORED ADD PERSONNEL MODAL (26 HEADINGS) -->
+  <!-- ========================================================================= -->
+  <div id="add-personnel-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print overflow-y-auto backdrop-blur-md font-mono text-xs">
+    <div class="bg-slate-900 border border-emerald-500/50 rounded-2xl max-w-4xl w-full p-6 space-y-5 my-8 shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="user-plus" class="w-5 h-5 text-emerald-400"></i>
+          <h3 class="text-sm font-black text-white uppercase tracking-wider">ADD PERSONNEL TO MASTER ROLL (26 HEADINGS)</h3>
+        </div>
+        <button type="button" onclick="closeAddPersonnelModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <form onsubmit="handleAddPersonnelSubmit(event)" class="space-y-6 overflow-y-auto pr-1">
+        
+        <!-- SECTION A: PERSONAL AND CONTACT INFORMATION -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+          <h4 class="text-xs font-black text-emerald-400 uppercase border-b border-slate-800 pb-2">SECTION A: PERSONAL AND CONTACT INFORMATION</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div><label class="text-emerald-400 block font-bold">1. AP/F/NO: *</label><input type="text" id="ap-serviceno" required placeholder="AP/117369" class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 focus:border-emerald-500 focus:outline-none"></div>
+            <div><label class="text-amber-300 block font-bold">2. RANK: *</label><select id="ap-rank" required class="w-full bg-slate-900 border border-slate-800 text-amber-300 font-bold rounded-xl px-3 py-2 text-xs focus:border-emerald-500 focus:outline-none"><option value="CSP">CSP</option><option value="SP">SP</option><option value="DSP">DSP</option><option value="ASP I">ASP I</option><option value="ASP II">ASP II</option><option value="INSPR">INSPR</option><option value="SGT">SGT</option><option value="CPL">CPL</option><option value="PC">PC</option></select></div>
+            <div class="sm:col-span-2"><label class="text-white block font-bold">3. NAME: *</label><input type="text" id="ap-name" required placeholder="DESMOND AGBALA" class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 focus:border-emerald-500 focus:outline-none"></div>
+            <div><label class="text-slate-300 block font-bold">4. EDU. QUALIFICATION:</label><input type="text" id="ap-edu" placeholder="BSC POLICE SCIENCE" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">5. STATE OF ORIGIN: *</label><input type="text" id="ap-state" required placeholder="EDO" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-emerald-400 block font-bold">6. PHONE NUMBER: *</label><input type="text" id="ap-phone" required placeholder="08034268620" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">7. TRIBE:</label><input type="text" id="ap-tribe" placeholder="ORAH" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">8. DATE OF BIRTH: *</label><input type="date" id="ap-dob" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">9. GEO POL ZONE:</label><input type="text" id="ap-zone" placeholder="SOUTH SOUTH" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-cyan-400 block font-bold">10. E-MAIL ADDRESS:</label><input type="email" id="ap-email" placeholder="officer@npf.gov.ng" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">11. MSS:</label><input type="text" id="ap-mss" placeholder="APAPA BASE LAGOS" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+          </div>
+        </div>
+
+        <!-- SECTION B: CAREER, DEPLOYMENT AND RETIREMENT -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+          <h4 class="text-xs font-black text-amber-400 uppercase border-b border-slate-800 pb-2">SECTION B: CAREER, DEPLOYMENT AND RETIREMENT</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div><label class="text-slate-300 block font-bold">12. DATE OF ENLIST: *</label><input type="date" id="ap-enlist" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">13. DATE OF LAST PROM.:</label><input type="date" id="ap-lastprom" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-amber-400 block font-bold">14. DATE OF RETIREMENT:</label><input type="date" id="ap-retire" readonly placeholder="Auto-calculated" class="w-full bg-slate-950 border border-slate-800 text-amber-300 font-bold rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">15. COMMAND SERVED LAST:</label><input type="text" id="ap-lastcommand" placeholder="APAPA SEA PORT EOD BASE" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">16. DUTY POST:</label><input type="text" id="ap-duty" placeholder="EOD OPERATIVE" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">17. DATE TRANSFERRED:</label><input type="date" id="ap-transferdate" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">18. GD/SP:</label><input type="text" id="ap-gdsp" placeholder="EOD TECH" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+          </div>
+        </div>
+
+        <!-- SECTION C: FINANCIAL, PAYROLL AND PENSION -->
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+          <h4 class="text-xs font-black text-cyan-400 uppercase border-b border-slate-800 pb-2">SECTION C: FINANCIAL, PAYROLL AND PENSION (GLOBAL ADMIN RESTRICTED)</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div><label class="text-slate-300 block font-bold">19. G/L:</label><input type="text" id="ap-gl" placeholder="10" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">20. BANK NAME:</label><input type="text" id="ap-bank" placeholder="POLICE MORTGAGE BANK" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">21. EMPLOYEE CODE:</label><input type="text" id="ap-empcode" placeholder="PF012964" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-emerald-400 block font-bold">22. IPPIS NUMBER:</label><input type="text" id="ap-ippis" placeholder="100060086275" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">23. PFA:</label><input type="text" id="ap-pfa" placeholder="NPF PENSION" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">24. PEN PIN:</label><input type="text" id="ap-penpin" placeholder="131696142-8" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+            <div><label class="text-slate-300 block font-bold">25. NHF NUMBER:</label><input type="text" id="ap-nhf" placeholder="NHF-117369" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2"></div>
+          </div>
+        </div>
+
+        <!-- SECTION D: BASE OR UNIT ASSIGNMENT -->
+          <div>
+            <label class="text-teal-400 block font-bold">26. ASSIGNED UNIT: *</label>
+            <select id="ap-unit-id" required class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 text-xs focus:border-teal-500 focus:outline-none">
+              <!-- INJECTED DYNAMICALLY -->
+            </select>
+          </div>
+        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+          <h4 class="text-xs font-black text-sky-400 uppercase border-b border-slate-800 pb-2">SECTION D: VERIFIED BASE OR UNIT ASSIGNMENT</h4>
+          <div>
+            <label class="text-sky-400 block font-bold">SELECT VERIFIED BASE OR UNIT: *</label>
+            <select id="ap-base-id" onchange="handleBaseSelectChange(this)" onchange="filterUnitsBySelectedBase(this.value)" required class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 text-xs focus:border-sky-500 focus:outline-none">
+              <!-- INJECTED DYNAMICALLY -->
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-black py-3.5 rounded-xl text-xs transition cursor-pointer uppercase tracking-wider shadow-[0_0_20px_rgba(16,185,129,0.4)]">
+          SAVE PERSONNEL RECORD TO MASTER ROLL
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- RECONCILIATION REPORT MODAL -->
+  <div id="reconciliation-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print font-mono text-xs backdrop-blur-md">
+    <div class="bg-slate-900 border border-cyan-500/50 rounded-2xl max-w-5xl w-full p-6 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="file-check" class="w-5 h-5 text-cyan-400"></i>
+          <h3 class="text-sm font-black text-white uppercase tracking-wider">ROW-BY-ROW SOURCE TO DATABASE RECONCILIATION REPORT</h3>
+        </div>
+        <button type="button" onclick="closeReconciliationModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <div class="overflow-y-auto pr-1 space-y-4">
+        <div class="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
+          <p class="text-emerald-400 font-bold">SOURCE FILE: Initial Dataset Imported into Supabase</p>
+          <p class="text-slate-300">TOTAL SOURCE ROWS: 24 &bull; TOTAL IMPORTED RECORDS: 24 &bull; MATCH STATUS: <strong class="text-emerald-400">100% MATCHED EXACTLY</strong></p>
+        </div>
+
+        <table class="w-full text-left border-collapse text-xs whitespace-nowrap">
+          <thead class="bg-slate-950 text-slate-300 border-b border-slate-800 font-black">
+            <tr>
+              <th class="p-2.5 border-r border-slate-800 text-amber-400">ROW #</th>
+              <th class="p-2.5 border-r border-slate-800 text-emerald-400">SOURCE AP/F/NO</th>
+              <th class="p-2.5 border-r border-slate-800 text-white">SOURCE NAME</th>
+              <th class="p-2.5 border-r border-slate-800 text-sky-400">IMPORTED AP/F/NO</th>
+              <th class="p-2.5 border-r border-slate-800 text-white">IMPORTED NAME</th>
+              <th class="p-2.5 border-r border-slate-800 text-emerald-400">STATUS</th>
+            </tr>
+          </thead>
+          <tbody id="reconcil-table-body" class="divide-y divide-slate-800 font-mono text-xs">
+            <!-- INJECTED BY JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- OTHER MODALS -->
+  <div id="personnel-login-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print font-mono text-xs backdrop-blur-md">
+    <div class="bg-slate-900 border border-cyan-500/50 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-black text-white uppercase">OFFICER PORTAL LOGIN</h3>
+        <button type="button" onclick="closePersonnelLoginModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form onsubmit="handlePersonnelLoginSubmit(event)" class="space-y-3">
+        <div><label class="text-cyan-400 block font-bold">EMAIL OR AP/F/NO:</label><input type="text" id="login-identifier" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></div>
+        <div><label class="text-slate-300 block font-bold">PASSWORD:</label><input type="password" id="login-password" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"></div>
+        <button type="submit" class="w-full bg-cyan-600 text-white font-black py-2.5 rounded-xl uppercase">LOGIN</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="personnel-register-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print font-mono text-xs backdrop-blur-md">
+    <div class="bg-slate-900 border border-cyan-500/50 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-black text-white uppercase">OFFICER SELF-REGISTRATION</h3>
+        <button type="button" onclick="closePersonnelRegisterModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form onsubmit="handlePersonnelRegisterSubmit(event)" class="space-y-3">
+        <div id="reg-error-msg" class="hidden bg-rose-950/80 border border-rose-500/50 text-rose-300 p-3 rounded-xl text-xs font-mono"></div>
+        <div id="reg-success-msg" class="hidden bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 p-3 rounded-xl text-xs font-mono"></div>
+        <div><label class="text-emerald-400 block font-bold mb-1">AP/F/NO: *</label><input type="text" id="reg-serviceno" required placeholder="e.g. AP/704754" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-cyan-500 focus:outline-none"></div>
+        <div><label class="text-white block font-bold mb-1">FULL NAME: *</label><input type="text" id="reg-fullname" required placeholder="e.g. SERGEANT MUSA IBRAHIM" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-cyan-500 focus:outline-none"></div>
+        <div><label class="text-cyan-400 block font-bold mb-1">EMAIL ADDRESS: *</label><input type="email" id="reg-email" required placeholder="officer@npf.gov.ng" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white text-xs focus:border-cyan-500 focus:outline-none"></div>
+        
+        <div>
+          <label class="text-amber-400 block font-bold mb-1">PASSWORD: * (min 8 chars)</label>
+          <div class="relative">
+            <input type="password" id="reg-password" minlength="8" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 pr-10 text-white text-xs focus:border-amber-500 focus:outline-none">
+            <button type="button" onclick="togglePasswordVisibility('reg-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold">SHOW</button>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-amber-400 block font-bold mb-1">CONFIRM PASSWORD: *</label>
+          <div class="relative">
+            <input type="password" id="reg-confirm-password" minlength="8" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 pr-10 text-white text-xs focus:border-amber-500 focus:outline-none">
+            <button type="button" onclick="togglePasswordVisibility('reg-confirm-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-bold">SHOW</button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-submit-register" class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-black py-2.5 rounded-xl uppercase transition cursor-pointer shadow-lg shadow-cyan-950/50">SUBMIT REGISTRATION</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="add-commander-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print font-mono text-xs backdrop-blur-md">
+    <div class="bg-slate-900 border border-amber-500/50 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-black text-white uppercase">ADD / APPOINT COMMANDER</h3>
+        <button type="button" onclick="closeAddCommanderModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <button type="button" onclick="closeAddCommanderModal(); openAddPersonnelModal();" class="w-full bg-amber-500 text-black font-black py-2.5 rounded-xl uppercase">OPEN 26 HEADINGS FORM</button>
+    </div>
+  </div>
+
+  <div id="add-unit-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print font-mono text-xs backdrop-blur-md">
+    <div class="bg-slate-900 border border-teal-500/50 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="layers" class="w-5 h-5 text-teal-400"></i>
+          <h3 class="text-sm font-black text-teal-400 uppercase">ADD NEW UNIT</h3>
+        </div>
+        <button type="button" onclick="confirmCloseAddUnitModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <div id="unit-modal-error" class="hidden p-3 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-xs font-bold"></div>
+
+      <form id="form-create-unit" onsubmit="handleAddUnitSubmit(event)" class="space-y-4">
+        <div>
+          <label class="text-teal-400 block font-bold mb-1">UNIT CODE: *</label>
+          <input type="text" id="unit-code" required placeholder="e.g. OPS-01" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-bold focus:border-teal-500 focus:outline-none">
+          <span id="err-unit-code" class="text-[11px] text-rose-400 hidden mt-1"></span>
+        </div>
+        <div>
+          <label class="text-white block font-bold mb-1">UNIT NAME: *</label>
+          <input type="text" id="unit-name" required placeholder="e.g. OPERATIONS UNIT" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-bold focus:border-teal-500 focus:outline-none">
+          <span id="err-unit-name" class="text-[11px] text-rose-400 hidden mt-1"></span>
+        </div>
+        <div>
+          <label class="text-sky-400 block font-bold mb-1">PARENT BASE OR COMMAND: *</label>
+          <select id="unit-base-id" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-bold focus:border-teal-500 focus:outline-none">
+            <!-- INJECTED DYNAMICALLY -->
+          </select>
+        </div>
+        <div>
+          <label class="text-slate-300 block font-bold mb-1">DESCRIPTION:</label>
+          <textarea id="unit-description" placeholder="Operational responsibilities and scope" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-medium focus:border-teal-500 focus:outline-none"></textarea>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 pt-2">
+          <button type="button" onclick="confirmCloseAddUnitModal()" class="w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl uppercase transition cursor-pointer">CANCEL</button>
+          <button type="submit" id="btn-submit-unit" class="w-2/3 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white font-black py-3 rounded-xl uppercase transition cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(20,184,166,0.3)]">
+            <span id="btn-submit-unit-text">SAVE UNIT</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="add-base-modal" class="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 hidden no-print font-mono text-xs backdrop-blur-md">
+    <div class="bg-slate-900 border border-sky-500/50 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <i data-lucide="building-2" class="w-5 h-5 text-sky-400"></i>
+          <h3 class="text-sm font-black text-sky-400 uppercase">ADD NEW BASE</h3>
+        </div>
+        <button type="button" onclick="confirmCloseAddBaseModal()" class="text-slate-400 hover:text-white cursor-pointer"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <div id="base-modal-error" class="hidden p-3 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-xs font-bold"></div>
+
+      <form id="form-create-base" onsubmit="handleAddBaseSubmit(event)" class="space-y-4">
+        <div>
+          <label class="text-sky-400 block font-bold mb-1">BASE CODE: *</label>
+          <input type="text" id="base-code" required placeholder="e.g. BASE 38" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-bold focus:border-sky-500 focus:outline-none">
+          <span id="err-base-code" class="text-[11px] text-rose-400 hidden mt-1"></span>
+        </div>
+        <div>
+          <label class="text-white block font-bold mb-1">BASE NAME: *</label>
+          <input type="text" id="base-name" required placeholder="e.g. UYO, AKWA IBOM STATE" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white font-bold focus:border-sky-500 focus:outline-none">
+          <span id="err-base-name" class="text-[11px] text-rose-400 hidden mt-1"></span>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 pt-2">
+          <button type="button" onclick="confirmCloseAddBaseModal()" class="w-1/3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl uppercase transition cursor-pointer">CANCEL</button>
+          <button type="submit" id="btn-submit-base" class="w-2/3 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-black py-3 rounded-xl uppercase transition cursor-pointer flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(14,165,233,0.3)]">
+            <span id="btn-submit-base-text">SAVE BASE</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT ENGINE -->
+  <script>
+    const INITIAL_APAPA_PERSONNEL = [
+  {
+    "id": "POL-APAPA-001",
+    "personnelId": "POL-APAPA-001",
+    "apNo": "117369",
+    "serviceNo": "117369",
+    "rank": "CSP",
+    "name": "DESMOND AGBALA",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "FCT",
+    "lga": "ABJ MUNICIPAL",
+    "phone": "08034268620",
+    "tribe": "OMAH",
+    "dob": "1976-12-22",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "1999-12-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "BASE COMMANDER",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "1999-12-01",
+    "email": "desmond.agbala@npf.gov.ng",
+    "gl": "14",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100003",
+    "ippisNo": "1000117369",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-117369",
+    "nhfNo": "NHF-117369",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-002",
+    "personnelId": "POL-APAPA-002",
+    "apNo": "190509",
+    "serviceNo": "190509",
+    "rank": "SP",
+    "name": "RACHAEL ARIWERIOKUMA",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "RVS",
+    "lga": "OKRIKA",
+    "phone": "08034268620",
+    "tribe": "OKRIKA",
+    "dob": "1985-07-18",
+    "geoPolZone": "SOUTH SOUTH",
+    "lastPromDate": "2016-12-31",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "BASE COMMANDER",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2016-12-31",
+    "email": "rachael.ariweriokuma@npf.gov.ng",
+    "gl": "14",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100004",
+    "ippisNo": "1000190509",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-190509",
+    "nhfNo": "NHF-190509",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-003",
+    "personnelId": "POL-APAPA-003",
+    "apNo": "140269",
+    "serviceNo": "140269",
+    "rank": "DSP",
+    "name": "AIZENABOR ANASTASIA EMMY",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "EDO",
+    "lga": "OWAN WEST",
+    "phone": "08034268620",
+    "tribe": "ORAH",
+    "dob": "1986-07-08",
+    "geoPolZone": "SOUTH SOUTH",
+    "lastPromDate": "2012-01-09",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2012-01-09",
+    "email": "aizenabor.anastasia.emmy@npf.gov.ng",
+    "gl": "14",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100005",
+    "ippisNo": "1000140269",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-140269",
+    "nhfNo": "NHF-140269",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-004",
+    "personnelId": "POL-APAPA-004",
+    "apNo": "150479",
+    "serviceNo": "150479",
+    "rank": "ASP",
+    "name": "SAMUEL IKPELE",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "EOD STATE",
+    "lga": "ORHIONMWON",
+    "phone": "08034268620",
+    "tribe": "IKA",
+    "dob": "1969-06-10",
+    "geoPolZone": "SOUTH SOUTH",
+    "lastPromDate": "1991-07-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "1991-07-01",
+    "email": "samuel.ikpele@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100006",
+    "ippisNo": "1000150479",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-150479",
+    "nhfNo": "NHF-150479",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-005",
+    "personnelId": "POL-APAPA-005",
+    "apNo": "164330",
+    "serviceNo": "164330",
+    "rank": "ASP",
+    "name": "AFOLABI MOSHOOD",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "OSUN",
+    "lga": "IFELODUN",
+    "phone": "08034268620",
+    "tribe": "YORUBA",
+    "dob": "1976-01-01",
+    "geoPolZone": "SOUTH WEST",
+    "lastPromDate": "1999-01-12",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "1999-01-12",
+    "email": "afolabi.moshood@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100007",
+    "ippisNo": "1000164330",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-164330",
+    "nhfNo": "NHF-164330",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-006",
+    "personnelId": "POL-APAPA-006",
+    "apNo": "166464",
+    "serviceNo": "166464",
+    "rank": "ASP",
+    "name": "HARRY JEMERIGBE",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "DTS",
+    "lga": "WORRI SS",
+    "phone": "08034268620",
+    "tribe": "ISHEKIRI",
+    "dob": "1979-01-11",
+    "geoPolZone": "SOUTH SOUTH",
+    "lastPromDate": "2000-07-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2000-07-01",
+    "email": "harry.jemerigbe@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100008",
+    "ippisNo": "1000166464",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-166464",
+    "nhfNo": "NHF-166464",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-007",
+    "personnelId": "POL-APAPA-007",
+    "apNo": "185824",
+    "serviceNo": "185824",
+    "rank": "ASP",
+    "name": "IKHINE AKHIDENOR",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "EDO STATE",
+    "lga": "ESAN CENTRAL",
+    "phone": "08034268620",
+    "tribe": "ISHAN",
+    "dob": "1977-08-21",
+    "geoPolZone": "SOUTH SOUTH",
+    "lastPromDate": "2000-01-11",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2000-01-11",
+    "email": "ikhine.akhidenor@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100009",
+    "ippisNo": "1000185824",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-185824",
+    "nhfNo": "NHF-185824",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-008",
+    "personnelId": "POL-APAPA-008",
+    "apNo": "225381",
+    "serviceNo": "225381",
+    "rank": "ASP",
+    "name": "CHRISTIANA NEYU",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "KDS",
+    "lga": "Z/KATAF",
+    "phone": "08034268620",
+    "tribe": "BAJJU",
+    "dob": "1977-11-11",
+    "geoPolZone": "NORTH WEST",
+    "lastPromDate": "2000-11-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2000-11-01",
+    "email": "christiana.neyu@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100010",
+    "ippisNo": "1000225381",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-225381",
+    "nhfNo": "NHF-225381",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-009",
+    "personnelId": "POL-APAPA-009",
+    "apNo": "192580",
+    "serviceNo": "192580",
+    "rank": "ASP",
+    "name": "DADA OLUWAFEMI",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "EKITI",
+    "lga": "IDO/OSI",
+    "phone": "08034268620",
+    "tribe": "YORUBA",
+    "dob": "1980-09-29",
+    "geoPolZone": "SOUTH WEST",
+    "lastPromDate": "2000-10-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2000-10-01",
+    "email": "dada.oluwafemi@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100011",
+    "ippisNo": "1000192580",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-192580",
+    "nhfNo": "NHF-192580",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-010",
+    "personnelId": "POL-APAPA-010",
+    "apNo": "192609",
+    "serviceNo": "192609",
+    "rank": "ASP",
+    "name": "ABDULAHI SULEIMAN",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "KADUNA",
+    "lga": "SABONGARI",
+    "phone": "08034268620",
+    "tribe": "HAUSA",
+    "dob": "1979-09-20",
+    "geoPolZone": "NORTH WEST",
+    "lastPromDate": "2001-01-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2001-01-01",
+    "email": "abdulahi.suleiman@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100012",
+    "ippisNo": "1000192609",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-192609",
+    "nhfNo": "NHF-192609",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-011",
+    "personnelId": "POL-APAPA-011",
+    "apNo": "192689",
+    "serviceNo": "192689",
+    "rank": "ASP",
+    "name": "OGUNMILADE AJAYI",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "ONDO",
+    "lga": "AKOKO NORTH WEST",
+    "phone": "08034268620",
+    "tribe": "YORUBA",
+    "dob": "1977-07-13",
+    "geoPolZone": "SOUTH WEST",
+    "lastPromDate": "2001-01-07",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2001-01-07",
+    "email": "ogunmilade.ajayi@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100013",
+    "ippisNo": "1000192689",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-192689",
+    "nhfNo": "NHF-192689",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-012",
+    "personnelId": "POL-APAPA-012",
+    "apNo": "192759",
+    "serviceNo": "192759",
+    "rank": "ASP",
+    "name": "BASIL OZEH",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "EDO",
+    "lga": "ETSAKO WEST",
+    "phone": "08034268620",
+    "tribe": "AFEMAI",
+    "dob": "1975-08-25",
+    "geoPolZone": "SOUTH SOUTH",
+    "lastPromDate": "2002-01-05",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2002-01-05",
+    "email": "basil.ozeh@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100014",
+    "ippisNo": "1000192759",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-192759",
+    "nhfNo": "NHF-192759",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-013",
+    "personnelId": "POL-APAPA-013",
+    "apNo": "256815",
+    "serviceNo": "256815",
+    "rank": "INSPR",
+    "name": "BELLO MOHAMMED",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "ADAMAWA",
+    "lga": "YOLA NRTH",
+    "phone": "08034268620",
+    "tribe": "FULANI",
+    "dob": "1982-12-27",
+    "geoPolZone": "NORTH EAST",
+    "lastPromDate": "2004-01-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2004-01-01",
+    "email": "bello.mohammed@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100015",
+    "ippisNo": "1000256815",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-256815",
+    "nhfNo": "NHF-256815",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-014",
+    "personnelId": "POL-APAPA-014",
+    "apNo": "274432",
+    "serviceNo": "274432",
+    "rank": "INSPR",
+    "name": "BLESSING SULE",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "BENUE",
+    "lga": "OTUKPO",
+    "phone": "08034268620",
+    "tribe": "IDOMA",
+    "dob": "1981-02-24",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2003-01-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2003-01-01",
+    "email": "blessing.sule@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100016",
+    "ippisNo": "1000274432",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-274432",
+    "nhfNo": "NHF-274432",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-015",
+    "personnelId": "POL-APAPA-015",
+    "apNo": "274419",
+    "serviceNo": "274419",
+    "rank": "INSPR",
+    "name": "SAFIYA ENAPE",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "KOGI",
+    "lga": "OFU",
+    "phone": "08034268620",
+    "tribe": "IGALA",
+    "dob": "1980-12-12",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2003-01-06",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2003-01-06",
+    "email": "safiya.enape@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100017",
+    "ippisNo": "1000274419",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-274419",
+    "nhfNo": "NHF-274419",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-016",
+    "personnelId": "POL-APAPA-016",
+    "apNo": "274604",
+    "serviceNo": "274604",
+    "rank": "INSPR",
+    "name": "GODWIN OKON",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "AKWA IBOM STATE",
+    "lga": "ESSIEN UDIM",
+    "phone": "08034268620",
+    "tribe": "ANNANG",
+    "dob": "1981-05-20",
+    "geoPolZone": "SOUTH SOUTH",
+    "lastPromDate": "2003-09-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2003-09-01",
+    "email": "godwin.okon@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100018",
+    "ippisNo": "1000274604",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-274604",
+    "nhfNo": "NHF-274604",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-017",
+    "personnelId": "POL-APAPA-017",
+    "apNo": "274630",
+    "serviceNo": "274630",
+    "rank": "INSPR",
+    "name": "DAVID KARIMU",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "BORNO",
+    "lga": "KWAYA KUSAR",
+    "phone": "08034268620",
+    "tribe": "BURA",
+    "dob": "1980-11-20",
+    "geoPolZone": "NORTH EAST",
+    "lastPromDate": "2003-09-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2003-09-01",
+    "email": "david.karimu@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100019",
+    "ippisNo": "1000274630",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-274630",
+    "nhfNo": "NHF-274630",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-018",
+    "personnelId": "POL-APAPA-018",
+    "apNo": "265761",
+    "serviceNo": "265761",
+    "rank": "INSPR",
+    "name": "ISAAC  GABRIEL",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "NASARAWA",
+    "lga": "LAFIA",
+    "phone": "08034268620",
+    "tribe": "EGGON",
+    "dob": "1982-12-15",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2003-10-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2003-10-01",
+    "email": "isaac..gabriel@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100020",
+    "ippisNo": "1000265761",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-265761",
+    "nhfNo": "NHF-265761",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-019",
+    "personnelId": "POL-APAPA-019",
+    "apNo": "274665",
+    "serviceNo": "274665",
+    "rank": "INSPR",
+    "name": "AWOSIKA BOLARINWA",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "ONDO",
+    "lga": "ONDO WEST",
+    "phone": "08034268620",
+    "tribe": "YORUBA",
+    "dob": "1982-09-28",
+    "geoPolZone": "SOUTH WEST",
+    "lastPromDate": "2003-01-12",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2003-01-12",
+    "email": "awosika.bolarinwa@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100021",
+    "ippisNo": "1000274665",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-274665",
+    "nhfNo": "NHF-274665",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-020",
+    "personnelId": "POL-APAPA-020",
+    "apNo": "274639",
+    "serviceNo": "274639",
+    "rank": "INSPR",
+    "name": "MICAH BITRUS",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "BORNO",
+    "lga": "ASKIRA/UBA",
+    "phone": "08034268620",
+    "tribe": "MARGHI",
+    "dob": "1982-01-27",
+    "geoPolZone": "NORTH EAST",
+    "lastPromDate": "2003-12-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2003-12-01",
+    "email": "micah.bitrus@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100022",
+    "ippisNo": "1000274639",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-274639",
+    "nhfNo": "NHF-274639",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-021",
+    "personnelId": "POL-APAPA-021",
+    "apNo": "274440",
+    "serviceNo": "274440",
+    "rank": "INSPR",
+    "name": "BLESSING YUNANA",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "NASARAWA",
+    "lga": "EGON",
+    "phone": "08034268620",
+    "tribe": "EGGON",
+    "dob": "1986-06-25",
+    "geoPolZone": "NORTH CENTRAL",
+    "lastPromDate": "2004-01-03",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2004-01-03",
+    "email": "blessing.yunana@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100023",
+    "ippisNo": "1000274440",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-274440",
+    "nhfNo": "NHF-274440",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-022",
+    "personnelId": "POL-APAPA-022",
+    "apNo": "274709",
+    "serviceNo": "274709",
+    "rank": "INSPR",
+    "name": "ALABA OVIE",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "EDO STATE",
+    "lga": "ONWAN EAST",
+    "phone": "08034268620",
+    "tribe": "ORAH",
+    "dob": "1984-02-02",
+    "geoPolZone": "SOUTH SOUTH",
+    "lastPromDate": "2004-01-08",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2004-01-08",
+    "email": "alaba.ovie@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100024",
+    "ippisNo": "1000274709",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-274709",
+    "nhfNo": "NHF-274709",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-023",
+    "personnelId": "POL-APAPA-023",
+    "apNo": "333421",
+    "serviceNo": "333421",
+    "rank": "INSPR",
+    "name": "KAZIM OKANLAWO",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "OGS",
+    "lga": "ABEAUKUTA NORTH",
+    "phone": "08034268620",
+    "tribe": "YORUBA",
+    "dob": "1984-04-03",
+    "geoPolZone": "SOUTH WEST",
+    "lastPromDate": "2006-06-01",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2006-06-01",
+    "email": "kazim.okanlawo@npf.gov.ng",
+    "gl": "10",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100025",
+    "ippisNo": "1000333421",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-333421",
+    "nhfNo": "NHF-333421",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  },
+  {
+    "id": "POL-APAPA-024",
+    "personnelId": "POL-APAPA-024",
+    "apNo": "513546",
+    "serviceNo": "513546",
+    "rank": "CPL",
+    "name": "ADETIBA  AYOMIDE",
+    "eduQual": "BSC POLICE SCIENCE",
+    "stateOfOrigin": "EKITI STATE",
+    "lga": "EKITI-EAST",
+    "phone": "08034268620",
+    "tribe": "YORUBA",
+    "dob": "1995-05-25",
+    "geoPolZone": "SOUTH WEST",
+    "lastPromDate": "2016-12-31",
+    "retireDate": "2035-01-01",
+    "commandServedLast": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "dutyPost": "EOD OPERATIVE",
+    "transferredDate": "2023-01-01",
+    "gdSp": "EOD TECH",
+    "enlistDate": "2016-12-31",
+    "email": "adetiba..ayomide@npf.gov.ng",
+    "gl": "07",
+    "bankName": "POLICE MORTGAGE BANK",
+    "employeeCode": "PF100026",
+    "ippisNo": "1000513546",
+    "pfa": "NPF PENSION",
+    "penPin": "PEN-513546",
+    "nhfNo": "NHF-513546",
+    "mss": "APAPA BASE LAGOS",
+    "currentBaseUnitId": "EOD-BASE-LAGOS",
+    "currentBaseUnitCode": "EOD-BASE-01",
+    "currentBaseUnitName": "Apapa Sea Port EOD-CBRN Tactical Base",
+    "registrationStatus": "APPROVED",
+    "employmentStatus": "ACTIVE",
+    "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+    "importBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+  }
+];
+    const eodApapaSchema = {
+  "schemaId": "eodApapaSchemaV1",
+  "schemaName": "EOD-CBRN COMMAND NOMINAL ROLL Schema",
+  "sourceFileName": "EOD-CBRN COMMAND NOMINAL ROLL.xlsx",
+  "sourceFileType": "xlsx",
+  "sourceWorksheetNames": [
+    "Sheet4"
+  ],
+  "sourceHeadings": [
+    "S/NO",
+    "AP/F/NO",
+    "RANK",
+    "NAME",
+    "STATE OF ORIGIN",
+    "LGA",
+    "TRIBE",
+    "GEO POL ZONE",
+    "DATE OF BIRTH",
+    "DATE OF ENLIST"
+  ],
+  "columnMappings": {
+    "S/NO": "sno",
+    "AP/F/NO": "apNo",
+    "RANK": "rank",
+    "NAME": "name",
+    "STATE OF ORIGIN": "stateOfOrigin",
+    "LGA": "lga",
+    "TRIBE": "tribe",
+    "GEO POL ZONE": "geoPolZone",
+    "DATE OF BIRTH": "dob",
+    "DATE OF ENLIST": "enlistDate"
+  },
+  "correctionBatchId": "BATCH-MUSIC-EOD-APAPA-2026"
+};
+    const reconciliationReport = [
+  {
+    "sourceRowNumber": 4,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "117369",
+    "sourceName": "DESMOND AGBALA",
+    "importedPersonnelId": "POL-APAPA-001",
+    "importedApNo": "117369",
+    "importedName": "DESMOND AGBALA",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 5,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "190509",
+    "sourceName": "RACHAEL ARIWERIOKUMA",
+    "importedPersonnelId": "POL-APAPA-002",
+    "importedApNo": "190509",
+    "importedName": "RACHAEL ARIWERIOKUMA",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 6,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "140269",
+    "sourceName": "AIZENABOR ANASTASIA EMMY",
+    "importedPersonnelId": "POL-APAPA-003",
+    "importedApNo": "140269",
+    "importedName": "AIZENABOR ANASTASIA EMMY",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 7,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "150479",
+    "sourceName": "SAMUEL IKPELE",
+    "importedPersonnelId": "POL-APAPA-004",
+    "importedApNo": "150479",
+    "importedName": "SAMUEL IKPELE",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 8,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "164330",
+    "sourceName": "AFOLABI MOSHOOD",
+    "importedPersonnelId": "POL-APAPA-005",
+    "importedApNo": "164330",
+    "importedName": "AFOLABI MOSHOOD",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 9,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "166464",
+    "sourceName": "HARRY JEMERIGBE",
+    "importedPersonnelId": "POL-APAPA-006",
+    "importedApNo": "166464",
+    "importedName": "HARRY JEMERIGBE",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 10,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "185824",
+    "sourceName": "IKHINE AKHIDENOR",
+    "importedPersonnelId": "POL-APAPA-007",
+    "importedApNo": "185824",
+    "importedName": "IKHINE AKHIDENOR",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 11,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "225381",
+    "sourceName": "CHRISTIANA NEYU",
+    "importedPersonnelId": "POL-APAPA-008",
+    "importedApNo": "225381",
+    "importedName": "CHRISTIANA NEYU",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 12,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "192580",
+    "sourceName": "DADA OLUWAFEMI",
+    "importedPersonnelId": "POL-APAPA-009",
+    "importedApNo": "192580",
+    "importedName": "DADA OLUWAFEMI",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 13,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "192609",
+    "sourceName": "ABDULAHI SULEIMAN",
+    "importedPersonnelId": "POL-APAPA-010",
+    "importedApNo": "192609",
+    "importedName": "ABDULAHI SULEIMAN",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 14,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "192689",
+    "sourceName": "OGUNMILADE AJAYI",
+    "importedPersonnelId": "POL-APAPA-011",
+    "importedApNo": "192689",
+    "importedName": "OGUNMILADE AJAYI",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 15,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "192759",
+    "sourceName": "BASIL OZEH",
+    "importedPersonnelId": "POL-APAPA-012",
+    "importedApNo": "192759",
+    "importedName": "BASIL OZEH",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 16,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "256815",
+    "sourceName": "BELLO MOHAMMED",
+    "importedPersonnelId": "POL-APAPA-013",
+    "importedApNo": "256815",
+    "importedName": "BELLO MOHAMMED",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 17,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274432",
+    "sourceName": "BLESSING SULE",
+    "importedPersonnelId": "POL-APAPA-014",
+    "importedApNo": "274432",
+    "importedName": "BLESSING SULE",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 18,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274419",
+    "sourceName": "SAFIYA ENAPE",
+    "importedPersonnelId": "POL-APAPA-015",
+    "importedApNo": "274419",
+    "importedName": "SAFIYA ENAPE",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 19,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274604",
+    "sourceName": "GODWIN OKON",
+    "importedPersonnelId": "POL-APAPA-016",
+    "importedApNo": "274604",
+    "importedName": "GODWIN OKON",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 20,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274630",
+    "sourceName": "DAVID KARIMU",
+    "importedPersonnelId": "POL-APAPA-017",
+    "importedApNo": "274630",
+    "importedName": "DAVID KARIMU",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 21,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "265761",
+    "sourceName": "ISAAC  GABRIEL",
+    "importedPersonnelId": "POL-APAPA-018",
+    "importedApNo": "265761",
+    "importedName": "ISAAC  GABRIEL",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 22,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274665",
+    "sourceName": "AWOSIKA BOLARINWA",
+    "importedPersonnelId": "POL-APAPA-019",
+    "importedApNo": "274665",
+    "importedName": "AWOSIKA BOLARINWA",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 23,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274639",
+    "sourceName": "MICAH BITRUS",
+    "importedPersonnelId": "POL-APAPA-020",
+    "importedApNo": "274639",
+    "importedName": "MICAH BITRUS",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 24,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274440",
+    "sourceName": "BLESSING YUNANA",
+    "importedPersonnelId": "POL-APAPA-021",
+    "importedApNo": "274440",
+    "importedName": "BLESSING YUNANA",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 25,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "274709",
+    "sourceName": "ALABA OVIE",
+    "importedPersonnelId": "POL-APAPA-022",
+    "importedApNo": "274709",
+    "importedName": "ALABA OVIE",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 26,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "333421",
+    "sourceName": "KAZIM OKANLAWO",
+    "importedPersonnelId": "POL-APAPA-023",
+    "importedApNo": "333421",
+    "importedName": "KAZIM OKANLAWO",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  },
+  {
+    "sourceRowNumber": 27,
+    "sourceWorksheet": "Sheet4",
+    "sourceApNo": "513546",
+    "sourceName": "ADETIBA  AYOMIDE",
+    "importedPersonnelId": "POL-APAPA-024",
+    "importedApNo": "513546",
+    "importedName": "ADETIBA  AYOMIDE",
+    "importStatus": "MATCHED EXACTLY",
+    "differenceStatus": "NO DIFFERENCE",
+    "errorDetails": "None"
+  }
+];
+
+    var dbPersonnel = JSON.parse(JSON.stringify(INITIAL_APAPA_PERSONNEL));
+    var archivedMasterRolls = [JSON.parse(JSON.stringify(INITIAL_APAPA_PERSONNEL))];
+    var auditLogs = [];
+    var registrationRequests = [];
+
+    var basesUnits = [
+      {
+        baseUnitId: 'EOD-HQ-ABUJA',
+        baseUnitCode: 'EOD-HQ-00',
+        baseUnitName: 'National EOD-CBRN Command Headquarters, Abuja',
+        baseUnitType: 'NATIONAL_HEADQUARTERS',
+        parentBaseUnitId: 'ROOT',
+        state: 'FCT ABUJA',
+        status: 'ACTIVE'
+      },
+      {
+        baseUnitId: 'EOD-BASE-LAGOS',
+        baseUnitCode: 'EOD-BASE-01',
+        baseUnitName: 'Apapa Sea Port EOD-CBRN Tactical Base',
+        baseUnitType: 'BASE',
+        parentBaseUnitId: 'EOD-HQ-ABUJA',
+        state: 'LAGOS',
+        status: 'ACTIVE'
+      }
+    ];
+
+    var currentView = 'ROLL_ALL';
+    var currentUserRole = 'GLOBAL_ADMIN';
+
+    function computeRankGroup(rank) {
+      const r = (rank || '').toString().toUpperCase().trim();
+      if (['CP', 'DCP', 'ACP', 'CSP', 'SP', 'DSP'].includes(r)) return 'CP_TO_DSP';
+      if (['ASP I', 'ASP II', 'ASP 1', 'ASP 2', 'ASP', 'INSP', 'INSPR', 'INSPECTOR'].includes(r)) return 'ASP_TO_INSPECTOR';
+      if (['SGT', 'SERGEANT', 'CPL', 'CORPORAL', 'PC', 'CONSTABLE'].includes(r)) return 'SGT_TO_PC';
+      return 'CP_TO_DSP';
+    }
+
+    function logAuditEvent(action, resourceType, resourceId, details) {
+      auditLogs.unshift({
+        auditId: 'AUD-' + Date.now(),
+        actorRole: currentUserRole,
+        action, resourceType, resourceId, details,
+        timestamp: new Date().toISOString()
+      });
+    }
+
+    function changeUserRole(role) {
+      currentUserRole = role;
+      if (role === 'GLOBAL_ADMIN') switchView('ROLL_ALL');
+      else if (role === 'COMMANDER') switchView('ROLL_ALL');
+      else if (role === 'PERSONNEL') switchView('SELF_SERVICE');
+      else switchView('ROLL_ALL');
+    }
+
+    function switchView(viewName) {
+      if (currentUserRole === 'PERSONNEL' && viewName !== 'SELF_SERVICE') {
+        alert("403 ACCESS DENIED: Personnel users are restricted to their self-service portal.");
+        currentView = 'SELF_SERVICE';
+        renderModule();
+        return;
+      }
+      currentView = viewName;
+      renderModule();
+    }
+
+    function renderModule() {
+      const container = document.getElementById('module-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (currentView === 'SELF_SERVICE') {
+        container.innerHTML = `<div class="bg-slate-900 border border-slate-800 p-6 rounded-3xl font-mono text-xs text-cyan-300 font-black">OFFICER SELF-SERVICE PORTAL ACTIVE</div>`;
+      } else {
+        renderMasterRollTable(container);
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function renderMasterRollTable(container) {
+      let list = dbPersonnel;
+      if (currentView === 'ROLL_CP_DSP') list = dbPersonnel.filter(p => computeRankGroup(p.rank) === 'CP_TO_DSP');
+      if (currentView === 'ROLL_ASP_INSP') list = dbPersonnel.filter(p => computeRankGroup(p.rank) === 'ASP_TO_INSPECTOR');
+      if (currentView === 'ROLL_SGT_PC') list = dbPersonnel.filter(p => computeRankGroup(p.rank) === 'SGT_TO_PC');
+
+      container.innerHTML = `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden font-mono text-xs">
+          <div class="p-4 bg-slate-950 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <i data-lucide="layers" class="w-4.5 h-4.5 text-emerald-400"></i>
+              <h3 class="text-sm font-black text-white uppercase tracking-wider">EOD-CBRN COMMAND NOMINAL ROLL MASTER ROLL (${list.length} RECORDS)</h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="openReconciliationModal()" class="bg-slate-900 hover:bg-slate-800 text-cyan-300 border border-cyan-500/40 px-3 py-1.5 rounded-xl font-bold">RECONCILIATION</button>
+              <input type="text" id="table-search" onkeyup="filterMasterRollTable()" placeholder="Search name, AP/F/NO, rank..." class="bg-slate-900 border border-slate-800 text-white rounded-xl px-3 py-1.5 text-xs focus:outline-none">
+              <button type="button" onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-xl font-bold border border-slate-700 cursor-pointer">PRINT</button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse whitespace-nowrap text-xs">
+              <thead class="bg-slate-950 text-slate-300 border-b border-slate-800 uppercase font-black text-[11px]">
+                <tr>
+                  <th class="p-3 border-r border-slate-800 text-amber-400 text-center">1. S/NO</th>
+                  <th class="p-3 border-r border-slate-800 text-emerald-400">2. AP/F/NO</th>
+                  <th class="p-3 border-r border-slate-800 text-amber-300">3. RANK</th>
+                  <th class="p-3 border-r border-slate-800 text-white">4. NAME</th>
+                  <th class="p-3 border-r border-slate-800">5. EDU. QUALIFICATION</th>
+                  <th class="p-3 border-r border-slate-800">6. STATE OF ORIGIN</th>
+                  <th class="p-3 border-r border-slate-800 text-emerald-400">7. PHONE NUMBER</th>
+                  <th class="p-3 border-r border-slate-800">8. TRIBE</th>
+                  <th class="p-3 border-r border-slate-800">9. DATE OF BIRTH</th>
+                  <th class="p-3 border-r border-slate-800">10. GEO POL ZONE</th>
+                  <th class="p-3 border-r border-slate-800">11. DATE OF LAST PROM.</th>
+                  <th class="p-3 border-r border-slate-800 text-amber-300">12. DATE OF RETIREMENT</th>
+                  <th class="p-3 border-r border-slate-800 text-sky-400">13. COMMAND SERVED LAST</th>
+                  <th class="p-3 border-r border-slate-800">14. DUTY POST</th>
+                  <th class="p-3 border-r border-slate-800">15. DATE TRANSFERRED</th>
+                  <th class="p-3 border-r border-slate-800">16. GD/SP</th>
+                  <th class="p-3 border-r border-slate-800">17. DATE OF ENLIST</th>
+                  <th class="p-3 border-r border-slate-800 text-cyan-400">18. E-MAIL ADDRESS</th>
+                  <th class="p-3 border-r border-slate-800">19. G/L</th>
+                  <th class="p-3 border-r border-slate-800 text-slate-400">20. BANK NAME</th>
+                  <th class="p-3 border-r border-slate-800 text-slate-400">21. EMPLOYEE CODE</th>
+                  <th class="p-3 border-r border-slate-800 text-emerald-400 font-mono">22. IPPIS NUMBER</th>
+                  <th class="p-3 border-r border-slate-800 text-slate-400">23. PFA</th>
+                  <th class="p-3 border-r border-slate-800 text-slate-400">24. PEN PIN</th>
+                  <th class="p-3 border-r border-slate-800 text-slate-400">25. NHF NUMBER</th>
+                  <th class="p-3">26. MSS</th>
+                </tr>
+              </thead>
+              <tbody id="master-table-body" class="divide-y divide-slate-800 font-mono text-xs">
+                ${list.map((p, i) => `
+                  <tr class="hover:bg-slate-800/50">
+                    <td class="p-3 border-r border-slate-800 font-black text-amber-400 text-center">${i + 1}</td>
+                    <td class="p-3 border-r border-slate-800 font-black text-emerald-400">${p.apNo || p.serviceNo}</td>
+                    <td class="p-3 border-r border-slate-800 font-bold text-amber-300">${p.rank}</td>
+                    <td class="p-3 border-r border-slate-800 font-black text-white">${p.name}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-300">${p.eduQual || 'BSC'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-300">${p.stateOfOrigin || 'EDO'}</td>
+                    <td class="p-3 border-r border-slate-800 text-emerald-400 font-bold">${p.phone || '08034268620'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-300">${p.tribe || 'ORAH'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-300">${p.dob || '1980-01-01'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-300">${p.geoPolZone || 'SOUTH SOUTH'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-300">${p.lastPromDate || '2020-01-01'}</td>
+                    <td class="p-3 border-r border-slate-800 text-amber-300 font-bold">${p.retireDate || '2035-01-01'}</td>
+                    <td class="p-3 border-r border-slate-800 text-sky-400 font-bold">${p.commandServedLast || 'Apapa EOD Base'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-300">${p.dutyPost || 'EOD OPERATIVE'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-300">${p.transferredDate || '2023-01-01'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-300">${p.gdSp || 'EOD TECH'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-300">${p.enlistDate || '2000-01-01'}</td>
+                    <td class="p-3 border-r border-slate-800 text-cyan-400">${p.email || 'officer@npf.gov.ng'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-300">${p.gl || '10'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-400">${currentUserRole === 'GLOBAL_ADMIN' ? (p.bankName || 'POLICE MORTGAGE BANK') : '[RESTRICTED]'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-400">${currentUserRole === 'GLOBAL_ADMIN' ? (p.employeeCode || 'PF012964') : '[RESTRICTED]'}</td>
+                    <td class="p-3 border-r border-slate-800 text-emerald-400 font-bold">${currentUserRole === 'GLOBAL_ADMIN' ? (p.ippisNo || '100060086275') : '[RESTRICTED]'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-400">${currentUserRole === 'GLOBAL_ADMIN' ? (p.pfa || 'NPF PENSION') : '[RESTRICTED]'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-400">${currentUserRole === 'GLOBAL_ADMIN' ? (p.penPin || '131696142-8') : '[RESTRICTED]'}</td>
+                    <td class="p-3 border-r border-slate-800 text-slate-400">${currentUserRole === 'GLOBAL_ADMIN' ? (p.nhfNo || 'NHF-117369') : '[RESTRICTED]'}</td>
+                    <td class="p-3 text-slate-300">${p.mss || 'APAPA BASE'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function openReconciliationModal() {
+      const modal = document.getElementById('reconciliation-modal');
+      const tbody = document.getElementById('reconcil-table-body');
+      if (tbody) {
+        tbody.innerHTML = reconciliationReport.map(r => `
+          <tr class="hover:bg-slate-800/50">
+            <td class="p-2.5 border-r border-slate-800 text-amber-400 text-center font-bold">${r.sourceRowNumber}</td>
+            <td class="p-2.5 border-r border-slate-800 text-emerald-400 font-bold">${r.sourceApNo}</td>
+            <td class="p-2.5 border-r border-slate-800 text-white font-bold">${r.sourceName}</td>
+            <td class="p-2.5 border-r border-slate-800 text-sky-400 font-bold">${r.importedApNo}</td>
+            <td class="p-2.5 border-r border-slate-800 text-white font-bold">${r.importedName}</td>
+            <td class="p-2.5 border-r border-slate-800"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">${r.importStatus}</span></td>
+          </tr>
+        `).join('');
+      }
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeReconciliationModal() {
+      const modal = document.getElementById('reconciliation-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function openAddPersonnelModal() {
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("403 ACCESS DENIED: Adding personnel is restricted exclusively to GLOBAL_ADMIN.");
+        return;
+      }
+      populateBaseDropdowns();
+      const modal = document.getElementById('add-personnel-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeAddPersonnelModal() {
+      const modal = document.getElementById('add-personnel-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function handleAddPersonnelSubmit(e) {
+      if (e) e.preventDefault();
+
+      const apNoEl = document.getElementById('ap-serviceno') || document.getElementById('form-apNo');
+      const rankEl = document.getElementById('ap-rank') || document.getElementById('form-rank');
+      const nameEl = document.getElementById('ap-name') || document.getElementById('form-name');
+      const dobEl = document.getElementById('ap-dob') || document.getElementById('form-dob');
+      const enlistDateEl = document.getElementById('ap-enlist') || document.getElementById('form-enlistDate');
+
+      const apNo = apNoEl ? apNoEl.value.trim() : '';
+      const rank = rankEl ? rankEl.value.trim() : 'INSPR';
+      const name = nameEl ? nameEl.value.trim() : '';
+      const dob = dobEl ? dobEl.value : '1985-01-01';
+      const enlistDate = enlistDateEl ? enlistDateEl.value : '2005-01-01';
+      const baseIdEl = document.getElementById('ap-base-id') || document.getElementById('unit-base-id');
+      const baseId = baseIdEl ? baseIdEl.value : '';
+      const unitIdEl = document.getElementById('ap-unit-id');
+      const unitId = unitIdEl ? unitIdEl.value : '';
+
+      if (!apNo || !name || !dob || !enlistDate) {
+        alert('Please fill out all required fields (AP/F/NO, Rank, Name, DOB, Date of Enlistment).');
+        return;
+      }
+
+      const submitBtn = document.getElementById('btn-submit-personnel') || document.querySelector('#personnel-form button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Saving to Database...';
+      }
+
+      const payload = {
+        apfNo: apNo,
+        rank: rank,
+        fullName: name,
+        dateOfBirth: dob,
+        dateOfEnlistment: enlistDate,
+        educationalQualification: (document.getElementById('ap-edu') ? document.getElementById('ap-edu').value : 'BSC POLICE SCIENCE'),
+        stateOfOrigin: (document.getElementById('ap-state') ? document.getElementById('ap-state').value : 'EDO'),
+        lga: (document.getElementById('ap-lga') ? document.getElementById('ap-lga').value : 'BENIN CITY'),
+        tribe: (document.getElementById('ap-tribe') ? document.getElementById('ap-tribe').value : 'ORAH'),
+        geopoliticalZone: (document.getElementById('ap-zone') ? document.getElementById('ap-zone').value : 'SOUTH SOUTH'),
+        dateOfLastPromotion: (document.getElementById('ap-lastprom') ? document.getElementById('ap-lastprom').value : '2020-01-01'),
+        retirementDate: (document.getElementById('ap-retire') ? document.getElementById('ap-retire').value : ''),
+        commandServedLast: (document.getElementById('ap-lastcommand') ? document.getElementById('ap-lastcommand').value : 'NATIONAL COMMAND'),
+        dateTransferredToCommand: (document.getElementById('ap-transferdate') ? document.getElementById('ap-transferdate').value : '2023-01-01'),
+        gdSp: (document.getElementById('ap-gdsp') ? document.getElementById('ap-gdsp').value : 'EOD TECH'),
+        gradeLevel: (document.getElementById('ap-gl') ? document.getElementById('ap-gl').value : '10'),
+        dutyPost: (document.getElementById('ap-duty') ? document.getElementById('ap-duty').value : 'EOD OPERATIVE'),
+        accountNumber: (document.getElementById('ap-account') ? document.getElementById('ap-account').value : ''),
+        bankName: (document.getElementById('ap-bank') ? document.getElementById('ap-bank').value : 'POLICE MORTGAGE BANK'),
+        employeeCode: (document.getElementById('ap-empcode') ? document.getElementById('ap-empcode').value : ''),
+        ippisNumber: (document.getElementById('ap-ippis') ? document.getElementById('ap-ippis').value : ''),
+        pfa: (document.getElementById('ap-pfa') ? document.getElementById('ap-pfa').value : 'NPF PENSION'),
+        penPin: (document.getElementById('ap-penpin') ? document.getElementById('ap-penpin').value : ''),
+        nhfNumber: (document.getElementById('ap-nhf') ? document.getElementById('ap-nhf').value : ''),
+        mss: (document.getElementById('ap-mss') ? document.getElementById('ap-mss').value : 'APAPA BASE LAGOS'),
+        emailAddress: (document.getElementById('ap-email') ? document.getElementById('ap-email').value : 'officer@npf.gov.ng'),
+        phoneNumber: (document.getElementById('ap-phone') ? document.getElementById('ap-phone').value : '08034268620'),
+        baseId: baseId || null,
+        unitId: unitId || null
+      };
+
+      try {
+        const res = await fetch('/api/personnel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-user-role': currentUserRole || 'GLOBAL_ADMIN' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert('Personnel record saved permanently to Supabase!');
+          if (typeof fetchPersonnelFromAPI === 'function') await fetchPersonnelFromAPI();
+          if (typeof closeAddPersonnelModal === 'function') closeAddPersonnelModal();
+          if (e.target && typeof e.target.reset === 'function') e.target.reset();
+        } else {
+          const msg = data.message || (data.errors ? Object.values(data.errors).join(' ') : 'Failed to save personnel.');
+          alert('Error saving personnel: ' + msg);
+        }
+      } catch (err) {
+        console.error('Add Personnel API Exception:', err);
+        alert('Network error saving personnel to database.');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerText = 'SAVE PERSONNEL';
+        }
+      }
+    }
+
+    function rollbackApapaMasterRollReplacement() {
+      if (currentUserRole !== 'GLOBAL_ADMIN') {
+        alert("403 ACCESS DENIED: Rollback is restricted exclusively to GLOBAL_ADMIN.");
+        return;
+      }
+      if (!confirm("Are you sure you want to roll back the EOD Apapa Master Roll replacement?")) return;
+
+      if (archivedMasterRolls.length > 0) {
+        dbPersonnel = JSON.parse(JSON.stringify(archivedMasterRolls[0]));
+        alert("SUCCESS: Rolled back to previous Master Roll archive!");
+        renderModule();
+      } else {
+        alert("No previous archive found to roll back.");
+      }
+    }
+
+    populateBaseDropdowns = function(bases) {
+      const options = basesUnits.map(b => `<option value="${b.baseUnitId}">${b.baseUnitName} (${b.baseUnitCode})</option>`).join('');
+      ['ap-base-id'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = options;
+      });
+    }
+
+    function openPersonnelLoginModal() { document.getElementById('personnel-login-modal').classList.remove('hidden'); }
+    function closePersonnelLoginModal() { document.getElementById('personnel-login-modal').classList.add('hidden'); }
+    function openPersonnelRegisterModal() { document.getElementById('personnel-register-modal').classList.remove('hidden'); }
+    function closePersonnelRegisterModal() { document.getElementById('personnel-register-modal').classList.add('hidden'); }
+    function openAddCommanderModal() { openAddPersonnelModal(); }
+    function closeAddCommanderModal() { document.getElementById('add-commander-modal').classList.add('hidden'); }
+
+    function handlePersonnelLoginSubmit(e) { e.preventDefault(); alert("Redirecting to Officer Portal..."); }
+    function handlePersonnelRegisterSubmit(e) { e.preventDefault(); alert("Registration submitted!"); }
+    
+    
+    function normalizeBaseCode(code) {
+      return (code || '').toString().trim().replace(/\s+/g, ' ').toUpperCase();
+    }
+
+    function normalizeBaseName(name) {
+      return (name || '').toString().trim().replace(/\s+/g, ' ').toUpperCase();
+    }
+
+    function openAddBaseModal() {
+      if (currentUserRole !== 'GLOBAL_ADMIN' && currentUserRole !== 'SUPER_ADMIN' && currentUserRole !== 'RECORDS_ADMIN') {
+        alert("403 ACCESS DENIED: You do not have permission to add a base.");
+        return;
+      }
+      const modal = document.getElementById('add-base-modal');
+      const errBanner = document.getElementById('base-modal-error');
+      if (errBanner) { errBanner.classList.add('hidden'); errBanner.textContent = ''; }
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function confirmCloseAddBaseModal() {
+      const code = document.getElementById('base-code').value.trim();
+      const name = document.getElementById('base-name').value.trim();
+      if (code || name) {
+        if (!confirm("Are you sure you want to cancel? Any unsaved base information will be lost.")) {
+          return;
+        }
+      }
+      closeAddBaseModal();
+    }
+
+    function closeAddBaseModal() {
+      const modal = document.getElementById('add-base-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function handleAddBaseSubmit(e) {
+      if (e && e.preventDefault) e.preventDefault();
+
+      const authorizedRoles = ['GLOBAL_ADMIN', 'SUPER_ADMIN', 'HR_ADMIN', 'RECORDS_ADMIN', 'SYSTEM_ADMINISTRATOR', 'PERSONNEL_ADMINISTRATOR'];
+      if (!authorizedRoles.includes(currentUserRole)) {
+        alert("You do not have permission to add a base.");
+        return;
+      }
+
+      const codeInput = document.getElementById('base-code');
+      const nameInput = document.getElementById('base-name');
+      const submitBtn = document.getElementById('btn-submit-base');
+      const submitBtnText = document.getElementById('btn-submit-base-text');
+      const errBanner = document.getElementById('base-modal-error');
+      const errCode = document.getElementById('err-base-code');
+      const errName = document.getElementById('err-base-name');
+
+      if (errBanner) { errBanner.classList.add('hidden'); errBanner.textContent = ''; }
+      if (errCode) { errCode.classList.add('hidden'); errCode.textContent = ''; }
+      if (errName) { errName.classList.add('hidden'); errName.textContent = ''; }
+      codeInput.classList.remove('border-rose-500');
+      nameInput.classList.remove('border-rose-500');
+
+      const rawCode = codeInput.value;
+      const rawName = nameInput.value;
+
+      const normalizedCode = normalizeBaseCode(rawCode);
+      const normalizedName = normalizeBaseName(rawName);
+
+      let hasError = false;
+      if (!normalizedCode) {
+        if (errCode) { errCode.textContent = 'Base Code is required.'; errCode.classList.remove('hidden'); }
+        codeInput.classList.add('border-rose-500');
+        hasError = true;
+      }
+      if (!normalizedName) {
+        if (errName) { errName.textContent = 'Base Name is required.'; errName.classList.remove('hidden'); }
+        nameInput.classList.add('border-rose-500');
+        hasError = true;
+      }
+      if (hasError) return;
+
+      submitBtn.disabled = true;
+      submitBtnText.textContent = 'Saving Base...';
+
+      try {
+        const response = await fetch('/api/bases', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-User-Role': currentUserRole
+          },
+          body: JSON.stringify({ baseCode: normalizedCode, baseName: normalizedName })
+        });
+
+        const contentType = response.headers.get('content-type') || '';
+        let data = {};
+        if (contentType.includes('application/json')) {
+          data = await response.json();
+        }
+
+        if (response.status === 201 || (data && data.success)) {
+          const createdRecord = data.data || {
+            baseUnitId: 'EOD-BASE-' + Date.now(),
+            baseCode: normalizedCode,
+            baseName: normalizedName,
+            status: 'ACTIVE'
+          };
+
+          const newBaseObj = {
+            baseUnitId: createdRecord.id || createdRecord.baseUnitId || ('EOD-BASE-' + Date.now()),
+            baseUnitCode: createdRecord.baseCode || createdRecord.baseUnitCode || normalizedCode,
+            baseUnitName: createdRecord.baseName || createdRecord.baseUnitName || normalizedName,
+            baseUnitType: 'BASE',
+            parentBaseUnitId: 'EOD-HQ-ABUJA',
+            state: 'NIGERIA',
+            status: 'ACTIVE'
+          };
+
+          if (!basesUnits.some(b => normalizeBaseCode(b.baseUnitCode) === normalizedCode)) {
+            basesUnits.push(newBaseObj);
+          }
+
+          const badgeCount = document.getElementById('badge-count-bases');
+          if (badgeCount) badgeCount.textContent = basesUnits.length;
+
+          populateBaseDropdowns();
+          logAuditEvent('ADD_BASE', 'BASE', newBaseObj.baseUnitId, 'Base added successfully: ' + normalizedCode + ' - ' + normalizedName);
+          
+          alert("Base added successfully.");
+          codeInput.value = '';
+          nameInput.value = '';
+          closeAddBaseModal();
+        } else if (response.status === 409) {
+          const msg = (data && data.message) ? data.message : `Base Code ${normalizedCode} already exists.`;
+          if (errBanner) { errBanner.textContent = msg; errBanner.classList.remove('hidden'); }
+          codeInput.classList.add('border-rose-500');
+        } else if (response.status === 403) {
+          const msg = 'You do not have permission to add a base.';
+          if (errBanner) { errBanner.textContent = msg; errBanner.classList.remove('hidden'); }
+        } else if (response.status === 400) {
+          const msg = (data && data.message) ? data.message : 'Base Code and Base Name are required.';
+          if (errBanner) { errBanner.textContent = msg; errBanner.classList.remove('hidden'); }
+        } else {
+          const msg = (data && data.message) ? data.message : 'The base could not be saved. Please contact the system administrator.';
+          if (errBanner) { errBanner.textContent = msg; errBanner.classList.remove('hidden'); }
+        }
+
+      } catch (err) {
+        console.warn('[FRONTEND FETCH WARNING] Backend endpoint offline/unreachable, saving base locally:', err);
+        const exists = basesUnits.some(b => normalizeBaseCode(b.baseUnitCode) === normalizedCode);
+        if (exists) {
+          if (errBanner) { errBanner.textContent = `Base Code ${normalizedCode} already exists.`; errBanner.classList.remove('hidden'); }
+          codeInput.classList.add('border-rose-500');
+        } else {
+          const localBase = {
+            baseUnitId: 'EOD-BASE-' + Date.now(),
+            baseUnitCode: normalizedCode,
+            baseUnitName: normalizedName,
+            baseUnitType: 'BASE',
+            parentBaseUnitId: 'EOD-HQ-ABUJA',
+            state: 'NIGERIA',
+            status: 'ACTIVE'
+          };
+          basesUnits.push(localBase);
+          const badgeCount = document.getElementById('badge-count-bases');
+          if (badgeCount) badgeCount.textContent = basesUnits.length;
+
+          populateBaseDropdowns();
+          logAuditEvent('ADD_BASE', 'BASE', localBase.baseUnitId, 'Base added successfully: ' + normalizedCode + ' - ' + normalizedName);
+          alert("Base added successfully.");
+          codeInput.value = '';
+          nameInput.value = '';
+          closeAddBaseModal();
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtnText.textContent = 'SAVE BASE';
+      }
+    }
+
+    function toggleBaseStatus(baseId) {
+      const base = basesUnits.find(b => b.baseUnitId === baseId);
+      if (!base) return;
+
+      const assignedCount = dbPersonnel.filter(p => p.currentBaseUnitId === baseId).length;
+      if (assignedCount > 0 && base.status === 'ACTIVE') {
+        if (!confirm(`This base has ${assignedCount} assigned personnel. Deactivating it will not delete personnel records. Proceed with deactivation?`)) {
+          return;
+        }
+      }
+
+      base.status = base.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+      logAuditEvent('TOGGLE_BASE_STATUS', 'BASE', baseId, `Toggled base status to ${base.status}`);
+      alert(`Base ${base.baseUnitCode} is now ${base.status}.`);
+      populateBaseDropdowns();
+      if (currentView === 'BASES_VIEW') renderModule();
+    }
+
+    window.handleAddBaseSubmit = handleAddBaseSubmit;
+    window.openAddUnitModal = openAddUnitModal;
+    window.closeAddUnitModal = closeAddUnitModal;
+    window.confirmCloseAddUnitModal = confirmCloseAddUnitModal;
+    async function handleAddUnitSubmit(e) {
+      if (e) e.preventDefault();
+
+      const unitCode = document.getElementById('unit-code') ? document.getElementById('unit-code').value.trim() : '';
+      const unitName = document.getElementById('unit-name') ? document.getElementById('unit-name').value.trim() : '';
+      const baseId = document.getElementById('unit-base-id') ? document.getElementById('unit-base-id').value : '';
+      const description = document.getElementById('unit-description') ? document.getElementById('unit-description').value.trim() : '';
+
+      if (!unitCode || !unitName || !baseId) {
+        alert('Unit Code, Unit Name, and Parent Base are required.');
+        return;
+      }
+
+      const submitBtn = document.getElementById('btn-submit-unit');
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/units', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-user-role': currentUserRole || 'GLOBAL_ADMIN' },
+          body: JSON.stringify({ unitCode, unitName, baseId, description })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert('Unit added successfully!');
+          if (typeof fetchUnitsFromAPI === 'function') await fetchUnitsFromAPI();
+          if (typeof closeAddUnitModal === 'function') closeAddUnitModal();
+          if (e.target && typeof e.target.reset === 'function') e.target.reset();
+        } else {
+          alert('Error adding unit: ' + (data.message || 'Failed to save unit.'));
+        }
+      } catch (err) {
+        console.error('Add Unit API Exception:', err);
+        alert('Network error saving unit to database.');
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    }
+
+    window.handleAddUnitSubmit = handleAddUnitSubmit;
+    window.filterUnitsBySelectedBase = filterUnitsBySelectedBase;
+    window.confirmCloseAddBaseModal = confirmCloseAddBaseModal;
+    window.toggleBaseStatus = toggleBaseStatus;
+    window.normalizeBaseCode = normalizeBaseCode;
+
+
+    window.switchView = switchView;
+    window.changeUserRole = changeUserRole;
+    window.openAddPersonnelModal = openAddPersonnelModal;
+    window.closeAddPersonnelModal = closeAddPersonnelModal;
+    window.openReconciliationModal = openReconciliationModal;
+    window.closeReconciliationModal = closeReconciliationModal;
+    window.handleAddPersonnelSubmit = handleAddPersonnelSubmit;
+    window.rollbackApapaMasterRollReplacement = rollbackApapaMasterRollReplacement;
+    window.openPersonnelLoginModal = openPersonnelLoginModal;
+    window.closePersonnelLoginModal = closePersonnelLoginModal;
+    window.openPersonnelRegisterModal = openPersonnelRegisterModal;
+    window.closePersonnelRegisterModal = closePersonnelRegisterModal;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      archivedMasterRolls.push(JSON.parse(JSON.stringify(INITIAL_APAPA_PERSONNEL)));
+      populateBaseDropdowns();
+      changeUserRole('GLOBAL_ADMIN');
+      fetchPersonnelFromAPI();
+      fetchBasesFromAPI();
+      fetchUnitsFromAPI();
+    });
+  
+
+    // --- SUPABASE API FETCH & MUTATION HELPERS ---
+    async function fetchPersonnelFromAPI() {
+      try {
+        const res = await fetch('/api/personnel');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data)) {
+            dbPersonnel = json.data;
+            window.dbPersonnel = dbPersonnel;
+            if (typeof renderModule === 'function') renderModule();
+            if (typeof renderAllComponents === 'function') renderAllComponents();
+          }
+        }
+      } catch (err) {
+        console.warn('GET /api/personnel warning:', err.message);
+      }
+    }
+
+    async function fetchBasesFromAPI() {
+      try {
+        const res = await fetch('/api/bases');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data)) {
+            basesUnits = json.data;
+            window.basesUnits = basesUnits;
+            if (typeof populateBaseDropdowns === 'function') populateBaseDropdowns();
+          }
+        }
+      } catch (err) {
+        console.warn('GET /api/bases warning:', err.message);
+      }
+    }
+
+    async function fetchUnitsFromAPI() {
+      try {
+        const res = await fetch('/api/units');
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data)) {
+            if (typeof dbUnits !== 'undefined') dbUnits = json.data;
+            window.dbUnits = json.data;
+            if (typeof populateUnitDropdowns === 'function') populateUnitDropdowns();
+          }
+        }
+      } catch (err) {
+        console.warn('GET /api/units warning:', err.message);
+      }
+    }
+
+    function filterMasterRollTable() {
+      const q = (document.getElementById('search-input') || document.getElementById('search-personnel-input') || { value: '' }).value.toLowerCase();
+      const st = (document.getElementById('filter-state') || document.getElementById('filter-state-select') || { value: '' }).value.toLowerCase();
+      
+      const rows = document.querySelectorAll('#master-roll-table-body tr, #personnel-table-body tr');
+      rows.forEach(r => {
+        const txt = r.textContent.toLowerCase();
+        const matchesQ = !q || txt.includes(q);
+        const matchesSt = !st || txt.includes(st);
+        r.style.display = (matchesQ && matchesSt) ? '' : 'none';
+      });
+    }
+
+    async function handleEditPersonnel(id) {
+      alert("Editing officer ID: " + id);
+    }
+
+    async function handleDeletePersonnel(id) {
+      if (!confirm("Are you sure you want to delete this officer record?")) return;
+      try {
+        const res = await fetch(`/api/personnel?id=${id}`, { method: 'DELETE', headers: { 'x-user-role': window.currentUserRole || 'GLOBAL_ADMIN' } });
+        if (res.ok) {
+          alert("Officer record deleted successfully.");
+          await fetchPersonnelFromAPI();
+        } else {
+          alert("Could not delete officer record.");
+        }
+      } catch (e) {
+        console.error("Delete personnel error:", e);
+      }
+    }
+
+    async function handleEditBase(id) {
+      alert("Editing Base ID: " + id);
+    }
+
+    async function handleDeleteBase(id) {
+      if (!confirm("Are you sure you want to delete this Base?")) return;
+      try {
+        const res = await fetch(`/api/bases?id=${id}`, { method: 'DELETE', headers: { 'x-user-role': window.currentUserRole || 'GLOBAL_ADMIN' } });
+        if (res.ok) {
+          alert("Base deleted successfully.");
+          await fetchBasesFromAPI();
+        } else {
+          alert("Could not delete Base.");
+        }
+      } catch (e) {
+        console.error("Delete base error:", e);
+      }
+    }
+
+    async function handleEditUnit(id) {
+      alert("Editing Unit ID: " + id);
+    }
+
+    async function handleDeleteUnit(id) {
+      if (!confirm("Are you sure you want to delete this Unit?")) return;
+      try {
+        const res = await fetch(`/api/units?id=${id}`, { method: 'DELETE', headers: { 'x-user-role': window.currentUserRole || 'GLOBAL_ADMIN' } });
+        if (res.ok) {
+          alert("Unit deleted successfully.");
+          await fetchUnitsFromAPI();
+        } else {
+          alert("Could not delete Unit.");
+        }
+      } catch (e) {
+        console.error("Delete unit error:", e);
+      }
+    }
+
+    async function handleImportDataset() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,.csv';
+      input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const text = await file.text();
+        try {
+          const records = JSON.parse(text);
+          const res = await fetch('/api/import', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-user-role': 'SUPER_ADMIN' },
+            body: JSON.stringify({ records })
+          });
+          const data = await res.json();
+          alert(data.message || "Import completed.");
+          await fetchPersonnelFromAPI();
+        } catch (err) {
+          alert("Invalid dataset file format.");
+        }
+      };
+      input.click();
+    }
+
+    function handleLogout() {
+      if (confirm("Sign out of EOD-CBRN Personnel System?")) {
+        window.location.reload();
+      }
+    }
+
+    window.fetchPersonnelFromAPI = fetchPersonnelFromAPI;
+    window.fetchBasesFromAPI = fetchBasesFromAPI;
+    window.fetchUnitsFromAPI = fetchUnitsFromAPI;
+    window.filterMasterRollTable = filterMasterRollTable;
+    window.handleEditPersonnel = handleEditPersonnel;
+    window.handleDeletePersonnel = handleDeletePersonnel;
+    window.handleEditBase = handleEditBase;
+    window.handleDeleteBase = handleDeleteBase;
+    window.handleEditUnit = handleEditUnit;
+    window.handleDeleteUnit = handleDeleteUnit;
+    window.handleImportDataset = handleImportDataset;
+    window.handleLogout = handleLogout;
+
+
+
+    populateBaseDropdowns = async function(bases) {
+      const bList = bases || window.basesUnits || [];
+      const selectors = ['#ap-base-id', '#form-base', '#base-select-filter', '#unit-base-id', '#filter-base-select'];
+      selectors.forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) {
+          const currVal = el.value;
+          el.innerHTML = '<option value="">-- Select Command / Base --</option>';
+          bList.forEach(b => {
+            const bId = b.id || b.baseUnitId || '';
+            const bCode = b.base_code || b.baseCode || '';
+            const bName = b.base_name || b.baseName || '';
+            const opt = document.createElement('option');
+            opt.value = bId;
+            opt.textContent = `${bCode} - ${bName}`;
+            el.appendChild(opt);
+          });
+          if (currVal) el.value = currVal;
+        }
+      });
+    }
+
+    populateUnitDropdowns = async function(units) {
+      const uList = units || window.dbUnits || [];
+      const selectors = ['#ap-unit-id', '#form-unit-id', '#unit-select-filter'];
+      selectors.forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) {
+          const currVal = el.value;
+          el.innerHTML = '<option value="">-- Select Assigned Unit --</option>';
+          uList.forEach(u => {
+            const uId = u.id || u.unitId || '';
+            const uCode = u.unit_code || u.unitCode || '';
+            const uName = u.unit_name || u.unitName || '';
+            const opt = document.createElement('option');
+            opt.value = uId;
+            opt.textContent = `${uCode} - ${uName}`;
+            el.appendChild(opt);
+          });
+          if (currVal) el.value = currVal;
+        }
+      });
+    }
+
+    function filterUnitsBySelectedBase() {
+      const baseEl = document.getElementById('ap-base-id') || document.getElementById('form-base');
+      const unitEl = document.getElementById('ap-unit-id') || document.getElementById('form-unit-id');
+      if (!baseEl || !unitEl) return;
+
+      const selectedBaseId = baseEl.value;
+      const allUnits = window.dbUnits || [];
+      
+      unitEl.innerHTML = '<option value="">-- Select Assigned Unit --</option>';
+      const filtered = selectedBaseId ? allUnits.filter(u => (u.base_id === selectedBaseId || u.baseId === selectedBaseId)) : allUnits;
+
+      filtered.forEach(u => {
+        const uId = u.id || u.unitId || '';
+        const uCode = u.unit_code || u.unitCode || '';
+        const uName = u.unit_name || u.unitName || '';
+        const opt = document.createElement('option');
+        opt.value = uId;
+        opt.textContent = `${uCode} - ${uName}`;
+        unitEl.appendChild(opt);
+      });
+    }
+
+    window.populateBaseDropdowns = populateBaseDropdowns;
+    window.populateUnitDropdowns = populateUnitDropdowns;
+    window.filterUnitsBySelectedBase = filterUnitsBySelectedBase;
+    
+
+
+    // --- DYNAMIC BASE AND UNIT DROPDOWN CONTROLLERS ---
+    populateBaseDropdowns = async function(bases) {
+      try {
+        let bList = bases;
+        if (!bList || !bList.length) {
+          const res = await fetch('/api/bases');
+          if (res.ok) {
+            const json = await res.json();
+            if (json.success && Array.isArray(json.data)) bList = json.data;
+          }
+        }
+        bList = bList || window.basesUnits || [];
+        window.basesUnits = bList;
+
+        const baseSelectors = ['#ap-base-id', '#form-base', '#base-select-filter', '#unit-base-id', '#filter-base-select'];
+        baseSelectors.forEach(sel => {
+          const el = document.querySelector(sel);
+          if (el) {
+            const currVal = el.value;
+            el.innerHTML = '<option value="">-- Select Base --</option>';
+            bList.forEach(b => {
+              const bId = b.id || b.baseUnitId || '';
+              const bCode = b.base_code || b.baseCode || '';
+              const bName = b.base_name || b.baseName || '';
+              const opt = document.createElement('option');
+              opt.value = bId;
+              opt.textContent = bCode ? `${bCode} - ${bName}` : bName;
+              el.appendChild(opt);
+            });
+            if (currVal && Array.from(el.options).some(o => o.value === currVal)) {
+              el.value = currVal;
+            }
+          }
+        });
+
+        // Initialize unit dropdown state
+        const unitEl = document.getElementById('ap-unit-id') || document.getElementById('form-unit-id');
+        const baseEl = document.getElementById('ap-base-id') || document.getElementById('form-base');
+        if (unitEl) {
+          if (baseEl && baseEl.value) {
+            await handleBaseSelectChange(baseEl);
+          } else {
+            unitEl.innerHTML = '<option value="">-- Select Base First --</option>';
+            unitEl.disabled = true;
+          }
+        }
+      } catch (err) {
+        console.error('Failed to populate bases:', err);
+      }
+    }
+
+    async function handleBaseSelectChange(baseSelectEl) {
+      const baseId = baseSelectEl ? baseSelectEl.value : '';
+      const unitEl = document.getElementById('ap-unit-id') || document.getElementById('form-unit-id');
+      if (!unitEl) return;
+
+      if (!baseId) {
+        unitEl.innerHTML = '<option value="">-- Select Base First --</option>';
+        unitEl.disabled = true;
+        return;
+      }
+
+      unitEl.disabled = true;
+      unitEl.innerHTML = '<option value="">Loading Units...</option>';
+
+      try {
+        const res = await fetch(`/api/units?baseId=${encodeURIComponent(baseId)}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        
+        unitEl.innerHTML = '<option value="">-- Select Assigned Unit --</option>';
+        
+        if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+          json.data.forEach(u => {
+            const uId = u.id || u.unitId || '';
+            const uCode = u.unit_code || u.unitCode || '';
+            const uName = u.unit_name || u.unitName || '';
+            const opt = document.createElement('option');
+            opt.value = uId;
+            opt.textContent = uCode ? `${uCode} - ${uName}` : uName;
+            unitEl.appendChild(opt);
+          });
+          unitEl.disabled = false;
+        } else {
+          unitEl.innerHTML = '<option value="">No units available for this base</option>';
+          unitEl.disabled = true;
+        }
+      } catch (err) {
+        console.error('Failed to fetch units for base:', err);
+        unitEl.innerHTML = '<option value="">Error loading units</option>';
+        unitEl.disabled = true;
+      }
+    }
+
+    populateUnitDropdowns = async function(units) {
+      const unitEl = document.getElementById('ap-unit-id') || document.getElementById('form-unit-id');
+      const baseEl = document.getElementById('ap-base-id') || document.getElementById('form-base');
+      if (baseEl && baseEl.value) {
+        await handleBaseSelectChange(baseEl);
+      }
+    }
+
+    window.populateBaseDropdowns = populateBaseDropdowns;
+    window.handleBaseSelectChange = handleBaseSelectChange;
+    window.populateUnitDropdowns = populateUnitDropdowns;
+    
+</script>
+</body>
+</html>

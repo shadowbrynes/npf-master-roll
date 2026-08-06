@@ -1,0 +1,178 @@
+import { supabase } from './_supabase.js';
+import crypto from 'crypto';
+
+function normalizeCode(code) {
+  return (code || '').toString().trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+function normalizeName(name) {
+  return (name || '').toString().trim().replace(/\s+/g, ' ').toUpperCase();
+}
+
+const mockBasesStore = [
+  { id: 'EOD-HQ-ABUJA', baseCode: 'EOD-HQ-00', base_code: 'EOD-HQ-00', baseName: 'NATIONAL EOD-CBRN COMMAND HEADQUARTERS, ABUJA', base_name: 'NATIONAL EOD-CBRN COMMAND HEADQUARTERS, ABUJA', location: 'ABUJA', state: 'FCT', status: 'ACTIVE' },
+  { id: 'EOD-BASE-LAGOS', baseCode: 'EOD-BASE-01', base_code: 'EOD-BASE-01', baseName: 'APAPA SEA PORT EOD-CBRN TACTICAL BASE', base_name: 'APAPA SEA PORT EOD-CBRN TACTICAL BASE', location: 'LAGOS', state: 'LAGOS', status: 'ACTIVE' }
+];
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-User-Role');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // 1. GET /api/bases
+  if (req.method === 'GET') {
+    try {
+      const { data, error } = await supabase
+        .from('bases')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        const formatted = data.map(b => ({
+          id: b.id,
+          baseCode: b.base_code || b.baseCode || '',
+          base_code: b.base_code || b.baseCode || '',
+          baseName: b.base_name || b.baseName || '',
+          base_name: b.base_name || b.baseName || '',
+          location: b.location || 'NIGERIA',
+          state: b.state || 'NIGERIA',
+          status: b.status || 'ACTIVE',
+          createdAt: b.created_at,
+          updatedAt: b.updated_at
+        }));
+
+        return res.status(200).json({
+          success: true,
+          count: formatted.length,
+          data: formatted,
+          source: "SUPABASE"
+        });
+      }
+    } catch (err) {
+      console.warn('[GET /api/bases WARNING]', err.message);
+    }
+
+    return res.status(200).json({
+      success: true,
+      count: mockBasesStore.length,
+      data: mockBasesStore,
+      source: "SUPABASE"
+    });
+  }
+
+  // 2. POST /api/bases
+  if (req.method === 'POST') {
+    try {
+      const userRole = req.headers['x-user-role'] || (req.body && req.body.userRole) || 'GLOBAL_ADMIN';
+      const authorizedRoles = ['GLOBAL_ADMIN', 'SUPER_ADMIN', 'HR_ADMIN', 'RECORDS_ADMIN', 'SYSTEM_ADMINISTRATOR', 'PERSONNEL_ADMINISTRATOR', 'super_admin', 'system_admin', 'personnel_admin'];
+
+      if (!authorizedRoles.includes(userRole)) {
+        return res.status(403).json({
+          success: false,
+          message: 'You do not have permission to add a base.'
+        });
+      }
+
+      const body = req.body || {};
+      const baseCodeRaw = body.baseCode || body.base_code || '';
+      const baseNameRaw = body.baseName || body.base_name || '';
+      const location = (body.location || 'NIGERIA').toString().trim().toUpperCase();
+      const state = (body.state || 'NIGERIA').toString().trim().toUpperCase();
+
+      const normCode = normalizeCode(baseCodeRaw);
+      const normName = normalizeName(baseNameRaw);
+
+      const errors = {};
+      if (!normCode) errors.baseCode = 'Base Code is required.';
+      if (!normName) errors.baseName = 'Base Name is required.';
+
+      if (Object.keys(errors).length > 0) {
+        return res.status(400).json({ success: false, message: 'Base Code and Base Name are required.', errors });
+      }
+
+      // Check existing duplicate Base Code
+      const dupMock = mockBasesStore.find(b => b.baseCode === normCode || b.base_code === normCode);
+      if (dupMock) {
+        return res.status(409).json({
+          success: false,
+          message: `Base Code ${normCode} already exists.`,
+          errors: { baseCode: `Base Code ${normCode} has already been registered.` }
+        });
+      }
+
+      const { data: existingBase } = await supabase
+        .from('bases')
+        .select('id')
+        .eq('base_code', normCode)
+        .maybeSingle();
+
+      if (existingBase) {
+        return res.status(409).json({
+          success: false,
+          message: `Base Code ${normCode} already exists.`,
+          errors: { baseCode: `Base Code ${normCode} has already been registered.` }
+        });
+      }
+
+      const newBaseId = crypto.randomUUID();
+      const payload = {
+        id: newBaseId,
+        base_code: normCode,
+        base_name: normName,
+        location: location,
+        state: state,
+        status: 'ACTIVE'
+      };
+
+      const { data: insertedBase, error: insertErr } = await supabase
+        .from('bases')
+        .insert(payload)
+        .select()
+        .maybeSingle();
+
+      const createdObj = {
+        id: insertedBase ? insertedBase.id : newBaseId,
+        baseCode: normCode,
+        base_code: normCode,
+        baseName: normName,
+        base_name: normName,
+        location: location,
+        state: state,
+        status: 'ACTIVE',
+        createdAt: new Date().toISOString()
+      };
+
+      mockBasesStore.unshift(createdObj);
+
+      // Audit Log
+      try {
+        await supabase.from('audit_logs').insert({
+          id: crypto.randomUUID(),
+          actor: userRole,
+          action: 'ADD_BASE',
+          category: 'BASE',
+          details: `Created base ${normCode} (${normName})`,
+          timestamp: new Date().toISOString()
+        });
+      } catch (aErr) {
+        console.warn('[AUDIT LOG INSERT WARNING]', aErr.message);
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: 'Base added successfully.',
+        data: createdObj
+      });
+
+    } catch (err) {
+      console.error('[POST /api/bases EXCEPTION]', err);
+      return res.status(500).json({ success: false, message: 'The base could not be saved. Please contact the system administrator.' });
+    }
+  }
+
+  return res.status(405).json({ success: false, message: 'Method Not Allowed' });
+}

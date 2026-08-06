@@ -1,0 +1,344 @@
+import { supabase as supabaseAdmin } from './_supabase.js';
+import crypto from 'node:crypto';
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+    String(email || '').trim()
+  );
+}
+
+function isDuplicateUserError(error) {
+  const code = String(error?.code || '').toLowerCase();
+  const message = String(error?.message || '').toLowerCase();
+
+  return (
+    code.includes('email_exists') ||
+    code.includes('user_already_exists') ||
+    message.includes('already registered') ||
+    message.includes('already exists') ||
+    message.includes('already been registered')
+  );
+}
+
+function normaliseBody(req) {
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return {};
+    }
+  }
+
+  return req.body || {};
+}
+
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'POST, OPTIONS'
+  );
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, X-User-Role'
+  );
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'POST');
+
+    return res.status(405).json({
+      success: false,
+      message: 'Method Not Allowed'
+    });
+  }
+
+  let newUserId = null;
+
+  try {
+    const body = normaliseBody(req);
+
+    const fullName = String(
+      body.fullName ||
+      body.full_name ||
+      body.name ||
+      ''
+    ).trim();
+
+    const email = String(
+      body.email ||
+      body.emailAddress ||
+      ''
+    )
+      .trim()
+      .toLowerCase();
+
+    const password = String(body.password || '');
+
+    const confirmPassword = String(
+      body.confirmPassword ||
+      body.confirm_password ||
+      ''
+    );
+
+    const apfNo = String(
+      body.apfNo ||
+      body.apNo ||
+      ''
+    )
+      .trim()
+      .toUpperCase();
+
+    const personnelId = String(
+      body.personnelId ||
+      body.personnel_id ||
+      ''
+    ).trim();
+
+    const errors = {};
+
+    if (!fullName) {
+      errors.fullName = 'Full Name is required.';
+    }
+
+    if (!email) {
+      errors.email = 'Email Address is required.';
+    } else if (!isValidEmail(email)) {
+      errors.email =
+        'Please enter a valid email address.';
+    }
+
+    if (!password) {
+      errors.password = 'Password is required.';
+    } else if (password.length < 8) {
+      errors.password =
+        'Password must be at least 8 characters long.';
+    }
+
+    if (
+      confirmPassword &&
+      password !== confirmPassword
+    ) {
+      errors.confirmPassword =
+        'Passwords do not match.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Registration validation failed.',
+        errors
+      });
+    }
+
+    /*
+     * Link the new account to an existing personnel record
+     * where a personnel ID or AP/F/NO was supplied.
+     */
+    let targetPersonnelId = personnelId || null;
+
+    if (!targetPersonnelId && apfNo) {
+      const {
+        data: personnelRecord,
+        error: personnelLookupError
+      } = await supabaseAdmin
+        .from('personnel')
+        .select('id')
+        .eq('apf_no', apfNo)
+        .maybeSingle();
+
+      if (personnelLookupError) {
+        console.error(
+          '[PERSONNEL LOOKUP ERROR]',
+          personnelLookupError.message
+        );
+
+        return res.status(500).json({
+          success: false,
+          message:
+            'The personnel record could not be checked.'
+        });
+      }
+
+      targetPersonnelId =
+        personnelRecord?.id || null;
+    }
+
+    /*
+     * Create the Supabase Auth user.
+     * Never create a random replacement user ID when this fails.
+     */
+    const {
+      data: authData,
+      error: authError
+    } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: {
+        full_name: fullName,
+        apf_no: apfNo || null
+      },
+      app_metadata: {
+        role: 'personnel'
+      }
+    });
+
+    if (authError) {
+      if (isDuplicateUserError(authError)) {
+        return res.status(409).json({
+          success: false,
+          message:
+            'An account with this email address already exists.',
+          errors: {
+            email:
+              'Email address is already registered.'
+          }
+        });
+      }
+
+      console.error(
+        '[SUPABASE AUTH CREATION ERROR]',
+        authError.message
+      );
+
+      return res.status(500).json({
+        success: false,
+        message:
+          'The authentication account could not be created.'
+      });
+    }
+
+    newUserId = authData?.user?.id;
+
+    if (!newUserId) {
+      throw new Error(
+        'Supabase did not return the created user ID.'
+      );
+    }
+
+    /*
+     * Upsert supports databases where an Auth trigger may
+     * already have created a basic profile record.
+     */
+    const profilePayload = {
+      id: newUserId,
+      full_name: fullName,
+      role: 'personnel',
+      status: 'active'
+    };
+
+    const {
+      data: insertedProfile,
+      error: profileError
+    } = await supabaseAdmin
+      .from('profiles')
+      .upsert(profilePayload, {
+        onConflict: 'id'
+      })
+      .select(
+        'id, full_name, role, status'
+      )
+      .single();
+
+    if (profileError) {
+      console.error(
+        '[SUPABASE INSERT PROFILE ERROR]',
+        profileError.message
+      );
+
+      const { error: cleanupError } =
+        await supabaseAdmin.auth.admin.deleteUser(
+          newUserId
+        );
+
+      if (cleanupError) {
+        console.error(
+          '[SUPABASE AUTH CLEANUP ERROR]',
+          cleanupError.message
+        );
+      }
+
+      newUserId = null;
+
+      return res.status(500).json({
+        success: false,
+        message:
+          'The authentication account was created, but the user profile could not be saved.'
+      });
+    }
+
+    /*
+     * Audit failure is logged but does not invalidate a
+     * successfully created user and profile.
+     */
+    const { error: auditError } =
+      await supabaseAdmin
+        .from('audit_logs')
+        .insert({
+          id: crypto.randomUUID(),
+          actor: email,
+          action: 'REGISTER_USER',
+          category: 'AUTHENTICATION',
+          details:
+            `Registered new user account ${email} (${fullName}) with role 'personnel'`,
+          timestamp: new Date().toISOString()
+        });
+
+    if (auditError) {
+      console.warn(
+        '[AUDIT LOG WARNING]',
+        auditError.message
+      );
+    }
+
+    return res.status(201).json({
+      success: true,
+      message:
+        'Registration completed successfully. Your account is now active.',
+      data: {
+        userId: insertedProfile.id,
+        email,
+        fullName: insertedProfile.full_name,
+        role: insertedProfile.role,
+        status: insertedProfile.status,
+        personnelId: null
+      }
+    });
+  } catch (error) {
+    console.error(
+      '[POST /api/register EXCEPTION]',
+      error
+    );
+
+    if (newUserId) {
+      try {
+        const { error: cleanupError } =
+          await supabaseAdmin.auth.admin.deleteUser(
+            newUserId
+          );
+
+        if (cleanupError) {
+          console.error(
+            '[REGISTRATION CLEANUP ERROR]',
+            cleanupError.message
+          );
+        }
+      } catch (cleanupException) {
+        console.error(
+          '[REGISTRATION CLEANUP EXCEPTION]',
+          cleanupException
+        );
+      }
+    }
+
+    return res.status(500).json({
+      success: false,
+      message:
+        'Registration failed due to a server error.'
+    });
+  }
+}
