@@ -61,6 +61,7 @@ export default function Shell({ children }: ShellProps) {
   const navItems = [
     { href: '/dashboard', label: 'C2 Command Dashboard', icon: Shield, roles: ['global_admin', 'state_admin', 'unit_admin', 'equipment_officer', 'personnel', 'auditor'] },
     { href: '/personnel', label: 'Master Nominal Roll', icon: Users, roles: ['global_admin', 'state_admin', 'unit_admin', 'auditor'] },
+    { href: '/personnel/state-roll', label: 'State Nominal Roll (36 States)', icon: Building, roles: ['global_admin', 'state_admin', 'auditor'] },
     { href: '/personnel/add', label: 'Add Personnel (26 Headings)', icon: UserPlus, roles: ['global_admin', 'state_admin'] },
     { href: '/equipment', label: 'CBRN Equipment Inventory', icon: Radio, roles: ['global_admin', 'state_admin', 'unit_admin', 'equipment_officer'] },
     { href: '/retirement', label: 'Retirement Warning Roster', icon: Clock, roles: ['global_admin', 'state_admin', 'unit_admin', 'personnel'] },
