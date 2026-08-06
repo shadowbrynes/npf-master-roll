@@ -40,8 +40,8 @@ INSERT INTO public.personnel (
     calculated_retirement_date, command_served_last, duty_post, date_transferred_to_command, gd_sp, base_id, unit_id, status
 ) VALUES
 (
-    '77777777-7777-4777-a777-777777777777', 'AP/117369', 'CSP', 'DESMOND AGBALA', 'MALE', 'BSC POLICE SCIENCE', 'FCT', 'ABUJA MUNICIPAL', 'OMAH', 'NORTH CENTRAL',
-    '1976-12-22', '08033752122', 'desmond.agbala@npf.gov.ng', 'BENIN CITY', '1999-12-01', '2024-08-08', '2034-12-01',
+    '77777777-7777-4777-a777-777777777777', 'AP/117369', 'INSPR', 'GODWIN UMOH', 'MALE', 'BSC POLICE SCIENCE', 'FCT', 'ABUJA MUNICIPAL', 'OMAH', 'NORTH CENTRAL',
+    '1976-12-22', '08033752122', 'godwin.umoh@npf.gov.ng', 'BENIN CITY', '1999-12-01', '2024-08-08', '2034-12-01',
     '2034-12-01', 'ASABA INTER. AIRPORT', 'COMMANDER', '2023-09-13', 'GD', '22222222-2222-4222-a222-222222222222', '55555555-5555-4555-a555-555555555555', 'active'
 ),
 (

@@ -35,7 +35,7 @@ export default function Gen60Page() {
             <div className="flex items-center gap-3">
               <Lock className="w-5 h-5 text-teal-400" />
               <div>
-                <span className="text-white font-bold block">GEN.60 APPRAISAL FORM 2025 - CSP DESMOND AGBALA</span>
+                <span className="text-white font-bold block">GEN.60 APPRAISAL FORM 2025 - INSPR. GODWIN UMOH</span>
                 <span className="text-slate-400 text-[11px] block">Uploaded: 2025-11-10 • Status: APPROVED</span>
               </div>
             </div>

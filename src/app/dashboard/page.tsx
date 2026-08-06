@@ -1,6 +1,7 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Shell from '@/components/layout/Shell';
 import DashboardHero from '@/components/dashboard/DashboardHero';
 import {
@@ -9,11 +10,48 @@ import {
   Radio,
   Clock,
   AlertCircle,
-  TrendingUp
+  TrendingUp,
+  Shield,
+  UserCheck,
+  Award,
+  Key
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
+import { createClient } from '@/lib/supabase/client';
 
 export default function DashboardPage() {
+  const supabase = createClient();
+  const [displayImgUrl, setDisplayImgUrl] = useState<string>('/images/EOD-CBRN2.jpg');
+
+  useEffect(() => {
+    async function loadDisplayAsset() {
+      try {
+        const { data } = await supabase
+          .from('dashboard_assets')
+          .select('*')
+          .in('image_type', ['dashboard_display', 'display'])
+          .eq('status', 'active')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (data?.storage_path) {
+          const { data: publicUrlData } = supabase.storage
+            .from('eod-cbrn-dashboard-assets')
+            .getPublicUrl(data.storage_path);
+
+          if (publicUrlData?.publicUrl) {
+            setDisplayImgUrl(publicUrlData.publicUrl);
+          }
+        }
+      } catch (err) {
+        console.warn('Dashboard display image load exception:', err);
+      }
+    }
+
+    loadDisplayAsset();
+  }, [supabase]);
+
   const rankData = [
     { rank: 'CSP', count: 1 },
     { rank: 'SP', count: 2 },
@@ -33,8 +71,69 @@ export default function DashboardPage() {
   return (
     <Shell>
       <div className="space-y-6 font-mono text-xs">
-        {/* REUSABLE HERO BANNER WITH BLENDED EOD CBRN BACKGROUND */}
+        {/* HERO SECTION (IMAGE 1: EOD-CBRN1 BACKGROUND) */}
         <DashboardHero userRole="global_admin" />
+
+        {/* TASK 2 & TASK 5: GLOBAL ADMINISTRATOR IDENTITY & EOD-CBRN2 CONTENT DISPLAY CARD */}
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+          <div className="flex flex-col lg:flex-row items-center gap-6">
+            {/* IMAGE 2: EOD-CBRN2 FRAMED CONTENT ELEMENT */}
+            <div className="relative w-full lg:w-72 h-48 rounded-2xl overflow-hidden border border-slate-700/80 shadow-2xl shrink-0 group">
+              <Image
+                src={displayImgUrl}
+                alt="NPF EOD CBRN Operational Identity"
+                fill
+                priority
+                className="object-cover object-center group-hover:scale-105 transition duration-500"
+                onError={() => setDisplayImgUrl('/images/EOD-CBRN2.jpg')}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent p-3 flex flex-col justify-end">
+                <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded text-[10px] font-bold uppercase w-max">
+                  Official Visual Identity
+                </span>
+              </div>
+            </div>
+
+            {/* NEW GLOBAL ADMINISTRATOR PROFILE DETAILS */}
+            <div className="flex-1 space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <UserCheck className="w-5 h-5 text-cyan-400" />
+                    <h2 className="text-lg font-black text-white uppercase tracking-wider">
+                      INSPR. GODWIN UMOH
+                    </h2>
+                  </div>
+                  <p className="text-amber-400 font-bold text-xs mt-0.5 uppercase tracking-wide">
+                    PRIMARY GLOBAL ADMINISTRATOR • NATIONAL COMMAND C2
+                  </p>
+                </div>
+
+                <span className="px-3 py-1.5 rounded-xl bg-cyan-950 text-cyan-300 border border-cyan-500/40 text-[10px] font-bold uppercase flex items-center gap-1.5">
+                  <Key className="w-3.5 h-3.5 text-cyan-400" />
+                  LEVEL 1 AUTHORIZATION
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                  <span className="text-slate-500 text-[10px] block font-bold">COMMAND APPOINTMENT</span>
+                  <span className="text-white font-bold block mt-0.5">NATIONAL C2 COMMANDER</span>
+                </div>
+
+                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                  <span className="text-slate-500 text-[10px] block font-bold">STATION BASE</span>
+                  <span className="text-white font-bold block mt-0.5">FORCE HQ ABUJA</span>
+                </div>
+
+                <div className="bg-slate-950 p-3 rounded-xl border border-slate-800">
+                  <span className="text-slate-500 text-[10px] block font-bold">ACCESS SCOPE</span>
+                  <span className="text-emerald-400 font-bold block mt-0.5">ALL 36 STATES &amp; FCT</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* TOP KPI CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShieldCheck, Lock, Sliders, Image as ImageIcon } from 'lucide-react';
+import { ShieldCheck, Lock, Sliders } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface DashboardHeroProps {
@@ -13,25 +13,21 @@ interface DashboardHeroProps {
 export default function DashboardHero({ userRole }: DashboardHeroProps) {
   const supabase = createClient();
   const [heroImageUrl, setHeroImageUrl] = useState<string>('/images/EOD-CBRN1.jpg');
-  const [assetName, setAssetName] = useState<string>('NPF EOD CBRN Operational Image');
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    async function loadActiveDashboardAsset() {
+    async function loadHeroBackgroundAsset() {
       try {
-        const { data, error } = await supabase
+        const { data } = await supabase
           .from('dashboard_assets')
           .select('*')
-          .in('image_type', ['blended_hero', 'dashboard_background'])
+          .in('image_type', ['background', 'dashboard_background', 'blended_hero'])
           .eq('status', 'active')
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle();
 
-        console.log('DashboardHero Asset Query Result:', { data, error });
-
         if (data?.storage_path) {
-          setAssetName(data.asset_name || 'Blended EOD CBRN Hero');
           const { data: publicUrlData } = supabase.storage
             .from('eod-cbrn-dashboard-assets')
             .getPublicUrl(data.storage_path);
@@ -47,39 +43,33 @@ export default function DashboardHero({ userRole }: DashboardHeroProps) {
       }
     }
 
-    loadActiveDashboardAsset();
+    loadHeroBackgroundAsset();
   }, [supabase]);
 
   return (
     <div className="relative w-full min-h-[220px] rounded-3xl overflow-hidden shadow-2xl border border-slate-800 bg-slate-950 font-mono">
-      {/* VIBRANT HIGH-VISIBILITY BACKGROUND IMAGE LAYER */}
+      {/* IMAGE 1: EOD-CBRN1 FULL-WIDTH BACKGROUND LAYER */}
       <div className="absolute inset-0 z-0">
         <Image
           src={heroImageUrl}
-          alt={assetName}
+          alt="Nigeria Police Force EOD CBRN Background"
           fill
           priority
           sizes="(max-width: 1200px) 100vw, 1920px"
           className="object-cover object-center opacity-70 scale-100 transition-all duration-700 hover:scale-105"
           onError={() => setHeroImageUrl('/images/EOD-CBRN1.jpg')}
         />
-        {/* Subtle Gradient Tint for Text Contrast without Obliterating the Image */}
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/85 via-slate-950/65 to-slate-950/85 backdrop-blur-[1px]" />
+        {/* Dark Security Overlay for Optimum Contrast & Legibility */}
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/70 to-slate-950/90 backdrop-blur-[1px]" />
       </div>
 
-      {/* HERO CONTENT OVERLAY */}
+      {/* HERO OVERLAY TEXT CONTENT */}
       <div className="relative z-10 p-6 md:p-8 flex flex-wrap items-center justify-between gap-6">
         <div className="space-y-3 max-w-3xl">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-[10px] text-amber-300 font-bold uppercase tracking-widest">
-              <Lock className="w-3.5 h-3.5 text-amber-400" />
-              Restricted Law Enforcement System
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-cyan-500/20 border border-cyan-500/40 rounded-full text-[10px] text-cyan-300 font-bold uppercase tracking-wider">
-              <ImageIcon className="w-3.5 h-3.5" />
-              Background: {assetName}
-            </span>
-          </div>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-full text-[10px] text-amber-300 font-bold uppercase tracking-widest">
+            <Lock className="w-3.5 h-3.5 text-amber-400" />
+            Restricted Law Enforcement System
+          </span>
 
           <h1 className="text-xl md:text-2xl font-black text-white uppercase tracking-wider flex items-center gap-3 drop-shadow-md">
             <ShieldCheck className="w-7 h-7 text-cyan-400 shrink-0" />
