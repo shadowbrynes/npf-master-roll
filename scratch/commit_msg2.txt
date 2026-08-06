@@ -1,0 +1,1 @@
+Update Vercel routing configuration for Next.js App Router

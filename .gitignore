@@ -9,3 +9,6 @@ test-results
 coverage
 *.log
 supabase/.temp
+
+.vercel
+.env*
