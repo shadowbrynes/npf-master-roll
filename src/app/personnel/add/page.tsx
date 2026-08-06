@@ -1,11 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Shell from '@/components/layout/Shell';
 import { UserPlus, Shield, CheckCircle2, AlertCircle, Calendar, Lock } from 'lucide-react';
 import { calculateStatutoryRetirement } from '@/lib/retirement-engine';
+import { createClient } from '@/lib/supabase/client';
+import { PersonnelFormSchema } from '@/lib/validations/personnel';
 
 export default function AddPersonnelPage() {
+  const router = useRouter();
+  const supabase = createClient();
+
   const [formData, setFormData] = useState({
     // Section A
     apfNo: '',
@@ -32,6 +38,7 @@ export default function AddPersonnelPage() {
     // Section C (Global Admin Restricted)
     gradeLevel: '10',
     bankName: 'NPFMFB',
+    accountNumber: '',
     employeeCode: '',
     ippisNumber: '',
     pfa: 'NPF PENSION',
@@ -47,7 +54,6 @@ export default function AddPersonnelPage() {
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-
   const [calculatedRetirement, setCalculatedRetirement] = useState<string>('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -72,17 +78,98 @@ export default function AddPersonnelPage() {
     setErrorMsg('');
 
     try {
-      if (!formData.apfNo || !formData.rank || !formData.fullName || !formData.stateOfOrigin || !formData.phoneNumber || !formData.dateOfBirth || !formData.dateOfEnlistment) {
-        setErrorMsg('Please fill out all required fields marked with *.');
+      // 1. Zod Validation
+      const validationResult = PersonnelFormSchema.safeParse(formData);
+      if (!validationResult.success) {
+        const firstError = validationResult.error.issues[0]?.message || 'Please fill out all required fields marked with *.';
+        setErrorMsg(firstError);
         setSubmitting(false);
         return;
       }
 
-      // Simulate API submit
-      await new Promise((res) => setTimeout(res, 800));
+      const effectiveRetirement = calculatedRetirement || formData.retirementDate ||
+        (formData.dateOfBirth && formData.dateOfEnlistment
+          ? calculateStatutoryRetirement(formData.dateOfBirth, formData.dateOfEnlistment).effectiveRetirementDate
+          : null);
+
+      const personnelPayload = {
+        apf_no: formData.apfNo.trim().toUpperCase(),
+        service_number: formData.apfNo.trim().toUpperCase(),
+        rank: formData.rank,
+        full_name: formData.fullName.trim().toUpperCase(),
+        educational_qualification: formData.educationalQualification?.trim() || null,
+        state_of_origin: formData.stateOfOrigin.trim().toUpperCase(),
+        tribe: formData.tribe?.trim() || null,
+        date_of_birth: formData.dateOfBirth,
+        geopolitical_zone: formData.geopoliticalZone?.trim() || null,
+        date_of_enlistment: formData.dateOfEnlistment,
+        date_of_last_promotion: formData.dateOfLastPromotion || null,
+        retirement_date: effectiveRetirement,
+        calculated_retirement_date: effectiveRetirement,
+        command_served_last: formData.commandServedLast?.trim() || null,
+        duty_post: formData.dutyPost?.trim() || null,
+        date_transferred_to_command: formData.dateTransferred || null,
+        gd_sp: formData.gdSp || 'GD',
+        grade_level: formData.gradeLevel?.trim() || null,
+        employee_code: formData.employeeCode?.trim() || null,
+        status: 'active'
+      };
+
+      console.log('Personnel submission:', personnelPayload);
+
+      // 2. Insert into public.personnel table
+      const { data: personnelRecord, error: insertError } = await supabase
+        .from('personnel')
+        .insert(personnelPayload)
+        .select()
+        .single();
+
+      console.log('Database response (personnel):', {
+        data: personnelRecord,
+        error: insertError
+      });
+
+      if (insertError) {
+        throw new Error(insertError.message || 'Failed to insert personnel into database.');
+      }
+
+      // 3. Insert into public.personnel_private table (Financial & Contact details)
+      if (personnelRecord?.id) {
+        const privatePayload = {
+          personnel_id: personnelRecord.id,
+          phone_number: formData.phoneNumber?.trim() || null,
+          email_address: formData.emailAddress?.trim() || null,
+          mss: formData.mss?.trim() || null,
+          bank_name: formData.bankName?.trim() || null,
+          account_number: formData.accountNumber?.trim() || null,
+          ippis_number: formData.ippisNumber?.trim() || null,
+          pfa: formData.pfa?.trim() || null,
+          pen_pin: formData.penPin?.trim() || null,
+          nhf_number: formData.nhfNumber?.trim() || null,
+        };
+
+        const { data: privateRecord, error: privateError } = await supabase
+          .from('personnel_private')
+          .insert(privatePayload)
+          .select()
+          .single();
+
+        console.log('Database response (personnel_private):', {
+          data: privateRecord,
+          error: privateError
+        });
+      }
+
       setSuccessMsg(`Officer ${formData.rank} ${formData.fullName} successfully registered in Supabase PostgreSQL Master Roll!`);
+
+      // Auto-redirect to Master Roll after 1.2s to verify immediate appearance
+      setTimeout(() => {
+        router.push('/personnel');
+        router.refresh();
+      }, 1200);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to register personnel.';
+      console.error('Personnel Submission Exception:', err);
       setErrorMsg(msg);
     } finally {
       setSubmitting(false);
@@ -478,7 +565,7 @@ export default function AddPersonnelPage() {
                   value={formData.assignedUnitId}
                   onChange={handleChange}
                   placeholder="e.g. APAPA SEA PORT CBRN UNIT"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-rose-500"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-rose-500"
                 />
               </div>
             </div>
