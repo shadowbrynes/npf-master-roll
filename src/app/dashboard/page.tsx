@@ -2,17 +2,14 @@
 
 import React from 'react';
 import Shell from '@/components/layout/Shell';
+import DashboardHero from '@/components/dashboard/DashboardHero';
 import {
   Users,
   MapPin,
-  Layers,
   Radio,
   Clock,
-  Cake,
   AlertCircle,
-  FileCheck2,
-  TrendingUp,
-  ShieldCheck
+  TrendingUp
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 
@@ -36,25 +33,8 @@ export default function DashboardPage() {
   return (
     <Shell>
       <div className="space-y-6 font-mono text-xs">
-        {/* HEADER HERO */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4 shadow-xl">
-          <div>
-            <h1 className="text-xl font-bold font-mono text-white uppercase tracking-wider flex items-center gap-2">
-              <ShieldCheck className="w-6 h-6 text-cyan-400" />
-              NATIONAL EOD CBRN COMMAND DASHBOARD
-            </h1>
-            <p className="text-slate-400 mt-1">
-              Authoritative Police Master Roll • 36 State Bases &amp; FCT • Equipment Inventory &amp; C2 Operations
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              SYSTEM STATUS: ONLINE
-            </span>
-          </div>
-        </div>
+        {/* REUSABLE HERO BANNER WITH BLENDED EOD CBRN BACKGROUND */}
+        <DashboardHero userRole="global_admin" />
 
         {/* TOP KPI CARDS */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
