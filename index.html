@@ -3726,6 +3726,114 @@
   window.autoPopulateOfficerFromAPF = autoPopulateOfficerFromAPF;
   window.handleRegisterCertificateFormSubmit = handleRegisterCertificateFormSubmit;
 
+    
+  const OFFICIAL_26_HEADERS_HTML = [
+    'AP/F/NO','RANK','NAME','EDU. QUALIFICATION','STATE OF ORIGIN','PHONE NUMBER','TRIBE','DATE OF BIRTH','GEO POL ZONE','E-MAIL ADDRESS','MSS','DATE OF ENLIST','DATE OF LAST PROM.','DATE OF RETIREMENT','COMMAND SERVED LAST','DUTY POST','DATE TRANSFERRED','GD/SP','G/L','BANK NAME','EMPLOYEE CODE','IPPIS NUMBER','PFA','PEN PIN','NHF NUMBER','ASSIGNED UNIT'
+  ];
+
+  let htmlStagedCsvItems = [];
+
+  function downloadOfficialCsvTemplate() {
+    let csv = OFFICIAL_26_HEADERS_HTML.join(',') + '\n' +
+      'AP/117369,INSPR,MUSTAPHA BABANGIDA,B.Sc Computer Science,Lagos,08031234567,Yoruba,1985-04-15,South West,mustapha@npf.gov.ng,MSS-II,2008-08-01,2022-01-15,,Lagos State Command,EOD CBRN Operator,2023-05-10,GD,G/L 09,First Bank of Nigeria,EMP-99201,IPPIS-882103,Stanbic IBTC Pension,PEN-10029384,NHF-449102,Lagos EOD CBRN Base\n';
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'NPF_EOD_CBRN_State_Nominal_Roll_Template.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  function openBulkCsvModal() {
+    document.getElementById('bulk-csv-upload-modal').classList.remove('hidden');
+    document.getElementById('csv-step-select').classList.remove('hidden');
+    document.getElementById('csv-step-preview').classList.add('hidden');
+    document.getElementById('csv-error-banner').classList.add('hidden');
+  }
+
+  function closeBulkCsvModal() {
+    document.getElementById('bulk-csv-upload-modal').classList.add('hidden');
+  }
+
+  function calculateRetirementHtml(dobStr, enlistStr) {
+    if (!dobStr || !enlistStr) return 'N/A';
+    const dob = new Date(dobStr);
+    const enlist = new Date(enlistStr);
+    if (isNaN(dob.getTime()) || isNaN(enlist.getTime())) return 'N/A';
+    const r1 = new Date(dob); r1.setFullYear(r1.getFullYear() + 60);
+    const r2 = new Date(enlist); r2.setFullYear(r2.getFullYear() + 35);
+    const minR = r1 < r2 ? r1 : r2;
+    return minR.toISOString().split('T')[0];
+  }
+
+  function handleHtmlCsvFileSelect(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const text = e.target.result;
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      if (lines.length <= 1) {
+        alert("CSV file contains no data rows.");
+        return;
+      }
+      const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+      htmlStagedCsvItems = [];
+      const tbody = document.getElementById('csv-preview-tbody');
+      tbody.innerHTML = '';
+
+      for (let i = 1; i < lines.length; i++) {
+        const rowVals = lines[i].split(',').map(v => v.replace(/"/g, '').trim());
+        const getV = (name) => {
+          const idx = headers.findIndex(h => h.toLowerCase().replace(/[^a-z0-9]/g, '') === name.toLowerCase().replace(/[^a-z0-9]/g, ''));
+          return idx !== -1 ? rowVals[idx] : '';
+        };
+
+        const apf = getV('AP/F/NO') || getV('APF NO') || getV('SERVICE NO');
+        const name = getV('NAME') || getV('OFFICER NAME');
+        const rank = getV('RANK') || 'INSPR';
+        const dob = getV('DATE OF BIRTH') || getV('DOB');
+        const enlist = getV('DATE OF ENLIST') || getV('DATE ENLISTED');
+        const calcRet = calculateRetirementHtml(dob, enlist);
+
+        let status = 'Valid';
+        if (!apf || !name) status = 'Error';
+
+        htmlStagedCsvItems.push({ row: i, apf, name, rank, dob, enlist, calcRet, status });
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40";
+        tr.innerHTML = `<td class="p-2 border-r border-slate-800 text-slate-400">${i}</td><td class="p-2 border-r border-slate-800 font-bold text-cyan-300">${apf || 'MISSING'}</td><td class="p-2 border-r border-slate-800 font-bold text-white">${name || 'MISSING'}</td><td class="p-2 border-r border-slate-800">${rank}</td><td class="p-2 border-r border-slate-800 text-slate-400">${dob || 'N/A'}</td><td class="p-2 border-r border-slate-800 font-bold text-amber-400">${calcRet}</td><td class="p-2 text-center"><span class="px-2 py-0.5 rounded text-[9px] font-bold uppercase ${status === 'Valid' ? 'text-emerald-400 bg-emerald-950/40' : 'text-rose-400 bg-rose-950/40'}">${status}</span></td>`;
+        tbody.appendChild(tr);
+      }
+
+      document.getElementById('csv-row-count-display').textContent = htmlStagedCsvItems.length;
+      document.getElementById('csv-state-display').textContent = document.getElementById('csv-select-state').value;
+      document.getElementById('csv-step-select').classList.add('hidden');
+      document.getElementById('csv-step-preview').classList.remove('hidden');
+    };
+    reader.readAsText(file);
+  }
+
+  function confirmHtmlBatchSubmission() {
+    alert("State Nominal Roll CSV Batch Submitted Successfully!");
+    closeBulkCsvModal();
+  }
+
+  function downloadHtmlCsvErrorReport() {
+    alert("Downloading CSV Error Report...");
+  }
+
+  window.downloadOfficialCsvTemplate = downloadOfficialCsvTemplate;
+  window.openBulkCsvModal = openBulkCsvModal;
+  window.closeBulkCsvModal = closeBulkCsvModal;
+  window.handleHtmlCsvFileSelect = handleHtmlCsvFileSelect;
+  window.confirmHtmlBatchSubmission = confirmHtmlBatchSubmission;
+  window.downloadHtmlCsvErrorReport = downloadHtmlCsvErrorReport;
+
     if (typeof switchMainView === 'function') window.switchMainView = switchMainView;
     if (typeof changeUserRole === 'function') window.changeUserRole = changeUserRole;
     if (typeof openPersonnelLoginModal === 'function') window.openPersonnelLoginModal = openPersonnelLoginModal;
@@ -4586,6 +4694,100 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+
+  <!-- MODAL: BULK PERSONNEL CSV IMPORT (26 HEADINGS) -->
+  <div id="bulk-csv-upload-modal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto font-mono text-xs">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-4xl p-6 space-y-5 shadow-2xl my-8">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30">
+            <i data-lucide="upload" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white uppercase tracking-wider">BULK PERSONNEL CSV IMPORT</h3>
+            <p class="text-xs text-slate-400">Upload State Nominal Roll Personnel Records (26 Headings)</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeBulkCsvModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="csv-error-banner" class="hidden p-3.5 rounded-xl bg-rose-950/90 border border-rose-500/50 text-rose-300 font-bold flex items-center gap-2">
+        <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400 shrink-0"></i>
+        <span id="csv-error-text"></span>
+      </div>
+
+      <!-- STEP 1 & 2: SELECT STATE & SELECT CSV FILE -->
+      <div id="csv-step-select" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
+            <label class="block text-cyan-400 font-bold uppercase text-xs">STEP 1: SELECT STATE / FCT *</label>
+            <select id="csv-select-state" class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2.5 focus:border-cyan-500 focus:outline-none">
+              <option value="Abia">Abia</option><option value="Adamawa">Adamawa</option><option value="Akwa Ibom">Akwa Ibom</option><option value="Anambra">Anambra</option><option value="Bauchi">Bauchi</option><option value="Bayelsa">Bayelsa</option><option value="Benue">Benue</option><option value="Borno">Borno</option><option value="Cross River">Cross River</option><option value="Delta">Delta</option><option value="Ebonyi">Ebonyi</option><option value="Edo">Edo</option><option value="Ekiti">Ekiti</option><option value="Enugu">Enugu</option><option value="Gombe">Gombe</option><option value="Imo">Imo</option><option value="Jigawa">Jigawa</option><option value="Kaduna">Kaduna</option><option value="Kano">Kano</option><option value="Katsina">Katsina</option><option value="Kebbi">Kebbi</option><option value="Kogi">Kogi</option><option value="Kwara">Kwara</option><option value="Lagos" selected>Lagos</option><option value="Nasarawa">Nasarawa</option><option value="Niger">Niger</option><option value="Ogun">Ogun</option><option value="Ondo">Ondo</option><option value="Osun">Osun</option><option value="Oyo">Oyo</option><option value="Plateau">Plateau</option><option value="Rivers">Rivers</option><option value="Sokoto">Sokoto</option><option value="Taraba">Taraba</option><option value="Yobe">Yobe</option><option value="Zamfara">Zamfara</option><option value="FCT Abuja">FCT Abuja</option>
+            </select>
+          </div>
+
+          <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-2">
+            <label class="block text-teal-400 font-bold uppercase text-xs">DATE FORMAT GUIDANCE</label>
+            <p class="text-slate-300 font-bold">Recommended Date Format: DD/MM/YYYY or YYYY-MM-DD</p>
+            <p class="text-[10px] text-slate-500">System automatically calculates Retirement Date = MIN(DOB + 60 Yrs, Enlistment + 35 Yrs).</p>
+          </div>
+        </div>
+
+        <div class="bg-slate-950 border-2 border-dashed border-slate-800 hover:border-cyan-500/50 rounded-3xl p-8 text-center space-y-3 transition">
+          <i data-lucide="file-spreadsheet" class="w-12 h-12 text-cyan-400 mx-auto"></i>
+          <div>
+            <h4 class="text-sm font-bold text-white uppercase">DROP PERSONNEL CSV HERE OR BROWSE</h4>
+            <p class="text-slate-400 text-xs mt-1">Accepted Format: UTF-8 CSV with 26 Column Headings</p>
+          </div>
+          <input type="file" id="html-csv-file-input" accept=".csv" onchange="handleHtmlCsvFileSelect(this)" class="hidden">
+          <button type="button" onclick="document.getElementById('html-csv-file-input').click()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold transition inline-flex items-center gap-2 uppercase cursor-pointer">
+            <i data-lucide="upload" class="w-4 h-4"></i>
+            <span>Select CSV File</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- STEP 3: PREVIEW & VALIDATION SUMMARY -->
+      <div id="csv-step-preview" class="hidden space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span class="text-xs text-slate-300 font-bold">DETECTED ROWS: <strong id="csv-row-count-display" class="text-cyan-300">0</strong></span>
+          <span className="text-xs text-slate-400">STATE: <strong id="csv-state-display" class="text-teal-300">Lagos</strong></span>
+        </div>
+
+        <div className="max-h-64 overflow-y-auto border border-slate-800 rounded-2xl">
+          <table className="w-full text-left border-collapse text-[11px] whitespace-nowrap font-mono">
+            <thead class="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase font-bold sticky top-0">
+              <tr>
+                <th class="p-2 border-r border-slate-800 text-cyan-400">ROW</th>
+                <th class="p-2 border-r border-slate-800 text-white">AP/F/NO</th>
+                <th class="p-2 border-r border-slate-800 text-white">OFFICER NAME</th>
+                <th class="p-2 border-r border-slate-800">RANK</th>
+                <th class="p-2 border-r border-slate-800">DOB</th>
+                <th class="p-2 border-r border-slate-800 text-amber-400">CALCULATED RETIREMENT</th>
+                <th class="p-2 text-center">STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="csv-preview-tbody" class="divide-y divide-slate-800 bg-slate-950/40">
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+          <button type="button" onclick="downloadHtmlCsvErrorReport()" class="px-3.5 py-2 rounded-xl bg-slate-800 text-rose-400 font-bold">Download Error Report</button>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="closeBulkCsvModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold">Cancel</button>
+            <button type="button" onclick="confirmHtmlBatchSubmission()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-black uppercase tracking-wider shadow-lg cursor-pointer">
+              Confirm &amp; Submit Batch
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 

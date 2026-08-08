@@ -263,3 +263,64 @@ export interface TrainingProvider {
   active: boolean;
 }
 
+export interface StateNominalRollSubmission {
+  id: string;
+  referenceNo: string;
+  stateName: string;
+  stateCode: string;
+  fileName: string;
+  storagePath?: string;
+  submittedBy?: string;
+  submittedByName?: string;
+  totalRecords: number;
+  validRecords: number;
+  errorRecords: number;
+  duplicateRecords: number;
+  warningRecords: number;
+  submissionStatus: 'Uploaded' | 'Validated' | 'Pending Review' | 'Approved' | 'Returned for Correction' | 'Rejected';
+  reviewComment?: string;
+  reviewedBy?: string;
+  reviewedByName?: string;
+  reviewedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CSVSubmissionItem {
+  id?: string;
+  submissionId?: string;
+  rowNumber: number;
+  apfNo: string;
+  rank: string;
+  name: string;
+  educationalQualification?: string;
+  stateOfOrigin: string;
+  phoneNumber: string;
+  tribe?: string;
+  dateOfBirth: string;
+  geopoliticalZone?: string;
+  emailAddress?: string;
+  mss?: string;
+  dateOfEnlistment: string;
+  dateOfLastPromotion?: string;
+  importedDateOfRetirement?: string;
+  calculatedRetirementDate: string;
+  commandServedLast?: string;
+  dutyPost?: string;
+  dateTransferred?: string;
+  gdSp?: string;
+  gradeLevel?: string;
+  bankName?: string;
+  employeeCode?: string;
+  ippisNumber?: string;
+  pfa?: string;
+  penPin?: string;
+  nhfNumber?: string;
+  assignedUnit: string;
+  validationStatus: 'Valid' | 'Warning' | 'Error' | 'Duplicate';
+  validationNotes?: string;
+  isDuplicateOverride?: boolean;
+  importedPersonnelId?: string;
+}
+
+
