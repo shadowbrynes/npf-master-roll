@@ -79,9 +79,22 @@
       .glass-card { background: white !important; border: 1px solid #ccc !important; }
     }
   
+  
   /* ==========================================================================
      GLOBAL TACTICAL BUTTON DESIGN SYSTEM & ANIMATION SUITE
      ========================================================================== */
+
+  :root {
+    --btn-primary-bg: linear-gradient(135deg, #0284c7 0%, #0d9488 50%, #059669 100%);
+    --btn-secondary-bg: #0f172a;
+    --btn-secondary-border: #334155;
+    --btn-success-bg: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    --btn-warning-bg: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+    --btn-danger-bg: linear-gradient(135deg, #be123c 0%, #e11d48 100%);
+    --btn-radius: 0.75rem;
+    --btn-glow: 0 0 20px rgba(6, 182, 212, 0.5);
+    --btn-transition: transform 180ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 180ms cubic-bezier(0.4, 0, 0.2, 1), filter 180ms ease;
+  }
 
   @keyframes button-breathing {
     0%, 100% {
@@ -120,11 +133,7 @@
 
   /* Global Button Animations & Feedback */
   button, .btn-tactical {
-    transition: transform 180ms cubic-bezier(0.4, 0, 0.2, 1),
-                box-shadow 180ms cubic-bezier(0.4, 0, 0.2, 1),
-                background-color 180ms cubic-bezier(0.4, 0, 0.2, 1),
-                border-color 180ms cubic-bezier(0.4, 0, 0.2, 1),
-                filter 180ms cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--btn-transition);
     cursor: pointer;
     touch-action: manipulation;
     user-select: none;
@@ -132,7 +141,7 @@
   }
 
   button:hover:not(:disabled), .btn-tactical:hover:not(:disabled) {
-    transform: scale(1.02) translateY(-1px) !important;
+    transform: scale(1.02) translateY(-2px) !important;
     filter: brightness(1.08) !important;
   }
 
@@ -148,6 +157,13 @@
     box-shadow: none !important;
     animation: none !important;
   }
+
+  /* Icon Micro-Animations */
+  button:hover .btn-icon-down { transform: translateY(2px); transition: transform 180ms ease; }
+  button:hover .btn-icon-up { transform: translateY(-2px); transition: transform 180ms ease; }
+  button:hover .btn-icon-rotate { transform: rotate(180deg); transition: transform 300ms ease; }
+  button:hover .btn-icon-edit { transform: rotate(-12deg) scale(1.1); transition: transform 180ms ease; }
+  button:hover .btn-icon-right { transform: translateX(2px); transition: transform 180ms ease; }
 
   .btn-primary-breathing {
     animation: button-breathing 3.2s ease-in-out infinite !important;
@@ -169,6 +185,7 @@
       transform: none !important;
     }
   }
+
 
   </style>
 <script>
@@ -594,7 +611,7 @@
         </button>
 
         <!-- ADD PERSONNEL BUTTON -->
-        <button type="button" id="btn-add-personnel" onclick="openAddPersonnelModal()" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-500 hover:to-teal-500 transition shadow-lg shadow-emerald-950/50 btn-primary-breathing">
+        <button type="button" id="btn-add-personnel" onclick="openAddPersonnelModal()" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-500 hover:to-teal-500 transition shadow-lg shadow-emerald-950/50 btn-primary-breathing btn-primary-breathing">
           <i data-lucide="user-plus" class="w-4 h-4"></i>
           <span>ADD PERSONNEL</span>
         </button>
@@ -626,7 +643,7 @@
         <div class="relative">
           <button type="button" onclick="toggleNotificationDropdown()" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition relative">
             <i data-lucide="bell" class="w-4 h-4 text-cyan-400"></i>
-            <span id="nav-notif-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[9px] font-black flex items-center justify-center shadow-lg badge-pulse">0</span>
+            <span id="nav-notif-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[9px] font-black flex items-center justify-center shadow-lg badge-pulse badge-pulse">0</span>
           </button>
           <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-4 z-50 font-sans text-xs">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
@@ -1644,7 +1661,7 @@
           <div class="flex items-center gap-3">
             <button type="button" id="btn-form-prev" onclick="navigateFormStep(-1)" class="hidden px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold transition">BACK</button>
             <button type="button" id="btn-form-next" onclick="navigateFormStep(1)" class="px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition shadow-lg shadow-emerald-950/50">NEXT STEP</button>
-            <button type="submit" id="btn-form-submit" class="hidden px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-500 hover:to-teal-500 transition shadow-lg shadow-emerald-950/50 flex items-center gap-2 btn-primary-breathing">
+            <button type="submit" id="btn-form-submit" class="hidden px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-500 hover:to-teal-500 transition shadow-lg shadow-emerald-950/50 flex items-center gap-2 btn-primary-breathing btn-primary-breathing">
               <i data-lucide="check-circle-2" class="w-4 h-4"></i>
               <span>SAVE PERSONNEL RECORD</span>
             </button>
@@ -4516,7 +4533,7 @@
 
         <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
           <button type="button" onclick="closeRegisterCertificateModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold">Cancel</button>
-          <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-black text-xs uppercase tracking-wider transition shadow-lg cursor-pointer btn-primary-breathing">
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-black text-xs uppercase tracking-wider transition shadow-lg cursor-pointer btn-primary-breathing btn-primary-breathing">
             Register Certificate
           </button>
         </div>
