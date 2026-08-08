@@ -95,7 +95,7 @@ export default function DashboardHero({ userRole }: DashboardHeroProps) {
           {(userRole === 'global_admin' || userRole === 'super_admin' || !userRole) && (
             <Link
               href="/settings/appearance"
-              className="px-4 py-2.5 rounded-xl bg-slate-900/90 text-cyan-300 border border-cyan-500/50 hover:bg-cyan-950 hover:text-white transition text-xs font-bold uppercase flex items-center gap-2 shadow-xl"
+              className="px-4 py-2.5 rounded-xl bg-slate-900/90 text-cyan-300 border border-cyan-500/50 hover:bg-cyan-950 hover:text-white transition text-xs font-bold uppercase flex items-center gap-2 shadow-xl btn-primary-breathing"
             >
               <Sliders className="w-4 h-4 text-cyan-400" />
               <span>Appearance Settings</span>
