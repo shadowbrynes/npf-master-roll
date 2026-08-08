@@ -78,6 +78,98 @@
       body { background: white !important; color: black !important; }
       .glass-card { background: white !important; border: 1px solid #ccc !important; }
     }
+  
+  /* ==========================================================================
+     GLOBAL TACTICAL BUTTON DESIGN SYSTEM & ANIMATION SUITE
+     ========================================================================== */
+
+  @keyframes button-breathing {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.3), 0 0 4px rgba(20, 184, 166, 0.4);
+      filter: brightness(1);
+    }
+    50% {
+      transform: scale(1.025);
+      box-shadow: 0 0 24px rgba(6, 182, 212, 0.7), 0 0 12px rgba(20, 184, 166, 0.85);
+      filter: brightness(1.12);
+    }
+  }
+
+  @keyframes button-warning-pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    }
+    50% {
+      transform: scale(1.025);
+      box-shadow: 0 0 22px rgba(245, 158, 11, 0.75);
+    }
+  }
+
+  @keyframes badge-pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 4px rgba(244, 63, 94, 0.4);
+    }
+    50% {
+      transform: scale(1.15);
+      box-shadow: 0 0 12px rgba(244, 63, 94, 0.9);
+    }
+  }
+
+  /* Global Button Animations & Feedback */
+  button, .btn-tactical {
+    transition: transform 180ms cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 180ms cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 180ms cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 180ms cubic-bezier(0.4, 0, 0.2, 1),
+                filter 180ms cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    font-weight: 700;
+  }
+
+  button:hover:not(:disabled), .btn-tactical:hover:not(:disabled) {
+    transform: scale(1.02) translateY(-1px) !important;
+    filter: brightness(1.08) !important;
+  }
+
+  button:active:not(:disabled), .btn-tactical:active:not(:disabled) {
+    transform: scale(0.97) translateY(0px) !important;
+    filter: brightness(0.95) !important;
+  }
+
+  button:disabled, .btn-tactical:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
+
+  .btn-primary-breathing {
+    animation: button-breathing 3.2s ease-in-out infinite !important;
+  }
+
+  .badge-pulse {
+    animation: badge-pulse 2.2s ease-in-out infinite !important;
+  }
+
+  button:focus-visible, .btn-tactical:focus-visible {
+    outline: 2px solid #06b6d4 !important;
+    outline-offset: 2px !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    button, .btn-tactical, .btn-primary-breathing, .badge-pulse {
+      animation: none !important;
+      transition: none !important;
+      transform: none !important;
+    }
+  }
+
   </style>
 <script>
         async function handleRegistrationSubmit(event) {
@@ -502,7 +594,7 @@
         </button>
 
         <!-- ADD PERSONNEL BUTTON -->
-        <button type="button" id="btn-add-personnel" onclick="openAddPersonnelModal()" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-500 hover:to-teal-500 transition shadow-lg shadow-emerald-950/50">
+        <button type="button" id="btn-add-personnel" onclick="openAddPersonnelModal()" class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-500 hover:to-teal-500 transition shadow-lg shadow-emerald-950/50 btn-primary-breathing">
           <i data-lucide="user-plus" class="w-4 h-4"></i>
           <span>ADD PERSONNEL</span>
         </button>
@@ -534,7 +626,7 @@
         <div class="relative">
           <button type="button" onclick="toggleNotificationDropdown()" class="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 transition relative">
             <i data-lucide="bell" class="w-4 h-4 text-cyan-400"></i>
-            <span id="nav-notif-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[9px] font-black flex items-center justify-center shadow-lg">0</span>
+            <span id="nav-notif-badge" class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[9px] font-black flex items-center justify-center shadow-lg badge-pulse">0</span>
           </button>
           <div id="notif-dropdown" class="hidden absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-4 z-50 font-sans text-xs">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
@@ -678,6 +770,10 @@
       </button>
       <button type="button" onclick="switchMainView('INTERVAL_PROJECTIONS')" id="tab-btn-projections" class="px-4 py-2 rounded-t-xl text-slate-400 hover:text-white font-bold flex items-center gap-2">
         <i data-lucide="trending-up" class="w-4 h-4"></i> 2-MONTH ROLLING INTERVAL PROJECTIONS
+      </button>
+      
+      <button type="button" onclick="switchMainView('TRAINING_CERTS')" id="tab-btn-training-certs" class="px-4 py-2 rounded-t-xl text-slate-400 hover:text-white font-bold flex items-center gap-2">
+        <i data-lucide="award" class="w-4 h-4 text-amber-400"></i> CBRN &amp; EOD TRAINING &amp; CERTS
       </button>
       <button type="button" onclick="switchMainView('AUDIT_LOGS')" id="tab-btn-audit-logs" class="px-4 py-2 rounded-t-xl text-slate-400 hover:text-white font-bold flex items-center gap-2">
         <i data-lucide="shield" class="w-4 h-4"></i> SECURITY AUDIT LOG TRAIL
@@ -1169,6 +1265,87 @@
     </div>
 
     <!-- VIEW 4: SECURITY AUDIT LOG TRAIL -->
+    
+    <!-- VIEW 5: CBRN & EOD TRAINING & CERTIFICATION CENTRE -->
+    <div id="view-container-training-certs" class="hidden flex flex-col gap-6 font-mono text-xs">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 flex flex-wrap items-center justify-between gap-4 shadow-2xl relative overflow-hidden">
+        <div class="flex items-center gap-4">
+          <div class="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+            <i data-lucide="award" class="w-8 h-8"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-black text-white uppercase tracking-wider">CBRN &amp; EOD TRAINING &amp; CERTIFICATION CENTRE</h1>
+            <p class="text-slate-400 mt-1">Personnel Competency Register • Verified Credentials • Expiry Warnings Scanner</p>
+          </div>
+        </div>
+        <button onclick="openRegisterTrainingModalProject()" class="bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-bold px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>+ Register Training / Certification</span>
+        </button>
+      </div>
+
+      <!-- COUNTERS -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex items-center justify-between">
+          <div><p class="text-slate-400 text-[10px] font-bold uppercase">Total Certifications</p><h3 id="p-total-certs" class="text-2xl font-black text-cyan-400 mt-0.5">0</h3></div>
+          <i data-lucide="award" class="w-5 h-5 text-cyan-400"></i>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex items-center justify-between">
+          <div><p class="text-slate-400 text-[10px] font-bold uppercase">Verified Records</p><h3 id="p-verified-certs" class="text-2xl font-black text-emerald-400 mt-0.5">0</h3></div>
+          <i data-lucide="file-check" class="w-5 h-5 text-emerald-400"></i>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex items-center justify-between">
+          <div><p class="text-slate-400 text-[10px] font-bold uppercase">CBRN Specialists</p><h3 id="p-cbrn-certs" class="text-2xl font-black text-teal-400 mt-0.5">0</h3></div>
+          <i data-lucide="shield" class="w-5 h-5 text-teal-400"></i>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex items-center justify-between">
+          <div><p class="text-slate-400 text-[10px] font-bold uppercase">EOD Bomb Techs</p><h3 id="p-eod-certs" class="text-2xl font-black text-amber-400 mt-0.5">0</h3></div>
+          <i data-lucide="shield-alert" class="w-5 h-5 text-amber-400"></i>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex items-center justify-between">
+          <div><p class="text-slate-400 text-[10px] font-bold uppercase">Hazmat Operators</p><h3 id="p-hazmat-certs" class="text-2xl font-black text-indigo-400 mt-0.5">0</h3></div>
+          <i data-lucide="file-text" class="w-5 h-5 text-indigo-400"></i>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 flex items-center justify-between">
+          <div><p class="text-slate-400 text-[10px] font-bold uppercase">Expiry Alerts</p><h3 id="p-alert-certs" class="text-2xl font-black text-rose-400 mt-0.5">0</h3></div>
+          <i data-lucide="clock" class="w-5 h-5 text-rose-400"></i>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+        <div class="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+          <h3 class="font-bold text-white uppercase">TRAINING &amp; CERTIFICATION REGISTER</h3>
+          <button onclick="openRegisterTrainingModalProject()" class="px-3.5 py-1.5 bg-cyan-600 text-white font-bold rounded-xl">+ Add Training</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs whitespace-nowrap">
+            <thead class="bg-slate-950 text-slate-400 border-b border-slate-800 uppercase font-bold">
+              <tr>
+                <th class="p-3 border-r border-slate-800 text-cyan-400">AP/F NO</th>
+                <th class="p-3 border-r border-slate-800 text-white">OFFICER NAME</th>
+                <th class="p-3 border-r border-slate-800 text-teal-400">COURSE NAME</th>
+                <th class="p-3 border-r border-slate-800">CATEGORY</th>
+                <th class="p-3 border-r border-slate-800">PROVIDER</th>
+                <th class="p-3 border-r border-slate-800">COMPLETED</th>
+                <th class="p-3 border-r border-slate-800 text-amber-400">EXPIRY DATE</th>
+                <th class="p-3 border-r border-slate-800">VERIFICATION</th>
+                <th class="p-3 text-cyan-400">STATUS</th>
+              </tr>
+            </thead>
+            <tbody id="p-training-tbody" class="divide-y divide-slate-800">
+              <tr>
+                <td colSpan="9" class="p-12 text-center text-slate-400 font-bold">
+                  <p class="text-white text-sm font-bold">No training or certification records have been registered yet.</p>
+                  <button onclick="openRegisterTrainingModalProject()" class="mt-3 px-4 py-2 bg-cyan-600 text-white font-bold rounded-xl">+ Register First Training Record</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <div id="view-container-audit-logs" class="hidden flex flex-col gap-6">
       <div class="glass-card rounded-2xl p-6 border-slate-800">
         <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
@@ -1467,7 +1644,7 @@
           <div class="flex items-center gap-3">
             <button type="button" id="btn-form-prev" onclick="navigateFormStep(-1)" class="hidden px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-bold transition">BACK</button>
             <button type="button" id="btn-form-next" onclick="navigateFormStep(1)" class="px-5 py-2.5 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition shadow-lg shadow-emerald-950/50">NEXT STEP</button>
-            <button type="submit" id="btn-form-submit" class="hidden px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-500 hover:to-teal-500 transition shadow-lg shadow-emerald-950/50 flex items-center gap-2">
+            <button type="submit" id="btn-form-submit" class="hidden px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:from-emerald-500 hover:to-teal-500 transition shadow-lg shadow-emerald-950/50 flex items-center gap-2 btn-primary-breathing">
               <i data-lucide="check-circle-2" class="w-4 h-4"></i>
               <span>SAVE PERSONNEL RECORD</span>
             </button>
@@ -3072,7 +3249,7 @@
 
     function switchMainView(viewName) {
       currentActiveView = viewName;
-      ['dashboard', 'master-roll', 'bases-units', 'calculator', 'projections', 'audit-logs'].forEach(v => {
+      ['dashboard', 'master-roll', 'bases-units', 'calculator', 'projections', 'audit-logs', 'training-certs'].forEach(v => {
         const container = document.getElementById(`view-container-${v}`);
         const btn = document.getElementById(`tab-btn-${v}`);
         const key = viewName.toLowerCase().replace(/_/g, '-');
@@ -3264,6 +3441,226 @@
     if (typeof openAddUnitModal === 'function') window.openAddUnitModal = openAddUnitModal;
     if (typeof closeAddUnitModal === 'function') window.closeAddUnitModal = closeAddUnitModal;
     if (typeof switchView === 'function') window.switchView = switchView;
+    
+    let pTrainingList = JSON.parse(localStorage.getItem('npf_project_trainings') || '[]');
+
+    function renderProjectTrainings() {
+      const tbody = document.getElementById('p-training-tbody');
+      document.getElementById('p-total-certs').textContent = pTrainingList.length;
+      document.getElementById('p-verified-certs').textContent = pTrainingList.filter(t => t.verificationStatus === 'Verified').length;
+      document.getElementById('p-cbrn-certs').textContent = pTrainingList.filter(t => t.category === 'CBRN').length;
+      document.getElementById('p-eod-certs').textContent = pTrainingList.filter(t => t.category === 'EOD' || t.category === 'Bomb Disposal').length;
+      document.getElementById('p-hazmat-certs').textContent = pTrainingList.filter(t => t.category === 'Hazmat').length;
+      document.getElementById('p-alert-certs').textContent = pTrainingList.filter(t => t.expiryDate && new Date(t.expiryDate) <= new Date(Date.now() + 90*86400000)).length;
+
+      if (!tbody) return;
+      if (pTrainingList.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colSpan="9" class="p-12 text-center text-slate-400 font-bold">
+              <i data-lucide="award" class="w-12 h-12 text-slate-600 mx-auto mb-2"></i>
+              <p class="text-white text-sm font-bold">No training or certification records have been registered yet.</p>
+              <p class="text-slate-500 max-w-md mx-auto mt-1 mb-3">Register personnel certifications to build the tactical competency roster.</p>
+              <button onclick="openRegisterTrainingModalProject()" class="px-4 py-2 bg-cyan-600 text-white font-bold rounded-xl">+ Register First Training Record</button>
+            </td>
+          </tr>`;
+      } else {
+        tbody.innerHTML = pTrainingList.map(t => `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3 border-r border-slate-800 font-bold text-cyan-300">${t.apfNo}</td>
+            <td class="p-3 border-r border-slate-800 font-bold text-white">${t.officerName}</td>
+            <td class="p-3 border-r border-slate-800 font-bold text-teal-300">${t.courseName}</td>
+            <td class="p-3 border-r border-slate-800 text-slate-300">${t.category}</td>
+            <td class="p-3 border-r border-slate-800 text-slate-400">${t.provider}</td>
+            <td class="p-3 border-r border-slate-800 text-slate-400">${t.completionDate}</td>
+            <td class="p-3 border-r border-slate-800 font-bold text-amber-400">${t.doesNotExpire ? 'NO EXPIRY' : t.expiryDate}</td>
+            <td class="p-3 border-r border-slate-800 font-bold text-emerald-400">${t.verificationStatus || 'Verified'}</td>
+            <td class="p-3 font-bold uppercase text-emerald-400">${t.status || 'Active'}</td>
+          </tr>`).join('');
+      }
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function openRegisterTrainingModalProject() {
+      let ap = prompt("Enter Officer AP/F Number (e.g. AP/117369):", "AP/117369");
+      if (!ap) return;
+      let name = prompt("Enter Officer Name:", "GODWIN UMOH");
+      if (!name) return;
+      let course = prompt("Enter Course Name (e.g. Advanced CBRN Response, EOD Advanced Course, Hazmat Operations):", "Advanced CBRN Response");
+      if (!course) return;
+      let category = prompt("Enter Category (CBRN, EOD, Hazmat, Bomb Disposal):", "CBRN");
+      if (!category) return;
+
+      const newRecord = {
+        id: Date.now().toString(),
+        apfNo: ap,
+        officerName: name,
+        courseName: course,
+        category: category,
+        provider: 'NPF EOD CBRN Training School',
+        completionDate: new Date().toISOString().split('T')[0],
+        expiryDate: '2028-12-31',
+        doesNotExpire: false,
+        verificationStatus: 'Verified',
+        status: 'Active'
+      };
+
+      pTrainingList.push(newRecord);
+      localStorage.setItem('npf_project_trainings', JSON.stringify(pTrainingList));
+      renderProjectTrainings();
+      alert("Training Record Registered Successfully!");
+    }
+
+    window.renderProjectTrainings = renderProjectTrainings;
+    window.openRegisterTrainingModalProject = openRegisterTrainingModalProject;
+    setTimeout(renderProjectTrainings, 500);
+    
+    
+  let persistentCertificates = JSON.parse(localStorage.getItem('npf_persistent_certificates') || '[]');
+
+  function openRegisterCertificateModal() {
+    const modal = document.getElementById('register-certificate-modal');
+    if (modal) {
+      modal.classList.remove('hidden');
+      document.getElementById('register-cert-error-banner').classList.add('hidden');
+    }
+  }
+
+  function closeRegisterCertificateModal() {
+    const modal = document.getElementById('register-certificate-modal');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  function toggleCertExpiryInput(disabled) {
+    const el = document.getElementById('cert-expiry-date');
+    if (el) {
+      el.disabled = disabled;
+      if (disabled) el.value = '';
+    }
+  }
+
+  function handleCertEndDateChange(val) {
+    const compEl = document.getElementById('cert-completion-date');
+    if (compEl && (!compEl.value || compEl.value === val)) {
+      compEl.value = val;
+    }
+  }
+
+  function autoPopulateOfficerFromAPF(apf) {
+    if (!apf) return;
+    let found = null;
+    if (typeof dbPersonnel !== 'undefined' && Array.isArray(dbPersonnel)) {
+      found = dbPersonnel.find(p => (p.apNo || p.serviceNo || '').toLowerCase() === apf.trim().toLowerCase());
+    }
+    if (found) {
+      document.getElementById('cert-officer-name').value = found.name || '';
+      document.getElementById('cert-rank').value = found.rank || '';
+    }
+  }
+
+  function handleRegisterCertificateFormSubmit(e) {
+    e.preventDefault();
+    const errBanner = document.getElementById('register-cert-error-banner');
+    const errText = document.getElementById('register-cert-error-text');
+
+    const apf = document.getElementById('cert-apf-no').value.trim();
+    const name = document.getElementById('cert-officer-name').value.trim();
+    const rank = document.getElementById('cert-rank').value.trim();
+    const course = document.getElementById('cert-course-name').value.trim();
+    const category = document.getElementById('cert-category').value;
+    const provider = document.getElementById('cert-provider').value.trim();
+    const startDate = document.getElementById('cert-start-date').value;
+    const endDate = document.getElementById('cert-end-date').value;
+    const completionDate = document.getElementById('cert-completion-date').value;
+    const certNum = document.getElementById('cert-number').value.trim();
+    const issueDate = document.getElementById('cert-issue-date').value;
+    const expiryDate = document.getElementById('cert-expiry-date').value;
+    const doesNotExpire = document.getElementById('cert-does-not-expire').checked;
+
+    // VALIDATION CHECKS
+    if (!apf || !name || !course || !category || !provider || !startDate || !endDate || !completionDate) {
+      errText.textContent = "Please fill in all compulsory fields: AP/F No, Officer Name, Course Name, Category, Provider, Start Date, End Date, and Completion Date.";
+      errBanner.classList.remove('hidden');
+      return;
+    }
+
+    if (!doesNotExpire && !expiryDate) {
+      errText.textContent = "Expiry Date is compulsory unless 'Certificate Does Not Expire' is checked.";
+      errBanner.classList.remove('hidden');
+      return;
+    }
+
+    const sDate = new Date(startDate);
+    const eDate = new Date(endDate);
+    const cDate = new Date(completionDate);
+
+    if (eDate < sDate) {
+      errText.textContent = "Validation Error: Course End Date cannot be earlier than Course Start Date.";
+      errBanner.classList.remove('hidden');
+      return;
+    }
+    if (cDate < sDate) {
+      errText.textContent = "Validation Error: Completion Date cannot be earlier than Course Start Date.";
+      errBanner.classList.remove('hidden');
+      return;
+    }
+
+    if (!doesNotExpire && expiryDate) {
+      const expDate = new Date(expiryDate);
+      if (expDate < cDate) {
+        errText.textContent = "Validation Error: Expiry Date cannot be earlier than Completion Date.";
+        errBanner.classList.remove('hidden');
+        return;
+      }
+    }
+
+    // Duplicate Certificate Number Check
+    if (certNum) {
+      const dup = persistentCertificates.find(c => c.certificateNumber && c.certificateNumber.toLowerCase() === certNum.toLowerCase());
+      if (dup) {
+        errText.textContent = `Validation Error: Certificate Number #${certNum} has already been registered for officer ${dup.officerName}.`;
+        errBanner.classList.remove('hidden');
+        return;
+      }
+    }
+
+    // Compute status
+    let certStatus = 'Pending Verification';
+
+    const newRecord = {
+      id: Date.now().toString(),
+      apfNo: apf,
+      officerName: name,
+      rank: rank,
+      courseName: course,
+      category: category,
+      provider: provider,
+      courseStartDate: startDate,
+      courseEndDate: endDate,
+      completionDate: completionDate,
+      certificateNumber: certNum,
+      certificateIssueDate: issueDate || completionDate,
+      expiryDate: doesNotExpire ? null : expiryDate,
+      doesNotExpire: doesNotExpire,
+      verificationStatus: 'Pending Verification',
+      status: certStatus
+    };
+
+    persistentCertificates.unshift(newRecord);
+    localStorage.setItem('npf_persistent_certificates', JSON.stringify(persistentCertificates));
+    closeRegisterCertificateModal();
+    alert("Certificate Registered Successfully! Record set to Pending Verification.");
+    if (typeof renderProjectTrainings === 'function') renderProjectTrainings();
+    if (typeof renderTrainingModule === 'function') renderTrainingModule(document.getElementById('module-container'));
+  }
+
+  window.openRegisterCertificateModal = openRegisterCertificateModal;
+  window.closeRegisterCertificateModal = closeRegisterCertificateModal;
+  window.toggleCertExpiryInput = toggleCertExpiryInput;
+  window.handleCertEndDateChange = handleCertEndDateChange;
+  window.autoPopulateOfficerFromAPF = autoPopulateOfficerFromAPF;
+  window.handleRegisterCertificateFormSubmit = handleRegisterCertificateFormSubmit;
+
     if (typeof switchMainView === 'function') window.switchMainView = switchMainView;
     if (typeof changeUserRole === 'function') window.changeUserRole = changeUserRole;
     if (typeof openPersonnelLoginModal === 'function') window.openPersonnelLoginModal = openPersonnelLoginModal;
@@ -3975,6 +4372,157 @@
       }, 500);
     });
 </script>
+
+
+  <!-- MODAL: + REGISTER CERTIFICATE FORM -->
+  <div id="register-certificate-modal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto font-mono text-xs">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-3xl p-6 space-y-5 shadow-2xl my-8">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30">
+            <i data-lucide="award" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white uppercase tracking-wider">CERTIFICATE REGISTRATION FORM</h3>
+            <p class="text-xs text-slate-400">Record personnel course attendance, start/end dates, credentials and certificate files.</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeRegisterCertificateModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="register-cert-error-banner" class="hidden p-3.5 rounded-xl bg-rose-950/90 border border-rose-500/50 text-rose-300 font-bold flex items-center gap-2">
+        <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400 shrink-0"></i>
+        <span id="register-cert-error-text"></span>
+      </div>
+
+      <form id="form-register-certificate" onsubmit="handleRegisterCertificateFormSubmit(event)" class="space-y-4">
+        
+        <!-- SECTION 1: PERSONNEL INFORMATION -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <h4 class="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="user-plus" class="w-4 h-4"></i>
+            <span>1. PERSONNEL INFORMATION</span>
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-slate-400 font-bold mb-1">1. AP/F NO: *</label>
+              <input type="text" id="cert-apf-no" required placeholder="e.g. AP/117369" onkeyup="autoPopulateOfficerFromAPF(this.value)" class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 focus:border-cyan-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-400 font-bold mb-1">2. OFFICER NAME: *</label>
+              <input type="text" id="cert-officer-name" required placeholder="Officer Name..." class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 focus:border-cyan-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-400 font-bold mb-1">3. RANK:</label>
+              <input type="text" id="cert-rank" placeholder="e.g. INSPR" class="w-full bg-slate-900 border border-slate-800 text-slate-300 rounded-xl px-3 py-2 focus:border-cyan-500 focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 2: COURSE, CATEGORY & PROVIDER -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <h4 class="text-xs font-bold text-teal-400 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+            <span>2. COURSE DETAILS</span>
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-slate-400 font-bold mb-1">4. COURSE NAME: *</label>
+              <input type="text" id="cert-course-name" required placeholder="e.g. Advanced CBRN Response" class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 focus:border-cyan-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-400 font-bold mb-1">5. CATEGORY: *</label>
+              <select id="cert-category" required class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 focus:border-cyan-500 focus:outline-none">
+                <option value="CBRN">CBRN</option>
+                <option value="EOD">EOD</option>
+                <option value="Hazmat">Hazmat</option>
+                <option value="Detection">Detection</option>
+                <option value="Decontamination">Decontamination</option>
+                <option value="Explosives Ordnance">Explosives Ordnance</option>
+                <option value="IED">IED</option>
+                <option value="Bomb Disposal">Bomb Disposal</option>
+                <option value="Chemical Response">Chemical Response</option>
+                <option value="Biological Response">Biological Response</option>
+                <option value="Radiological Response">Radiological Response</option>
+                <option value="Emergency Response">Emergency Response</option>
+                <option value="Tactical Training">Tactical Training</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-slate-400 font-bold mb-1">6. TRAINING PROVIDER: *</label>
+              <input type="text" id="cert-provider" required placeholder="e.g. NPF EOD CBRN Training School" class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 focus:border-cyan-500 focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: COURSE DATES -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <h4 class="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+            <span>3. COURSE DATES</span>
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-slate-400 font-bold mb-1">7. DATE COURSE STARTED: *</label>
+              <input type="date" id="cert-start-date" required class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 focus:border-cyan-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-400 font-bold mb-1">8. DATE COURSE ENDED: *</label>
+              <input type="date" id="cert-end-date" required onchange="handleCertEndDateChange(this.value)" class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 focus:border-cyan-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-400 font-bold mb-1">9. DATE COMPLETED / AWARDED: *</label>
+              <input type="date" id="cert-completion-date" required class="w-full bg-slate-900 border border-slate-800 text-white font-bold rounded-xl px-3 py-2 focus:border-cyan-500 focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- SECTION 4: CREDENTIAL, EXPIRY & UPLOAD -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+          <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-2">
+            <i data-lucide="upload" class="w-4 h-4"></i>
+            <span>4. CREDENTIAL NUMBER, EXPIRY &amp; UPLOAD</span>
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block text-slate-400 font-bold mb-1">10. CERTIFICATE NUMBER:</label>
+              <input type="text" id="cert-number" placeholder="e.g. NPF/EOD/2026/089" class="w-full bg-slate-900 border border-slate-800 text-white font-mono rounded-xl px-3 py-2 focus:border-cyan-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-400 font-bold mb-1">11. CERTIFICATE ISSUE DATE:</label>
+              <input type="date" id="cert-issue-date" class="w-full bg-slate-900 border border-slate-800 text-white rounded-xl px-3 py-2 focus:border-cyan-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-slate-400 font-bold mb-1">12. EXPIRY DATE:</label>
+              <input type="date" id="cert-expiry-date" class="w-full bg-slate-900 border border-slate-800 text-white rounded-xl px-3 py-2 focus:border-cyan-500 focus:outline-none">
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-1">
+            <label class="flex items-center gap-2 cursor-pointer font-bold text-xs text-white">
+              <input type="checkbox" id="cert-does-not-expire" onchange="toggleCertExpiryInput(this.checked)" class="rounded bg-slate-900 border-slate-700 text-cyan-500">
+              <span>Certificate Does Not Expire</span>
+            </label>
+
+            <div>
+              <label class="block text-slate-400 font-bold text-[11px] mb-1">13. UPLOAD CERTIFICATE (PDF, JPG, PNG)</label>
+              <input type="file" id="cert-file-input" accept=".pdf,.jpg,.jpeg,.png" class="text-slate-300 text-xs file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-cyan-400 hover:file:bg-slate-700 cursor-pointer">
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+          <button type="button" onclick="closeRegisterCertificateModal()" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-bold">Cancel</button>
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-600 via-teal-600 to-emerald-600 hover:from-cyan-500 hover:to-emerald-500 text-white font-black text-xs uppercase tracking-wider transition shadow-lg cursor-pointer btn-primary-breathing">
+            Register Certificate
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
 </body>
 </html>

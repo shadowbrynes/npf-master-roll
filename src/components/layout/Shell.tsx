@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   Shield,
   Users,
@@ -30,10 +30,20 @@ interface ShellProps {
 
 export default function Shell({ children }: ShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const supabase = createClient();
   const [collapsed, setCollapsed] = useState(false);
   const [userRole, setUserRole] = useState<UserRole>('global_admin');
   const [userName, setUserName] = useState<string>('INSPR. GODWIN UMOH');
+
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Sign out error:', err);
+    }
+    window.location.href = '/login';
+  };
 
   useEffect(() => {
     async function loadUserProfile() {
@@ -130,13 +140,13 @@ export default function Shell({ children }: ShellProps) {
 
         {/* SIDEBAR FOOTER */}
         <div className="p-3 border-t border-slate-800">
-          <Link
-            href="/login"
-            className="flex items-center gap-3 px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-950/30 transition text-xs font-mono font-bold"
+          <button
+            onClick={handleSignOut}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-rose-400 hover:bg-rose-950/30 transition text-xs font-mono font-bold"
           >
             <LogOut className="w-4 h-4 shrink-0" />
             {!collapsed && <span>Sign Out</span>}
-          </Link>
+          </button>
         </div>
       </aside>
 

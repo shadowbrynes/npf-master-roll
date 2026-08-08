@@ -139,3 +139,127 @@ export interface AuditLogEntry {
   result: string;
   createdAt: string;
 }
+
+export type VerificationStatus = 'Pending Verification' | 'Verified' | 'Rejected' | 'Requires Review';
+
+export type CertificationStatus = 
+  | 'Active' 
+  | 'Expiring Soon' 
+  | 'Critical Expiry Warning' 
+  | 'Expired' 
+  | 'Pending Verification' 
+  | 'Rejected' 
+  | 'Requires Review' 
+  | 'No Expiry';
+
+export interface PersonnelCertification {
+  id: string;
+  personnelId: string;
+  courseId?: string;
+  categoryId?: string;
+  providerId?: string;
+  
+  apfNo: string;
+  officerName: string;
+  rank?: string;
+  department?: string;
+  unit?: string;
+  commandLocation?: string;
+  phoneNumber?: string;
+  officialEmail?: string;
+  
+  courseName: string;
+  category: string;
+  provider: string;
+  providerCountry?: string;
+  providerAddress?: string;
+  providerContact?: string;
+  accreditationDetails?: string;
+  
+  certificateNumber?: string;
+  courseStartDate?: string;
+  courseEndDate?: string;
+  completionDate: string;
+  certificateIssueDate?: string;
+  expiryDate?: string;
+  doesNotExpire: boolean;
+  
+  verificationStatus: VerificationStatus;
+  certificationStatus: CertificationStatus;
+  
+  verifiedBy?: string;
+  verifiedByName?: string;
+  verifiedAt?: string;
+  verificationComment?: string;
+  
+  previousCertificationId?: string;
+  notes?: string;
+  
+  createdBy?: string;
+  createdAt: string;
+  updatedAt: string;
+  archivedAt?: string;
+  
+  documents?: CertificationDocument[];
+  daysRemaining?: number;
+}
+
+export interface CertificationDocument {
+  id: string;
+  certificationId: string;
+  fileName: string;
+  filePath: string;
+  fileType: string;
+  fileSize?: number;
+  documentCategory: 'Course Certificate' | 'Training Report' | 'Attendance Confirmation' | 'Competency Assessment' | 'Instructor Evaluation' | 'Renewal Certificate' | 'Supporting Document';
+  uploadedBy?: string;
+  uploadedAt: string;
+}
+
+export interface PersonnelCompetency {
+  id: string;
+  personnelId: string;
+  apfNo: string;
+  officerName: string;
+  rank?: string;
+  primaryCompetency?: string;
+  secondaryCompetency?: string;
+  cbrnQualification?: string;
+  eodQualification?: string;
+  hazmatQualification?: string;
+  detectionQualification?: string;
+  decontaminationQualification?: string;
+  lastTrainingDate?: string;
+  nextExpiryDate?: string;
+  competencyStatus: string;
+  updatedAt: string;
+}
+
+export interface TrainingCourse {
+  id: string;
+  courseCode: string;
+  courseName: string;
+  categoryName: string;
+  description?: string;
+  defaultProviderName?: string;
+  validityPeriodMonths: number;
+  renewalRequirement?: string;
+  competencyAwarded?: string;
+  requiredPrerequisite?: string;
+  certificationLevel?: string;
+  active: boolean;
+}
+
+export interface TrainingProvider {
+  id: string;
+  providerName: string;
+  providerType?: string;
+  country?: string;
+  address?: string;
+  email?: string;
+  telephone?: string;
+  website?: string;
+  accreditationDetails?: string;
+  active: boolean;
+}
+
